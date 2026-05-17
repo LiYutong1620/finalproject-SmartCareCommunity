@@ -1,0 +1,30 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Java / Maven
+backend/target/
+backend/*.log
+*.class
+
+# Node / 前端
+front/node_modules/
+front/dist/
+*.local
+
+# 上传文件与本地配置（勿提交密码）
+backend/upload/
+.env
+.env.*
+**/application-local.yml
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.log
+
+# 可选：体积较大的需求文档（若需上传可删除此行）
+# *.docx

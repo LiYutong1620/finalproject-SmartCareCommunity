@@ -1,0 +1,41 @@
+<template>
+  <el-row :gutter="20">
+    <el-col :span="6" v-for="item in cards" :key="item.label">
+      <el-card shadow="hover" class="stat-card">
+        <div class="stat-value">{{ item.value }}</div>
+        <div class="stat-label">{{ item.label }}</div>
+      </el-card>
+    </el-col>
+  </el-row>
+  <el-card class="mt-20">
+    <template #header>运营概览（静态统计，不含 AI 预测）</template>
+    <p>工单完成率、预警待处理、欠费账单等核心指标一览。</p>
+  </el-card>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { dashboardStats } from '@/api/property'
+
+const stats = ref({})
+
+const cards = computed(() => [
+  { label: '工单总量', value: stats.value.totalOrders ?? '-' },
+  { label: '已完成', value: stats.value.completedOrders ?? '-' },
+  { label: '完成率(%)', value: stats.value.completionRate ?? '-' },
+  { label: '待处理预警', value: stats.value.pendingAlerts ?? '-' },
+  { label: '欠费账单', value: stats.value.unpaidBills ?? '-' }
+])
+
+onMounted(async () => {
+  const res = await dashboardStats()
+  stats.value = res.data
+})
+</script>
+
+<style scoped>
+.stat-card { text-align: center; }
+.stat-value { font-size: 32px; font-weight: bold; color: #1a5f4a; }
+.stat-label { margin-top: 8px; color: #666; }
+.mt-20 { margin-top: 20px; }
+</style>
