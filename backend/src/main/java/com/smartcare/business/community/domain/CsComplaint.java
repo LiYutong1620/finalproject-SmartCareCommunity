@@ -21,6 +21,7 @@ public class CsComplaint extends BaseEntity {
     private String category;
     private String title;
     private String content;
+    private String images;
     private Integer anonymous;
     private String status;
     private Long handlerId;

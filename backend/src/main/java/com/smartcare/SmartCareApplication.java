@@ -11,6 +11,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class SmartCareApplication {
 
     public static void main(String[] args) {
+
         SpringApplication.run(SmartCareApplication.class, args);
+        System.out.println("项目启动成功");
     }
 }

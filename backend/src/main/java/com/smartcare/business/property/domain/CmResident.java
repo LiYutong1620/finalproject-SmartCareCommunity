@@ -1,6 +1,7 @@
 package com.smartcare.business.property.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.smartcare.common.core.domain.BaseEntity;
@@ -24,5 +25,9 @@ public class CmResident extends BaseEntity {
     private String residentType;
     private LocalDate moveInDate;
     private String emergencyContact;
+    private String familyMembers;
     private String delFlag;
+
+    @TableField(exist = false)
+    private java.util.List<Long> tagIds;
 }
