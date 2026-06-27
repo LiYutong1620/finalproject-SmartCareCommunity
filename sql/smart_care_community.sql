@@ -11,7 +11,7 @@
  Target Server Version : 80404 (8.4.4)
  File Encoding         : 65001
 
- Date: 17/05/2026 18:48:31
+ Date: 27/06/2026 22:21:04
 */
 
 SET NAMES utf8mb4;
@@ -49,7 +49,7 @@ CREATE TABLE `cm_equipment`  (
   `next_maintain` date NULL DEFAULT NULL COMMENT '下次维保日期',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`equipment_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '小区公共设备表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '小区公共设备表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_equipment
@@ -66,6 +66,11 @@ CREATE TABLE `cm_house`  (
   `area` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '建筑面积',
   `layout` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '户型',
   `owner_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '业主姓名',
+  `tenant_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '租客姓名',
+  `tenant_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '租客电话',
+  `lease_start` date NULL DEFAULT NULL COMMENT '租期开始',
+  `lease_end` date NULL DEFAULT NULL COMMENT '租期结束',
+  `rent_amount` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '租金',
   `rent_status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '租赁：0空置 1已租 2待退租',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`house_id`) USING BTREE
@@ -74,7 +79,7 @@ CREATE TABLE `cm_house`  (
 -- ----------------------------
 -- Records of cm_house
 -- ----------------------------
-INSERT INTO `cm_house` VALUES (1, 1, '101', 89.50, '三室两厅', '张三', '1', '2026-05-17 18:16:04');
+INSERT INTO `cm_house` VALUES (1, 1, '101', 89.50, '三室两厅', '张三', '', '', NULL, NULL, 0.00, '1', '2026-05-17 18:16:04');
 
 -- ----------------------------
 -- Table structure for cm_move_apply
@@ -84,12 +89,15 @@ CREATE TABLE `cm_move_apply`  (
   `apply_id` bigint NOT NULL AUTO_INCREMENT COMMENT '申请主键',
   `resident_id` bigint NULL DEFAULT NULL COMMENT '住户ID',
   `house_id` bigint NOT NULL COMMENT '房屋ID',
+  `applicant_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '申请人',
+  `applicant_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '申请人电话',
+  `user_id` bigint NULL DEFAULT NULL COMMENT '申请用户ID',
   `apply_type` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '类型：0入住 1迁出',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0待审 1通过 2驳回',
   `reject_reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '驳回原因',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申请时间',
   PRIMARY KEY (`apply_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '入住迁出申请表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '入住迁出申请表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_move_apply
@@ -106,11 +114,14 @@ CREATE TABLE `cm_parking`  (
   `yearly_fee` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '年租费',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0空闲 1已绑定',
   PRIMARY KEY (`parking_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车位资源表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车位资源表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_parking
 -- ----------------------------
+INSERT INTO `cm_parking` VALUES (1, 'A-001', 300.00, 3000.00, '0');
+INSERT INTO `cm_parking` VALUES (2, 'A-002', 300.00, 3000.00, '0');
+INSERT INTO `cm_parking` VALUES (3, 'B-001', 350.00, 3500.00, '0');
 
 -- ----------------------------
 -- Table structure for cm_parking_bind
@@ -122,10 +133,31 @@ CREATE TABLE `cm_parking_bind`  (
   `resident_id` bigint NOT NULL COMMENT '住户ID',
   `bind_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '绑定时间',
   PRIMARY KEY (`bind_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车位绑定表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车位绑定表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_parking_bind
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for cm_parking_payment
+-- ----------------------------
+DROP TABLE IF EXISTS `cm_parking_payment`;
+CREATE TABLE `cm_parking_payment`  (
+  `payment_id` bigint NOT NULL AUTO_INCREMENT COMMENT '缴费记录ID',
+  `parking_id` bigint NOT NULL COMMENT '车位ID',
+  `resident_id` bigint NULL DEFAULT NULL COMMENT '住户ID',
+  `amount` decimal(10, 2) NOT NULL COMMENT '缴费金额',
+  `pay_type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'monthly' COMMENT 'monthly/yearly',
+  `period_start` date NULL DEFAULT NULL COMMENT '费用起始',
+  `period_end` date NULL DEFAULT NULL COMMENT '费用截止',
+  `pay_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '缴费时间',
+  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '备注',
+  PRIMARY KEY (`payment_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '车位缴费记录' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of cm_parking_payment
 -- ----------------------------
 
 -- ----------------------------
@@ -142,6 +174,7 @@ CREATE TABLE `cm_resident`  (
   `resident_type` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '类型：0业主 1租客',
   `move_in_date` date NULL DEFAULT NULL COMMENT '入住日期',
   `emergency_contact` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '紧急联系人',
+  `family_members` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '家庭成员JSON',
   `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '删除：0存在 2删除',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -151,7 +184,7 @@ CREATE TABLE `cm_resident`  (
 -- ----------------------------
 -- Records of cm_resident
 -- ----------------------------
-INSERT INTO `cm_resident` VALUES (1, 2, 1, '张三', '', '13800000001', '0', '2024-01-01', '', '0', '2026-05-17 18:16:04', '2026-05-17 18:25:08');
+INSERT INTO `cm_resident` VALUES (1, 2, 1, '张三', '', '13800000001', '0', '2024-01-01', '', '', '0', '2026-05-17 18:16:04', '2026-05-17 18:25:08');
 
 -- ----------------------------
 -- Table structure for cm_resident_tag
@@ -162,11 +195,17 @@ CREATE TABLE `cm_resident_tag`  (
   `tag_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '标签名称',
   `tag_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'custom' COMMENT '类型：elder/disabled/custom等',
   PRIMARY KEY (`tag_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '住户标签定义表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '住户标签定义表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_resident_tag
 -- ----------------------------
+INSERT INTO `cm_resident_tag` VALUES (1, '独居老人', 'elder');
+INSERT INTO `cm_resident_tag` VALUES (2, '高龄老人', 'elder');
+INSERT INTO `cm_resident_tag` VALUES (3, '残疾人', 'disabled');
+INSERT INTO `cm_resident_tag` VALUES (4, '党员', 'custom');
+INSERT INTO `cm_resident_tag` VALUES (5, '志愿者', 'custom');
+INSERT INTO `cm_resident_tag` VALUES (6, '宠物家庭', 'custom');
 
 -- ----------------------------
 -- Table structure for cm_resident_tag_rel
@@ -194,7 +233,7 @@ CREATE TABLE `cm_violation`  (
   `unlock_date` date NULL DEFAULT NULL COMMENT '解封日期',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '1' COMMENT '状态：1黑名单 0已解除',
   PRIMARY KEY (`violation_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '违规住户记录表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '违规住户记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_violation
@@ -215,11 +254,12 @@ CREATE TABLE `cs_activity`  (
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '1' COMMENT '状态：1有效 0下架',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`activity_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '社区活动表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '社区活动表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_activity
 -- ----------------------------
+INSERT INTO `cs_activity` VALUES (1, '端午包粽子', '欢迎业主报名参加包粽子体验活动', '社区活动中心', '2026-06-10 14:00:00', '2026-06-08 18:00:00', 50, '1', '2026-05-19 15:18:30');
 
 -- ----------------------------
 -- Table structure for cs_activity_reg
@@ -233,9 +273,10 @@ CREATE TABLE `cs_activity_reg`  (
   `house_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '房号',
   `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '电话',
   `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'pending' COMMENT '状态：pending/joined/cancelled',
+  `voucher_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '报名凭证号',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '报名时间',
   PRIMARY KEY (`reg_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '活动报名表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '活动报名表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_activity_reg
@@ -252,6 +293,7 @@ CREATE TABLE `cs_complaint`  (
   `category` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'other' COMMENT '分类',
   `title` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '标题',
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '内容',
+  `images` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '图片URL列表JSON',
   `anonymous` tinyint NULL DEFAULT 0 COMMENT '匿名：0否 1是',
   `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'pending' COMMENT '状态',
   `handler_id` bigint NULL DEFAULT NULL COMMENT '处理人ID',
@@ -260,10 +302,28 @@ CREATE TABLE `cs_complaint`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`complaint_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '投诉建议表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '投诉建议表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_complaint
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for cs_complaint_log
+-- ----------------------------
+DROP TABLE IF EXISTS `cs_complaint_log`;
+CREATE TABLE `cs_complaint_log`  (
+  `log_id` bigint NOT NULL AUTO_INCREMENT COMMENT '日志ID',
+  `complaint_id` bigint NOT NULL COMMENT '投诉ID',
+  `action` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '动作：accept/reply/assign',
+  `handler_id` bigint NULL DEFAULT NULL COMMENT '操作人',
+  `content` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '说明',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '时间',
+  PRIMARY KEY (`log_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '投诉处理记录' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of cs_complaint_log
 -- ----------------------------
 
 -- ----------------------------
@@ -278,7 +338,7 @@ CREATE TABLE `cs_family_bind`  (
   `share_alert` tinyint NULL DEFAULT 0 COMMENT '共享预警：0否 1是',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '绑定时间',
   PRIMARY KEY (`bind_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '亲情账号绑定表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '亲情账号绑定表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_family_bind
@@ -296,7 +356,7 @@ CREATE TABLE `cs_forum_comment`  (
   `audit_status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '1' COMMENT '审核状态',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '留言时间',
   PRIMARY KEY (`comment_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '帖子留言表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '帖子留言表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_forum_comment
@@ -310,10 +370,11 @@ CREATE TABLE `cs_forum_post`  (
   `post_id` bigint NOT NULL AUTO_INCREMENT COMMENT '帖子主键',
   `user_id` bigint NOT NULL COMMENT '发帖用户ID',
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '帖子内容',
+  `images` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '图片URL列表JSON',
   `audit_status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '审核：0待审 1通过 2驳回',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发帖时间',
   PRIMARY KEY (`post_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '邻里论坛帖子表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '邻里论坛帖子表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_forum_post
@@ -330,7 +391,7 @@ CREATE TABLE `cs_housekeeping`  (
   `license_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '营业执照号',
   `avg_score` decimal(3, 2) NULL DEFAULT 5.00 COMMENT '平均评分',
   PRIMARY KEY (`provider_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '家政服务商表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '家政服务商表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_housekeeping
@@ -347,7 +408,7 @@ CREATE TABLE `cs_housekeeping_order`  (
   `book_time` datetime NOT NULL COMMENT '预约时间',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0待确认 1已完成 2取消',
   PRIMARY KEY (`order_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '家政服务预约表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '家政服务预约表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_housekeeping_order
@@ -373,11 +434,13 @@ CREATE TABLE `cs_notice`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`notice_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '社区公告通知表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '社区公告通知表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_notice
 -- ----------------------------
+INSERT INTO `cs_notice` VALUES (1, 'announce', '端午节社区活动通知', '社区将于端午节举办包粽子活动，欢迎报名。', '', 1, NULL, NULL, '', NULL, '1', 4, '2026-05-19 15:18:30', '2026-05-19 15:18:30');
+INSERT INTO `cs_notice` VALUES (2, 'outage', '1栋停水通知', '因管道检修，1栋将于5月20日9:00-17:00停水。', '', 0, NULL, NULL, '1栋全体住户', '2026-05-20 17:00:00', '1', 4, '2026-05-19 15:18:30', '2026-05-19 15:18:30');
 
 -- ----------------------------
 -- Table structure for cs_notice_read
@@ -393,6 +456,8 @@ CREATE TABLE `cs_notice_read`  (
 -- ----------------------------
 -- Records of cs_notice_read
 -- ----------------------------
+INSERT INTO `cs_notice_read` VALUES (1, 2, '2026-05-19 15:32:47');
+INSERT INTO `cs_notice_read` VALUES (2, 2, '2026-05-19 15:33:15');
 
 -- ----------------------------
 -- Table structure for cs_secondhand
@@ -407,7 +472,7 @@ CREATE TABLE `cs_secondhand`  (
   `price` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '价格',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '1' COMMENT '状态：1上架 0下架',
   PRIMARY KEY (`item_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '二手闲置表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '二手闲置表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_secondhand
@@ -422,11 +487,14 @@ CREATE TABLE `cs_venue`  (
   `venue_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '场地名称',
   `fee_standard` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '收费标准',
   PRIMARY KEY (`venue_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '公共场地表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '公共场地表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_venue
 -- ----------------------------
+INSERT INTO `cs_venue` VALUES (1, '多功能厅', 200.00);
+INSERT INTO `cs_venue` VALUES (2, '篮球场', 100.00);
+INSERT INTO `cs_venue` VALUES (3, '棋牌室', 50.00);
 
 -- ----------------------------
 -- Table structure for cs_venue_booking
@@ -440,7 +508,7 @@ CREATE TABLE `cs_venue_booking`  (
   `time_slot` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '时段',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0待审 1通过 2取消',
   PRIMARY KEY (`booking_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '场地预约表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '场地预约表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_venue_booking
@@ -459,8 +527,10 @@ CREATE TABLE `cs_visitor`  (
   `visit_end` datetime NULL DEFAULT NULL COMMENT '来访结束',
   `plate_no` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '车牌号',
   `qrcode` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '通行二维码',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '1' COMMENT '状态：1有效 0过期',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`visitor_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '访客预约表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '访客预约表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_visitor
@@ -474,15 +544,17 @@ CREATE TABLE `cs_vote`  (
   `vote_id` bigint NOT NULL AUTO_INCREMENT COMMENT '投票主键',
   `title` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '议题标题',
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '议题说明',
+  `options` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '同意,反对,弃权' COMMENT '投票选项逗号分隔',
   `anonymous` tinyint NULL DEFAULT 1 COMMENT '匿名：0否 1是',
   `end_time` datetime NOT NULL COMMENT '截止时间',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '1' COMMENT '状态：1进行中 0结束',
   PRIMARY KEY (`vote_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '业主投票议题表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '业主投票议题表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_vote
 -- ----------------------------
+INSERT INTO `cs_vote` VALUES (1, '是否增设电动车充电桩', '拟在地下车库B区增设10组充电桩，请业主表决。', '同意,反对,弃权', 1, '2026-06-30 23:59:59', '1');
 
 -- ----------------------------
 -- Table structure for cs_vote_record
@@ -495,7 +567,7 @@ CREATE TABLE `cs_vote_record`  (
   `option` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '选项',
   PRIMARY KEY (`record_id`) USING BTREE,
   UNIQUE INDEX `uk_vote_user`(`vote_id` ASC, `user_id` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '业主投票记录表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '业主投票记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_vote_record
@@ -517,7 +589,7 @@ CREATE TABLE `el_alert`  (
   `handle_result` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '处置结果',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '预警时间',
   PRIMARY KEY (`alert_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '老人异常预警表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '老人异常预警表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_alert
@@ -536,7 +608,7 @@ CREATE TABLE `el_care_order`  (
   `result` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '处置结果',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`care_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '独居老人关怀工单表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '独居老人关怀工单表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_care_order
@@ -553,7 +625,7 @@ CREATE TABLE `el_care_staff`  (
   `staff_type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'grid' COMMENT '类型：grid/volunteer/social',
   `building_ids` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '负责楼栋ID列表',
   PRIMARY KEY (`staff_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '关怀人员台账表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '关怀人员台账表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_care_staff
@@ -582,7 +654,7 @@ CREATE TABLE `el_disposal_plan`  (
   `level` int NOT NULL COMMENT '等级：1立即上门 2电话确认',
   `rule_desc` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '规则描述',
   PRIMARY KEY (`plan_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '异常事件分级处置预案表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '异常事件分级处置预案表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_disposal_plan
@@ -600,7 +672,7 @@ CREATE TABLE `el_health_record`  (
   `steps` int NULL DEFAULT NULL COMMENT '步数',
   `record_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '采集时间',
   PRIMARY KEY (`record_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '老人健康数据记录表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '老人健康数据记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_health_record
@@ -616,7 +688,7 @@ CREATE TABLE `el_health_threshold`  (
   `min_value` decimal(10, 2) NULL DEFAULT NULL COMMENT '最小阈值',
   `max_value` decimal(10, 2) NULL DEFAULT NULL COMMENT '最大阈值',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '健康数据告警阈值表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '健康数据告警阈值表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_health_threshold
@@ -634,7 +706,7 @@ CREATE TABLE `el_visit_plan`  (
   `next_date` date NOT NULL COMMENT '下次执行日期',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '1' COMMENT '状态：1有效 0停用',
   PRIMARY KEY (`plan_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '定期关怀回访计划表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '定期关怀回访计划表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_visit_plan
@@ -657,11 +729,14 @@ CREATE TABLE `fn_bill`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '出账时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`bill_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '费用账单表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '费用账单表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of fn_bill
 -- ----------------------------
+INSERT INTO `fn_bill` VALUES (1, 1, 1, '2026-05', 500.00, 0.00, 0.00, '0', '2026-05-31', '2026-05-19 15:18:30', '2026-05-19 15:18:30');
+INSERT INTO `fn_bill` VALUES (2, 1, 2, '2026-05', 68.50, 68.50, 0.00, '1', '2026-05-31', '2026-05-19 15:18:30', '2026-05-19 15:18:30');
+INSERT INTO `fn_bill` VALUES (3, 1, 3, '2026-05', 120.00, 0.00, 0.00, '0', '2026-05-31', '2026-05-19 15:18:30', '2026-05-19 15:18:30');
 
 -- ----------------------------
 -- Table structure for fn_fee_item
@@ -694,7 +769,7 @@ CREATE TABLE `fn_invoice`  (
   `pdf_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT 'PDF地址',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申请时间',
   PRIMARY KEY (`invoice_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '电子发票申请表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '电子发票申请表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of fn_invoice
@@ -713,11 +788,12 @@ CREATE TABLE `fn_payment`  (
   `trade_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '交易号',
   `pay_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '缴费时间',
   PRIMARY KEY (`payment_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '缴费流水表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '缴费流水表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of fn_payment
 -- ----------------------------
+INSERT INTO `fn_payment` VALUES (1, 2, 2, 68.50, 'online', 'PAY20260517001', '2026-05-19 15:18:30');
 
 -- ----------------------------
 -- Table structure for kb_article
@@ -730,7 +806,7 @@ CREATE TABLE `kb_article`  (
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '正文',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`article_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修知识库文章表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修知识库文章表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of kb_article
@@ -748,7 +824,7 @@ CREATE TABLE `mt_plan`  (
   `advance_days` int NULL DEFAULT 7 COMMENT '提前天数',
   `next_date` date NOT NULL COMMENT '下次维保日期',
   PRIMARY KEY (`plan_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备维保计划表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备维保计划表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of mt_plan
@@ -767,7 +843,7 @@ CREATE TABLE `mt_record`  (
   `suggestion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '维保建议',
   `maintain_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '维保时间',
   PRIMARY KEY (`record_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备维保记录表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备维保记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of mt_record
@@ -785,7 +861,7 @@ CREATE TABLE `rp_material`  (
   `quantity` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '数量',
   `unit_price` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '单价',
   PRIMARY KEY (`material_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单耗材登记表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单耗材登记表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_material
@@ -804,7 +880,7 @@ CREATE TABLE `rp_material_apply`  (
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0待审 1通过 2驳回',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申请时间',
   PRIMARY KEY (`apply_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '物料领用申请表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '物料领用申请表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_material_apply
@@ -836,7 +912,7 @@ CREATE TABLE `rp_order`  (
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`order_id`) USING BTREE,
   UNIQUE INDEX `uk_order_no`(`order_no` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '报修工单表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '报修工单表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_order
@@ -855,7 +931,7 @@ CREATE TABLE `rp_order_eval`  (
   `appeal_status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '申诉：0无 1中 2通过 3驳回',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评价时间',
   PRIMARY KEY (`eval_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单服务评价表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单服务评价表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_order_eval
@@ -870,7 +946,7 @@ CREATE TABLE `rp_order_image`  (
   `order_id` bigint NOT NULL COMMENT '工单ID',
   `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '图片地址',
   PRIMARY KEY (`image_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '报修现场图片表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '报修现场图片表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_order_image
@@ -888,7 +964,7 @@ CREATE TABLE `rp_order_progress`  (
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '备注',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录时间',
   PRIMARY KEY (`progress_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单进度节点表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单进度节点表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_order_progress
@@ -926,7 +1002,7 @@ CREATE TABLE `rp_work_hour`  (
   `end_time` datetime NULL DEFAULT NULL COMMENT '结束时间',
   `modify_status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '修改审批：0无 1待审',
   PRIMARY KEY (`hour_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修工时打卡表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修工时打卡表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_work_hour
@@ -943,7 +1019,7 @@ CREATE TABLE `rp_worker_appeal`  (
   `reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '申诉理由',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0待审 1通过 2驳回',
   PRIMARY KEY (`appeal_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修工差评申诉表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修工差评申诉表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_worker_appeal
@@ -980,7 +1056,7 @@ CREATE TABLE `sys_abnormal_login`  (
   `device` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '设备信息',
   `is_self` tinyint NULL DEFAULT 0 COMMENT '是否本人：0否 1是',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '异常登录记录表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '异常登录记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_abnormal_login
@@ -1069,7 +1145,7 @@ CREATE TABLE `sys_flow_switch`  (
   `enabled` tinyint NULL DEFAULT 1 COMMENT '是否启用：1是 0否',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '备注',
   PRIMARY KEY (`switch_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '业务流程开关表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '业务流程开关表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_flow_switch
@@ -1089,7 +1165,7 @@ CREATE TABLE `sys_login_log`  (
   `login_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '登录时间',
   PRIMARY KEY (`log_id`) USING BTREE,
   INDEX `idx_username_time`(`username` ASC, `login_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户登录日志表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户登录日志表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_login_log
@@ -1102,6 +1178,10 @@ INSERT INTO `sys_login_log` VALUES (5, 'property01', '0:0:0:0:0:0:0:1', 'Mozilla
 INSERT INTO `sys_login_log` VALUES (6, 'owner02', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', '0', '登录成功', '2026-05-17 18:35:30');
 INSERT INTO `sys_login_log` VALUES (7, 'property01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', '0', '登录成功', '2026-05-17 18:44:41');
 INSERT INTO `sys_login_log` VALUES (8, 'owner02', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', '0', '登录成功', '2026-05-17 18:46:00');
+INSERT INTO `sys_login_log` VALUES (9, 'owner01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', '0', '登录成功', '2026-05-19 15:32:21');
+INSERT INTO `sys_login_log` VALUES (10, 'property01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', '0', '登录成功', '2026-05-19 15:53:07');
+INSERT INTO `sys_login_log` VALUES (11, 'property01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', '0', '登录成功', '2026-06-24 16:34:42');
+INSERT INTO `sys_login_log` VALUES (12, 'owner01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', '0', '登录成功', '2026-06-24 16:35:36');
 
 -- ----------------------------
 -- Table structure for sys_menu
@@ -1119,7 +1199,7 @@ CREATE TABLE `sys_menu`  (
   `order_num` int NULL DEFAULT 0,
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '0',
   PRIMARY KEY (`menu_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_menu
@@ -1143,7 +1223,7 @@ CREATE TABLE `sys_message`  (
   `recall_time` datetime NULL DEFAULT NULL COMMENT '撤回时间',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`message_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '统一消息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '统一消息表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_message
@@ -1161,7 +1241,7 @@ CREATE TABLE `sys_message_user`  (
   `read_time` datetime NULL DEFAULT NULL COMMENT '阅读时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_msg_user`(`message_id` ASC, `user_id` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户消息已读状态表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户消息已读状态表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_message_user
@@ -1185,7 +1265,7 @@ CREATE TABLE `sys_oper_log`  (
   `error_msg` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '错误信息',
   `oper_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间',
   PRIMARY KEY (`oper_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统操作日志表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统操作日志表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -1273,7 +1353,7 @@ CREATE TABLE `sys_user_device`  (
   `trusted` tinyint NULL DEFAULT 0 COMMENT '是否信任：0否 1是',
   `login_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最近登录时间',
   PRIMARY KEY (`device_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户登录设备表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户登录设备表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_user_device
