@@ -8,7 +8,7 @@
 
 ```
 finalproject/
-├── sql/                    # 数据库脚本与增量补丁
+├── sql/                    # 数据库脚本
 ├── backend/                # Spring Boot 3 后端（Java 17）
 ├── front/                  # Vue 3 前端
 ├── .gitignore              # Git 忽略规则
@@ -49,13 +49,6 @@ finalproject/
 mysql -u root -p < sql/smart_care_community.sql
 ```
 
-若项目已建库，按需执行增量补丁（顺序执行，列已存在可跳过对应语句）：
-
-- `sql/patch_community_module.sql` — 业主社区服务字段与演示数据
-- `sql/patch_community_fix_columns.sql` — 社区表缺列修复
-- `sql/patch_property_module.sql` — 物业资源管理字段与车位缴费表
-- `sql/patch_property_content.sql` — 投诉处理记录表
-
 修改 `backend/src/main/resources/application.yml` 中的数据库账号密码。
 
 ### 2. 后端
@@ -85,10 +78,7 @@ npm run dev
 | 文件 | 作用 |
 |------|------|
 | `smart_care_community.sql` | **主库脚本**：建库、全业务表结构、字段注释、初始演示数据 |
-| `patch_community_module.sql` | 社区业主端：报名凭证、帖子图片、投票选项、访客状态等 + 演示数据 |
-| `patch_community_fix_columns.sql` | 修复社区相关表缺失列（若主库未含新字段） |
-| `patch_property_module.sql` | 物业资源：房屋租赁字段、车位缴费表、住户标签、演示车位 |
-| `patch_property_content.sql` | 物业内容：投诉处理日志表 `cs_complaint_log` |
+
 
 ---
 
