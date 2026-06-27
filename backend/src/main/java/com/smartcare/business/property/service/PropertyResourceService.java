@@ -2,7 +2,6 @@ package com.smartcare.business.property.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.smartcare.business.community.mapper.CsFamilyBindMapper;
 import com.smartcare.business.property.domain.*;
 import com.smartcare.business.property.mapper.*;
 import com.smartcare.business.repair.domain.RpOrder;
@@ -31,11 +30,9 @@ public class PropertyResourceService {
     private final CmResidentTagRelMapper tagRelMapper;
     private final CmParkingMapper parkingMapper;
     private final CmParkingBindMapper parkingBindMapper;
-    private final CmParkingPaymentMapper parkingPaymentMapper;
     private final CmViolationMapper violationMapper;
     private final CmMoveApplyMapper moveApplyMapper;
     private final RpOrderMapper orderMapper;
-    private final CsFamilyBindMapper familyBindMapper;
 
     // ---------- 楼栋 ----------
     public List<CmBuilding> listBuildings() {
@@ -209,9 +206,6 @@ public class PropertyResourceService {
                 .eq(RpOrder::getOwnerId, r.getUserId())
                 .notIn(RpOrder::getStatus, "completed", "cancelled", "closed"));
             if (orders > 0) throw new ServiceException("存在未完结报修工单，无法删除");
-            long family = familyBindMapper.selectCount(new LambdaQueryWrapper<com.smartcare.business.community.domain.CsFamilyBind>()
-                .eq(com.smartcare.business.community.domain.CsFamilyBind::getOwnerId, r.getUserId()));
-            if (family > 0) throw new ServiceException("请先解绑亲情账号");
         }
         CmResident upd = new CmResident();
         upd.setResidentId(residentId);
@@ -227,8 +221,6 @@ public class PropertyResourceService {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("parkingId", p.getParkingId());
             m.put("parkingNo", p.getParkingNo());
-            m.put("monthlyFee", p.getMonthlyFee());
-            m.put("yearlyFee", p.getYearlyFee());
             m.put("status", p.getStatus());
             CmParkingBind bind = parkingBindMapper.selectOne(new LambdaQueryWrapper<CmParkingBind>()
                 .eq(CmParkingBind::getParkingId, p.getParkingId()).last("LIMIT 1"));
@@ -247,7 +239,7 @@ public class PropertyResourceService {
         parkingMapper.insert(p);
     }
 
-    public void updateParkingFee(CmParking p) {
+    public void updateParking(CmParking p) {
         parkingMapper.updateById(p);
     }
 
@@ -272,26 +264,6 @@ public class PropertyResourceService {
         parkingBindMapper.delete(new LambdaQueryWrapper<CmParkingBind>().eq(CmParkingBind::getParkingId, parkingId));
         p.setStatus("0");
         parkingMapper.updateById(p);
-    }
-
-    public List<CmParkingPayment> listParkingPayments(Long parkingId, String parkingNo,
-                                                      LocalDate start, LocalDate end) {
-        LambdaQueryWrapper<CmParkingPayment> qw = new LambdaQueryWrapper<CmParkingPayment>()
-            .orderByDesc(CmParkingPayment::getPayTime);
-        if (parkingId != null) qw.eq(CmParkingPayment::getParkingId, parkingId);
-        if (start != null) qw.ge(CmParkingPayment::getPeriodStart, start);
-        if (end != null) qw.le(CmParkingPayment::getPeriodEnd, end);
-        if (StringUtils.hasText(parkingNo)) {
-            CmParking p = parkingMapper.selectOne(new LambdaQueryWrapper<CmParking>()
-                .eq(CmParking::getParkingNo, parkingNo).last("LIMIT 1"));
-            if (p != null) qw.eq(CmParkingPayment::getParkingId, p.getParkingId());
-        }
-        return parkingPaymentMapper.selectList(qw);
-    }
-
-    public void addParkingPayment(CmParkingPayment payment) {
-        if (payment.getPayTime() == null) payment.setPayTime(LocalDateTime.now());
-        parkingPaymentMapper.insert(payment);
     }
 
     // ---------- 违规 ----------

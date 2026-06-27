@@ -8,8 +8,8 @@
     </el-col>
   </el-row>
   <el-card class="mt-20">
-    <template #header>运营概览（静态统计，不含 AI 预测）</template>
-    <p>工单完成率、预警待处理、欠费账单等核心指标一览。</p>
+    <template #header>运营概览</template>
+    <p>工单完成率、预警待处理等核心指标一览。</p>
   </el-card>
 </template>
 
@@ -23,8 +23,7 @@ const cards = computed(() => [
   { label: '工单总量', value: stats.value.totalOrders ?? '-' },
   { label: '已完成', value: stats.value.completedOrders ?? '-' },
   { label: '完成率(%)', value: stats.value.completionRate ?? '-' },
-  { label: '待处理预警', value: stats.value.pendingAlerts ?? '-' },
-  { label: '欠费账单', value: stats.value.unpaidBills ?? '-' }
+  { label: '待处理预警', value: stats.value.pendingAlerts ?? '-' }
 ])
 
 onMounted(async () => {

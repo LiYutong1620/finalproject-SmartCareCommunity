@@ -71,12 +71,6 @@ export function bindParking(data) {
 export function unbindParking(parkingId) {
   return request({ url: `/property/parking/bind/${parkingId}`, method: 'delete' })
 }
-export function listParkingPayment(params) {
-  return request({ url: '/property/parking/payment/list', method: 'get', params })
-}
-export function addParkingPayment(data) {
-  return request({ url: '/property/parking/payment', method: 'post', data })
-}
 
 export function listViolation(params) {
   return request({ url: '/property/violation/list', method: 'get', params })
@@ -109,10 +103,4 @@ export function listElderAlert(params) {
 }
 export function handleElderAlert(data) {
   return request({ url: '/property/elder/alert/handle', method: 'put', data })
-}
-export function listPropertyBill(params) {
-  return request({ url: '/property/bill/list', method: 'get', params })
-}
-export function createBill(data) {
-  return request({ url: '/property/bill', method: 'post', data })
 }

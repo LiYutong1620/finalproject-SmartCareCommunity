@@ -139,7 +139,7 @@ public class PropertyResourceController {
 
     @PutMapping("/parking")
     public AjaxResult updateParking(@RequestBody CmParking parking) {
-        resourceService.updateParkingFee(parking);
+        resourceService.updateParking(parking);
         return AjaxResult.success();
     }
 
@@ -152,20 +152,6 @@ public class PropertyResourceController {
     @DeleteMapping("/parking/bind/{parkingId}")
     public AjaxResult unbindParking(@PathVariable Long parkingId) {
         resourceService.unbindParking(parkingId);
-        return AjaxResult.success();
-    }
-
-    @GetMapping("/parking/payment/list")
-    public AjaxResult parkingPayments(@RequestParam(required = false) Long parkingId,
-                                      @RequestParam(required = false) String parkingNo,
-                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
-        return AjaxResult.success(resourceService.listParkingPayments(parkingId, parkingNo, start, end));
-    }
-
-    @PostMapping("/parking/payment")
-    public AjaxResult addParkingPayment(@RequestBody CmParkingPayment payment) {
-        resourceService.addParkingPayment(payment);
         return AjaxResult.success();
     }
 

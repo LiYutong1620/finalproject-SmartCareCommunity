@@ -10,12 +10,6 @@
           <el-button link type="primary" class="ml-8" @click="saveEmergency">保存</el-button>
         </el-descriptions-item>
       </el-descriptions>
-      <h4 class="mt-16">家庭成员（亲情绑定）</h4>
-      <el-table :data="profile.familyList || []">
-        <el-table-column prop="familyPhone" label="亲属手机" />
-        <el-table-column label="共享工单"><template #default="{ row }">{{ row.shareOrder ? '是' : '否' }}</template></el-table-column>
-        <el-table-column label="预警授权"><template #default="{ row }">{{ row.shareAlert ? '是' : '否' }}</template></el-table-column>
-      </el-table>
     </el-card>
   </div>
 </template>
@@ -46,4 +40,4 @@ async function saveEmergency() {
 onMounted(load)
 </script>
 
-<style scoped>.mt-16{margin-top:16px}.ml-8{margin-left:8px}</style>
+<style scoped>.ml-8{margin-left:8px}</style>

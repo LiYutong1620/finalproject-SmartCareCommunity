@@ -123,35 +123,18 @@
       <!-- 车位 -->
       <el-tab-pane label="车位管理" name="parking">
         <el-button type="primary" class="mb-16" @click="openParking()">新增车位</el-button>
-        <el-button class="mb-16" @click="payDlg = true">登记缴费</el-button>
         <el-table :data="parkings">
           <el-table-column prop="parkingNo" label="编号" />
-          <el-table-column prop="monthlyFee" label="月租" width="80" />
-          <el-table-column prop="yearlyFee" label="年租" width="80" />
           <el-table-column prop="status" label="状态" width="80">
             <template #default="{ row }">{{ row.status === '1' ? '已绑定' : '空闲' }}</template>
           </el-table-column>
           <el-table-column prop="residentName" label="绑定住户" />
-          <el-table-column label="操作" width="180">
+          <el-table-column label="操作" width="140">
             <template #default="{ row }">
               <el-button v-if="row.status !== '1'" link @click="bindPark(row)">绑定</el-button>
               <el-button v-else link type="warning" @click="unbindPark(row)">解绑</el-button>
-              <el-button link @click="editParkFee(row)">改费用</el-button>
             </template>
           </el-table-column>
-        </el-table>
-        <h4 class="mt-16">缴费记录</h4>
-        <el-form inline class="mb-8">
-          <el-form-item label="车位号"><el-input v-model="payQ.parkingNo" style="width:100px" /></el-form-item>
-          <el-button @click="loadPayments">查询</el-button>
-        </el-form>
-        <el-table :data="payments" size="small">
-          <el-table-column prop="parkingId" label="车位ID" width="80" />
-          <el-table-column prop="amount" label="金额" width="80" />
-          <el-table-column prop="payType" label="类型" width="80" />
-          <el-table-column prop="periodStart" label="起始" width="110" />
-          <el-table-column prop="periodEnd" label="截止" width="110" />
-          <el-table-column prop="payTime" label="缴费时间" />
         </el-table>
       </el-tab-pane>
 
@@ -301,22 +284,8 @@
     <el-dialog v-model="parkingDlg" title="车位" width="400px">
       <el-form :model="parkingForm" label-width="80px">
         <el-form-item label="编号"><el-input v-model="parkingForm.parkingNo" /></el-form-item>
-        <el-form-item label="月租"><el-input v-model="parkingForm.monthlyFee" /></el-form-item>
-        <el-form-item label="年租"><el-input v-model="parkingForm.yearlyFee" /></el-form-item>
       </el-form>
       <template #footer><el-button type="primary" @click="saveParking">保存</el-button></template>
-    </el-dialog>
-
-    <el-dialog v-model="payDlg" title="车位缴费" width="440px">
-      <el-form :model="payForm" label-width="90px">
-        <el-form-item label="车位ID"><el-input v-model.number="payForm.parkingId" /></el-form-item>
-        <el-form-item label="住户ID"><el-input v-model.number="payForm.residentId" /></el-form-item>
-        <el-form-item label="金额"><el-input v-model="payForm.amount" /></el-form-item>
-        <el-form-item label="类型"><el-select v-model="payForm.payType"><el-option label="月租" value="monthly" /><el-option label="年租" value="yearly" /></el-select></el-form-item>
-        <el-form-item label="起始"><el-date-picker v-model="payForm.periodStart" type="date" value-format="YYYY-MM-DD" style="width:100%" /></el-form-item>
-        <el-form-item label="截止"><el-date-picker v-model="payForm.periodEnd" type="date" value-format="YYYY-MM-DD" style="width:100%" /></el-form-item>
-      </el-form>
-      <template #footer><el-button type="primary" @click="savePayment">保存</el-button></template>
     </el-dialog>
 
     <!-- 入住迁出 -->
@@ -354,7 +323,7 @@ import {
   listEquipment, addEquipment, deleteEquipment,
   listTag, addTag, listResident, addResident, updateResident, deleteResident,
   listRentHouse, listParking, addParking, updateParking, bindParking, unbindParking,
-  listParkingPayment, addParkingPayment, listViolation, addViolation, updateViolation, removeViolation,
+  listViolation, addViolation, updateViolation, removeViolation,
   listMove, addMove, auditMove as auditMoveApi
 } from '@/api/property'
 
@@ -374,8 +343,6 @@ const q = reactive({ buildingId: null, tagId: null, name: '' })
 const rentFilter = ref('')
 const rentList = ref([])
 const parkings = ref([])
-const payments = ref([])
-const payQ = reactive({ parkingNo: '' })
 const moves = ref([])
 const moveFilter = ref('0')
 const violations = ref([])
@@ -393,9 +360,7 @@ const tagForm = reactive({ tagName: '', tagType: 'custom' })
 const rentDlg = ref(false)
 const rentForm = reactive({ houseId: null, rentStatus: '1', tenantName: '', tenantPhone: '', leaseStart: '', leaseEnd: '', rentAmount: 0 })
 const parkingDlg = ref(false)
-const parkingForm = reactive({ parkingNo: '', monthlyFee: 300, yearlyFee: 3000 })
-const payDlg = ref(false)
-const payForm = reactive({ parkingId: null, residentId: null, amount: 0, payType: 'monthly', periodStart: '', periodEnd: '' })
+const parkingForm = reactive({ parkingNo: '' })
 const moveDlg = ref(false)
 const moveForm = reactive({ applyType: '0', applicantName: '', applicantPhone: '', houseId: 1, residentId: null })
 const violationDlg = ref(false)
@@ -507,19 +472,6 @@ async function unbindPark(row) {
   await unbindParking(row.parkingId)
   parkings.value = (await listParking()).data
 }
-async function editParkFee(row) {
-  const { value } = await ElMessageBox.prompt('月租费用', '修改', { inputValue: row.monthlyFee })
-  await updateParking({ parkingId: row.parkingId, parkingNo: row.parkingNo, monthlyFee: value, yearlyFee: row.yearlyFee, status: row.status })
-  parkings.value = (await listParking()).data
-}
-async function loadPayments() {
-  payments.value = (await listParkingPayment(payQ)).data
-}
-async function savePayment() {
-  await addParkingPayment(payForm)
-  payDlg.value = false
-  loadPayments()
-}
 async function loadMoves() {
   moves.value = (await listMove({ status: moveFilter.value || undefined })).data
 }
@@ -561,7 +513,7 @@ async function liftViolation(row) {
 function onTabChange(name) {
   if (name === 'resident') loadResidents()
   if (name === 'rent') loadRent()
-  if (name === 'parking') { listParking().then(r => { parkings.value = r.data }); loadPayments() }
+  if (name === 'parking') { listParking().then(r => { parkings.value = r.data }) }
   if (name === 'move') loadMoves()
   if (name === 'violation') listViolation({ status: '1' }).then(r => { violations.value = r.data })
   if (name === 'equipment') listEquipment().then(r => { equipments.value = r.data })
