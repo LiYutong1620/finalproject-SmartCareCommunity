@@ -282,12 +282,15 @@ CREATE TABLE `cm_resident`  (
   `user_id` bigint NULL DEFAULT NULL COMMENT '绑定用户ID',
   `house_id` bigint NOT NULL COMMENT '房屋ID',
   `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '姓名',
+  `gender` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '性别：0男 1女',
+  `age` int NULL DEFAULT NULL COMMENT '年龄',
   `id_card` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '身份证号',
   `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '电话',
   `resident_type` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '类型：0业主 1租客',
   `move_in_date` date NULL DEFAULT NULL COMMENT '入住日期',
   `emergency_contact` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '紧急联系人',
   `family_members` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '家庭成员JSON',
+  `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '备注',
   `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '删除：0存在 2删除',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -297,42 +300,21 @@ CREATE TABLE `cm_resident`  (
 -- ----------------------------
 -- Records of cm_resident
 -- ----------------------------
-INSERT INTO `cm_resident` VALUES (1, 2, 1, '张三', '', '13810000001', '0', '2023-01-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (2, 5, 11, '李芳', '', '13810000002', '0', '2023-02-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (3, 6, 21, '王磊', '', '13810000003', '0', '2023-03-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (4, 7, 31, '赵敏', '', '13810000004', '0', '2023-04-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (5, 8, 41, '刘洋', '', '13810000005', '0', '2023-05-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (6, 9, 51, '陈静', '', '13810000006', '0', '2023-06-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (7, 10, 61, '杨帆', '', '13810000007', '0', '2023-07-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (8, 11, 71, '周婷', '', '13810000008', '0', '2023-08-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (9, 12, 81, '吴刚', '', '13810000009', '0', '2023-09-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (10, 13, 91, '郑丽', '', '13810000010', '0', '2023-10-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (11, 14, 2, '孙浩', '', '13810000011', '0', '2023-11-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (12, 15, 12, '马超', '', '13810000012', '0', '2023-12-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (13, 16, 22, '朱琳', '', '13810000013', '0', '2023-01-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (14, 17, 32, '胡军', '', '13810000014', '0', '2023-02-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `cm_resident` VALUES (15, 18, 42, '林雪', '', '13810000015', '0', '2023-03-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-
--- ----------------------------
--- Table structure for cm_resident_tag
--- ----------------------------
-DROP TABLE IF EXISTS `cm_resident_tag`;
-CREATE TABLE `cm_resident_tag`  (
-  `tag_id` bigint NOT NULL AUTO_INCREMENT COMMENT '标签主键',
-  `tag_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '标签名称',
-  `tag_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'custom' COMMENT '类型：elder/disabled/custom等',
-  PRIMARY KEY (`tag_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '住户标签定义表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of cm_resident_tag
--- ----------------------------
-INSERT INTO `cm_resident_tag` VALUES (1, '独居老人', 'elder');
-INSERT INTO `cm_resident_tag` VALUES (2, '高龄老人', 'elder');
-INSERT INTO `cm_resident_tag` VALUES (3, '残疾人', 'disabled');
-INSERT INTO `cm_resident_tag` VALUES (4, '党员', 'custom');
-INSERT INTO `cm_resident_tag` VALUES (5, '志愿者', 'custom');
-INSERT INTO `cm_resident_tag` VALUES (6, '宠物家庭', 'custom');
+INSERT INTO `cm_resident` VALUES (1, 2, 1, '张三', '0', 35, '', '13810000001', '0', '2023-01-15', '', '', '主业主，系统账号已绑定', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (2, 5, 11, '李芳', '1', 42, '', '13810000002', '0', '2023-02-15', '李强 13900000002', '', '日常在家，快递可放门口驿站', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (3, 6, 21, '王磊', '0', 38, '', '13810000003', '0', '2023-03-15', '', '', '工作日晚归，访客需提前登记', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (4, 7, 31, '赵敏', '1', 36, '', '13810000004', '0', '2023-04-15', '赵刚 13900000004', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (5, 8, 41, '刘洋', '0', 45, '', '13810000005', '0', '2023-05-15', '刘梅 13900000005', '', '长期出差，紧急事项可联系配偶', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (6, 9, 51, '陈静', '1', 33, '', '13810000006', '0', '2023-06-15', '', '', '家有宠物，遛狗请走指定路线', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (7, 10, 61, '杨帆', '0', 29, '', '13810000007', '0', '2023-07-15', '', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (8, 11, 71, '周婷', '1', 31, '', '13810000008', '0', '2023-08-15', '', '', '偏好短信通知，22点后请勿电话', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (9, 12, 81, '吴刚', '0', 50, '', '13810000009', '0', '2023-09-15', '吴芳 13900000009', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (10, 13, 91, '郑丽', '1', 72, '', '13810000010', '0', '2023-10-15', '郑明 13900000010', '', '独居，已纳入老人关怀关注', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (11, 14, 2, '孙浩', '0', 28, '', '13810000011', '0', '2023-11-15', '', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (12, 15, 12, '马超', '0', 26, '', '13810000012', '0', '2023-12-15', '', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (13, 16, 22, '朱琳', '1', 34, '', '13810000013', '0', '2023-01-15', '', '', '维修前请提前沟通', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (14, 17, 32, '胡军', '0', 55, '', '13810000014', '0', '2023-02-15', '', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (15, 18, 42, '林雪', '1', 40, '', '13810000015', '0', '2023-03-15', '林涛 13900000015', '', '家中有老人同住，停水停电请优先通知', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
 
 -- ----------------------------
 -- Table structure for cm_resident_tag_rel
@@ -347,6 +329,13 @@ CREATE TABLE `cm_resident_tag_rel`  (
 -- ----------------------------
 -- Records of cm_resident_tag_rel
 -- ----------------------------
+INSERT INTO `cm_resident_tag_rel` VALUES (6, 6);
+INSERT INTO `cm_resident_tag_rel` VALUES (10, 1);
+INSERT INTO `cm_resident_tag_rel` VALUES (10, 2);
+INSERT INTO `cm_resident_tag_rel` VALUES (11, 5);
+INSERT INTO `cm_resident_tag_rel` VALUES (14, 4);
+INSERT INTO `cm_resident_tag_rel` VALUES (14, 5);
+INSERT INTO `cm_resident_tag_rel` VALUES (15, 2);
 
 -- ----------------------------
 -- Table structure for cs_notice
@@ -1047,6 +1036,8 @@ CREATE TABLE `sys_user`  (
   `username` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '登录账号',
   `password` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '登录密码(BCrypt)',
   `nick_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '用户昵称',
+  `gender` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '性别：0男 1女',
+  `age` int NULL DEFAULT NULL COMMENT '年龄',
   `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '手机号码',
   `id_card` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '身份证号',
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '头像URL',
@@ -1065,23 +1056,23 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (2, 'owner01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '张三', '13810000001', '', '', '0', NULL, 1, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (3, 'worker01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '李师傅', '13800000002', '', '', '1', NULL, NULL, '0', '0', '2026-05-17 18:16:04', '2026-05-17 18:16:04');
-INSERT INTO `sys_user` VALUES (4, 'property01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '王管家', '13800000003', '', '', '2', NULL, NULL, '0', '0', '2026-05-17 18:16:04', '2026-05-17 18:16:04');
-INSERT INTO `sys_user` VALUES (5, 'owner02', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '李芳', '13810000002', '', '', '0', NULL, 11, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (6, 'owner03', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '王磊', '13810000003', '', '', '0', NULL, 21, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (7, 'owner04', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '赵敏', '13810000004', '', '', '0', NULL, 31, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (8, 'owner05', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '刘洋', '13810000005', '', '', '0', NULL, 41, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (9, 'owner06', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '陈静', '13810000006', '', '', '0', NULL, 51, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (10, 'owner07', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '杨帆', '13810000007', '', '', '0', NULL, 61, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (11, 'owner08', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '周婷', '13810000008', '', '', '0', NULL, 71, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (12, 'owner09', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '吴刚', '13810000009', '', '', '0', NULL, 81, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (13, 'owner10', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '郑丽', '13810000010', '', '', '0', NULL, 91, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (14, 'owner11', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '孙浩', '13810000011', '', '', '0', NULL, 2, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (15, 'owner12', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '马超', '13810000012', '', '', '0', NULL, 12, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (16, 'owner13', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '朱琳', '13810000013', '', '', '0', NULL, 22, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (17, 'owner14', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '胡军', '13810000014', '', '', '0', NULL, 32, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
-INSERT INTO `sys_user` VALUES (18, 'owner15', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '林雪', '13810000015', '', '', '0', NULL, 42, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (2, 'owner01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '张三', '0', 35, '13810000001', '', '', '0', NULL, 1, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (3, 'worker01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '李师傅', '0', 42, '13800000002', '', '', '1', NULL, NULL, '0', '0', '2026-05-17 18:16:04', '2026-05-17 18:16:04');
+INSERT INTO `sys_user` VALUES (4, 'property01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '王管家', '1', 38, '13800000003', '', '', '2', NULL, NULL, '0', '0', '2026-05-17 18:16:04', '2026-05-17 18:16:04');
+INSERT INTO `sys_user` VALUES (5, 'owner02', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '李芳', '1', 42, '13810000002', '', '', '0', NULL, 11, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (6, 'owner03', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '王磊', '0', 38, '13810000003', '', '', '0', NULL, 21, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (7, 'owner04', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '赵敏', '1', 36, '13810000004', '', '', '0', NULL, 31, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (8, 'owner05', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '刘洋', '0', 45, '13810000005', '', '', '0', NULL, 41, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (9, 'owner06', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '陈静', '1', 33, '13810000006', '', '', '0', NULL, 51, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (10, 'owner07', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '杨帆', '0', 29, '13810000007', '', '', '0', NULL, 61, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (11, 'owner08', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '周婷', '1', 31, '13810000008', '', '', '0', NULL, 71, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (12, 'owner09', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '吴刚', '0', 50, '13810000009', '', '', '0', NULL, 81, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (13, 'owner10', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '郑丽', '1', 72, '13810000010', '', '', '0', NULL, 91, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (14, 'owner11', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '孙浩', '0', 28, '13810000011', '', '', '0', NULL, 2, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (15, 'owner12', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '马超', '0', 26, '13810000012', '', '', '0', NULL, 12, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (16, 'owner13', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '朱琳', '1', 34, '13810000013', '', '', '0', NULL, 22, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (17, 'owner14', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '胡军', '0', 55, '13810000014', '', '', '0', NULL, 32, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (18, 'owner15', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '林雪', '1', 40, '13810000015', '', '', '0', NULL, 42, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
 
 -- ----------------------------
 -- Table structure for sys_user_device
@@ -1119,3 +1110,4 @@ INSERT INTO `sys_user_role` VALUES (2, 2);
 INSERT INTO `sys_user_role` VALUES (3, 3);
 INSERT INTO `sys_user_role` VALUES (4, 4);
 INSERT INTO `sys_user_role` VALUES (5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 2), (11, 2), (12, 2), (13, 2), (14, 2), (15, 2), (16, 2), (17, 2), (18, 2);
+

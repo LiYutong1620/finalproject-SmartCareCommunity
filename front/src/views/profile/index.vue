@@ -37,6 +37,14 @@
               <span class="value">{{ profile.phone || '-' }}</span>
             </div>
             <div class="info-item">
+              <span class="label">性别</span>
+              <span class="value">{{ genderLabel(profile.gender) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">年龄</span>
+              <span class="value">{{ profile.age != null ? profile.age + ' 岁' : '-' }}</span>
+            </div>
+            <div class="info-item">
               <span class="label">账户角色</span>
               <span class="value">{{ roleLabel }}</span>
             </div>
@@ -47,7 +55,7 @@
           <el-card shadow="never" class="form-card">
             <el-tabs v-model="activeTab" class="profile-tabs">
               <el-tab-pane label="基本资料" name="info">
-                <div class="tab-desc">更新您的昵称与联系方式，保存后立即生效。</div>
+                <div class="tab-desc">更新您的昵称、联系方式与基本资料，保存后立即生效。</div>
                 <el-form ref="infoRef" :model="infoForm" :rules="infoRules" label-width="88px" class="profile-form">
                   <el-form-item label="登录账号">
                     <el-input v-model="infoForm.username" disabled />
@@ -57,6 +65,15 @@
                   </el-form-item>
                   <el-form-item label="手机号码" prop="phone">
                     <el-input v-model="infoForm.phone" maxlength="11" placeholder="请输入手机号" />
+                  </el-form-item>
+                  <el-form-item label="性别">
+                    <el-select v-model="infoForm.gender" clearable placeholder="选填" style="width:100%">
+                      <el-option label="男" value="0" />
+                      <el-option label="女" value="1" />
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item label="年龄" prop="age">
+                    <el-input-number v-model="infoForm.age" :min="1" :max="120" controls-position="right" placeholder="选填" style="width:100%" />
                   </el-form-item>
                   <el-form-item>
                     <el-button type="primary" :loading="saving" @click="submitInfo">保存修改</el-button>
@@ -104,11 +121,19 @@ const pwdRef = ref()
 const roleMap = { '0': '业主', '1': '维修工', '2': '物业管理员' }
 const roleLabel = computed(() => roleMap[profile.value.userType] || '用户')
 
+function genderLabel(gender) {
+  if (gender === '0') return '男'
+  if (gender === '1') return '女'
+  return '-'
+}
+
 const infoForm = reactive({
   username: '',
   nickName: '',
   phone: '',
-  avatar: ''
+  avatar: '',
+  gender: '',
+  age: null
 })
 
 const pwdForm = reactive({
@@ -122,7 +147,8 @@ const infoRules = {
   phone: [
     { required: true, message: '请输入手机号', trigger: 'blur' },
     { pattern: /^1\d{10}$/, message: '手机号格式不正确', trigger: 'blur' }
-  ]
+  ],
+  age: [{ type: 'number', min: 1, max: 120, message: '年龄应在1-120之间', trigger: 'blur' }]
 }
 
 const validateConfirmPwd = (rule, value, callback) => {
@@ -156,6 +182,8 @@ async function loadProfile() {
   infoForm.nickName = res.data.nickName
   infoForm.phone = res.data.phone
   infoForm.avatar = res.data.avatar
+  infoForm.gender = res.data.gender || ''
+  infoForm.age = res.data.age ?? null
 }
 
 async function handleAvatarUpload({ file }) {
@@ -170,12 +198,17 @@ async function submitInfo() {
   await infoRef.value.validate()
   saving.value = true
   try {
-    const res = await updateProfile({
+    const payload = {
       nickName: infoForm.nickName,
       phone: infoForm.phone,
-      avatar: infoForm.avatar
-    })
+      avatar: infoForm.avatar,
+      gender: infoForm.gender || null,
+      age: infoForm.age
+    }
+    const res = await updateProfile(payload)
     profile.value = res.data
+    infoForm.gender = res.data.gender || ''
+    infoForm.age = res.data.age ?? null
     syncUserStore()
     ElMessage.success('保存成功')
   } finally {

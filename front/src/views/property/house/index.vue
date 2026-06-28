@@ -10,6 +10,9 @@
         <el-form-item label="房号">
           <el-input v-model="houseQuery.houseNo" clearable placeholder="房号" style="width:120px" />
         </el-form-item>
+        <el-form-item label="户型">
+          <el-input v-model="houseQuery.layout" clearable placeholder="如：两室" style="width:120px" />
+        </el-form-item>
         <el-form-item>
           <el-button icon="Refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
@@ -77,7 +80,8 @@ const houseQuery = reactive({
   pageNum: 1,
   pageSize: 10,
   buildingId: route.query.buildingId ? Number(route.query.buildingId) : null,
-  houseNo: ''
+  houseNo: '',
+  layout: ''
 })
 const houseDlg = ref(false)
 const houseForm = reactive({ houseId: null, buildingId: null, houseNo: '', area: 0, layout: '', ownerName: '', remark: '' })
@@ -97,14 +101,15 @@ async function fetchList() {
 }
 
 const { loading, load: loadList, reset: resetAuto } = useAutoQuery(fetchList,
-  () => [houseQuery.buildingId, houseQuery.houseNo],
+  () => [houseQuery.buildingId, houseQuery.houseNo, houseQuery.layout],
   { beforeLoad: () => { houseQuery.pageNum = 1 } }
 )
 
 function resetQuery() {
   resetAuto(() => {
-    houseQuery.buildingId = buildingOptions.value[0]?.buildingId || null
+    houseQuery.buildingId = null
     houseQuery.houseNo = ''
+    houseQuery.layout = ''
     houseQuery.pageNum = 1
   })
 }
@@ -140,9 +145,6 @@ async function delHouse(row) {
 
 onMounted(async () => {
   await loadBuildingOptions()
-  if (!houseQuery.buildingId && buildingOptions.value.length) {
-    houseQuery.buildingId = buildingOptions.value[0].buildingId
-  }
 })
 </script>
 

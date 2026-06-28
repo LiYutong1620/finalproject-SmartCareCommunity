@@ -102,8 +102,12 @@ public class OwnerCommunityService {
         Map<String, Object> vo = new LinkedHashMap<>();
         if (r != null) {
             vo.put("name", r.getName());
+            vo.put("gender", r.getGender());
+            vo.put("age", r.getAge());
             vo.put("phone", r.getPhone());
             vo.put("emergencyContact", r.getEmergencyContact());
+            vo.put("remark", r.getRemark());
+            vo.put("moveInDate", r.getMoveInDate());
             vo.put("houseId", r.getHouseId());
             CmHouse house = houseMapper.selectById(r.getHouseId());
             if (house != null) {

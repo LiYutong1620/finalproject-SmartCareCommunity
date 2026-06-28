@@ -20,12 +20,15 @@ public class CmResident extends BaseEntity {
     private Long userId;
     private Long houseId;
     private String name;
+    private String gender;
+    private Integer age;
     private String idCard;
     private String phone;
     private String residentType;
     private LocalDate moveInDate;
     private String emergencyContact;
     private String familyMembers;
+    private String remark;
     private String delFlag;
 
     @TableField(exist = false)

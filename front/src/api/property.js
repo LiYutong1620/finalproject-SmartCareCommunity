@@ -12,6 +12,13 @@ export function updateResident(data) {
 export function deleteResident(residentId) {
   return request({ url: `/property/resident/${residentId}`, method: 'delete' })
 }
+export function listOccupiedHouses(excludeResidentId) {
+  return request({
+    url: '/property/resident/occupied-houses',
+    method: 'get',
+    params: excludeResidentId != null ? { excludeResidentId } : {}
+  })
+}
 
 export function listBuilding(params) {
   return request({ url: '/property/building/list', method: 'get', params })
@@ -48,6 +55,9 @@ export function listTag() {
 }
 export function addTag(data) {
   return request({ url: '/property/tag', method: 'post', data })
+}
+export function deleteTag(tagId) {
+  return request({ url: `/property/tag/${tagId}`, method: 'delete' })
 }
 
 export function dashboardStats() {

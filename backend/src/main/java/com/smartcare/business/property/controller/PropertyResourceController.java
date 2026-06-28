@@ -17,8 +17,9 @@ public class PropertyResourceController {
     @GetMapping("/building/list")
     public AjaxResult buildingList(@RequestParam(defaultValue = "1") int pageNum,
                                    @RequestParam(defaultValue = "10") int pageSize,
-                                   @RequestParam(required = false) String buildingNo) {
-        TableDataInfo data = resourceService.searchBuildings(pageNum, pageSize, buildingNo);
+                                   @RequestParam(required = false) String buildingNo,
+                                   @RequestParam(required = false) Integer totalFloors) {
+        TableDataInfo data = resourceService.searchBuildings(pageNum, pageSize, buildingNo, totalFloors);
         return AjaxResult.success(data);
     }
 
@@ -49,8 +50,9 @@ public class PropertyResourceController {
     public AjaxResult houseList(@RequestParam(defaultValue = "1") int pageNum,
                                 @RequestParam(defaultValue = "10") int pageSize,
                                 @RequestParam(required = false) Long buildingId,
-                                @RequestParam(required = false) String houseNo) {
-        TableDataInfo data = resourceService.searchHouses(pageNum, pageSize, buildingId, houseNo);
+                                @RequestParam(required = false) String houseNo,
+                                @RequestParam(required = false) String layout) {
+        TableDataInfo data = resourceService.searchHouses(pageNum, pageSize, buildingId, houseNo, layout);
         return AjaxResult.success(data);
     }
 
@@ -83,13 +85,22 @@ public class PropertyResourceController {
         return AjaxResult.success();
     }
 
+    @DeleteMapping("/tag/{tagId}")
+    public AjaxResult deleteTag(@PathVariable Long tagId) {
+        resourceService.deleteTag(tagId);
+        return AjaxResult.success();
+    }
+
     @GetMapping("/resident/list")
     public AjaxResult residentList(@RequestParam(defaultValue = "1") int pageNum,
                                    @RequestParam(defaultValue = "10") int pageSize,
                                    @RequestParam(required = false) Long buildingId,
                                    @RequestParam(required = false) Long tagId,
-                                   @RequestParam(required = false) String name) {
-        TableDataInfo data = resourceService.searchResidents(pageNum, pageSize, buildingId, tagId, name);
+                                   @RequestParam(required = false) String name,
+                                   @RequestParam(required = false) String gender,
+                                   @RequestParam(required = false) Integer ageMin,
+                                   @RequestParam(required = false) Integer ageMax) {
+        TableDataInfo data = resourceService.searchResidents(pageNum, pageSize, buildingId, tagId, name, gender, ageMin, ageMax);
         return AjaxResult.success(data);
     }
 
@@ -109,5 +120,10 @@ public class PropertyResourceController {
     public AjaxResult deleteResident(@PathVariable Long residentId) {
         resourceService.deleteResident(residentId);
         return AjaxResult.success();
+    }
+
+    @GetMapping("/resident/occupied-houses")
+    public AjaxResult occupiedHouseIds(@RequestParam(required = false) Long excludeResidentId) {
+        return AjaxResult.success(resourceService.listOccupiedHouseIds(excludeResidentId));
     }
 }

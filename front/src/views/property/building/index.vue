@@ -5,6 +5,9 @@
         <el-form-item label="楼栋号">
           <el-input v-model="buildingQuery.buildingNo" clearable placeholder="楼栋号" style="width:140px" />
         </el-form-item>
+        <el-form-item label="总层数">
+          <el-input-number v-model="buildingQuery.totalFloors" :min="1" :max="99" controls-position="right" placeholder="层数" style="width:120px" />
+        </el-form-item>
         <el-form-item>
           <el-button icon="Refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
@@ -68,7 +71,7 @@ import { useAutoQuery } from '@/composables/useAutoQuery'
 const router = useRouter()
 const buildings = ref([])
 const buildingTotal = ref(0)
-const buildingQuery = reactive({ pageNum: 1, pageSize: 10, buildingNo: '' })
+const buildingQuery = reactive({ pageNum: 1, pageSize: 10, buildingNo: '', totalFloors: null })
 const buildingDlg = ref(false)
 const buildingForm = reactive({ buildingId: null, buildingNo: '', totalFloors: 18, unitsPerFloor: 4, remark: '' })
 
@@ -79,13 +82,14 @@ async function fetchList() {
 }
 
 const { loading, load: loadList, reset: resetAuto } = useAutoQuery(fetchList,
-  () => [buildingQuery.buildingNo],
+  () => [buildingQuery.buildingNo, buildingQuery.totalFloors],
   { beforeLoad: () => { buildingQuery.pageNum = 1 } }
 )
 
 function resetQuery() {
   resetAuto(() => {
     buildingQuery.buildingNo = ''
+    buildingQuery.totalFloors = null
     buildingQuery.pageNum = 1
   })
 }

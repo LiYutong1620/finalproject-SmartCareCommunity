@@ -72,6 +72,8 @@ public class SysUserService {
         update.setUserId(user.getUserId());
         update.setNickName(user.getNickName());
         update.setPhone(user.getPhone());
+        update.setGender(user.getGender());
+        update.setAge(user.getAge());
         if (user.getAvatar() != null) {
             update.setAvatar(user.getAvatar());
         }
