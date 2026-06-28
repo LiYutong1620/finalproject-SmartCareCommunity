@@ -2,7 +2,7 @@
  Smart Care Community - 完整数据库脚本
  用途：全新导入（会先 DROP 再 CREATE 全部表）
  数据库：smart_care_community
- 生成日期：2026-06-27
+ 更新日期：2026-06-28
 */
 
 CREATE DATABASE IF NOT EXISTS `smart_care_community` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
@@ -10,6 +10,54 @@ USE `smart_care_community`;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- 预删除全部表（支持重复导入；中断后再次执行也不会报已存在）
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user_role`;
+DROP TABLE IF EXISTS `sys_user_device`;
+DROP TABLE IF EXISTS `sys_role_menu`;
+DROP TABLE IF EXISTS `sys_message_user`;
+DROP TABLE IF EXISTS `sys_oper_log`;
+DROP TABLE IF EXISTS `sys_login_log`;
+DROP TABLE IF EXISTS `sys_message`;
+DROP TABLE IF EXISTS `sys_menu`;
+DROP TABLE IF EXISTS `sys_user`;
+DROP TABLE IF EXISTS `sys_role`;
+DROP TABLE IF EXISTS `sys_flow_switch`;
+DROP TABLE IF EXISTS `sys_dict_data`;
+DROP TABLE IF EXISTS `sys_dict_type`;
+DROP TABLE IF EXISTS `sys_config`;
+DROP TABLE IF EXISTS `sys_abnormal_login`;
+DROP TABLE IF EXISTS `rp_worker_profile`;
+DROP TABLE IF EXISTS `rp_worker_appeal`;
+DROP TABLE IF EXISTS `rp_work_hour`;
+DROP TABLE IF EXISTS `rp_material`;
+DROP TABLE IF EXISTS `rp_material_apply`;
+DROP TABLE IF EXISTS `rp_order_eval`;
+DROP TABLE IF EXISTS `rp_order_image`;
+DROP TABLE IF EXISTS `rp_order_progress`;
+DROP TABLE IF EXISTS `rp_order`;
+DROP TABLE IF EXISTS `rp_repair_type`;
+DROP TABLE IF EXISTS `ai_chat_message`;
+DROP TABLE IF EXISTS `cs_service_ticket`;
+DROP TABLE IF EXISTS `ai_chat_session`;
+DROP TABLE IF EXISTS `kb_learn_draft`;
+DROP TABLE IF EXISTS `kb_article`;
+DROP TABLE IF EXISTS `el_visit_plan`;
+DROP TABLE IF EXISTS `el_health_threshold`;
+DROP TABLE IF EXISTS `el_health_record`;
+DROP TABLE IF EXISTS `el_disposal_plan`;
+DROP TABLE IF EXISTS `el_device`;
+DROP TABLE IF EXISTS `el_care_staff`;
+DROP TABLE IF EXISTS `el_care_order`;
+DROP TABLE IF EXISTS `el_alert`;
+DROP TABLE IF EXISTS `cs_notice_read`;
+DROP TABLE IF EXISTS `cs_notice`;
+DROP TABLE IF EXISTS `cm_resident_tag_rel`;
+DROP TABLE IF EXISTS `cm_resident`;
+DROP TABLE IF EXISTS `cm_house`;
+DROP TABLE IF EXISTS `cm_building`;
 
 -- ----------------------------
 -- Table structure for cm_building
@@ -567,6 +615,130 @@ CREATE TABLE `kb_article`  (
 -- ----------------------------
 -- Records of kb_article
 -- ----------------------------
+INSERT INTO `kb_article` VALUES (1, '如何在线提交报修工单', '报修,工单,提交,维修', '登录业主端后进入「报修工单」，点击「提交报修」，选择报修类型（如水电、门窗、公共设施），填写问题描述并上传现场照片，提交后可在列表查看进度。紧急问题请备注「紧急」并拨打物业值班电话。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (2, '报修工单状态说明', '报修,状态,进度,待接单', '工单状态包括：待接单、已派单、处理中、待验收、已完成、已取消。您可在工单详情查看维修进度时间线，处理完成后请进行验收评价。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (3, '如何查看社区公告与停水停电通知', '公告,停水,停电,通知', '业主端「社区公告」可查看物业发布的通知；「停水停电」专门展示水电检修类通知。支持按标题、已读状态和发布时间筛选，点击详情可标记已读。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (4, '住户档案与紧急联系人维护', '住户,档案,紧急联系人', '在「住户档案」可查看物业登记的姓名、房号、电话等信息；紧急联系人可自行修改保存，便于物业在紧急情况下联系家属。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (5, '物业费与缴费常见问题', '物业,缴费,费用,账单', '本系统当前版本暂未开放在线缴费。如需咨询物业费、停车费等，请携带房本到物业服务中心办理，或在工作日拨打物业前台电话咨询。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (6, '装修报备与施工时间规定', '装修,报备,施工,噪音', '室内装修需提前到物业办理装修报备，施工时间一般为工作日 8:00-12:00、14:00-18:00，周末及节假日禁止有噪音施工。违规施工将被要求停工整改。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (7, '快递与外卖进出管理', '快递,外卖,门禁,访客', '小区实行门禁管理，快递员、外卖员可登记后进入指定区域。大件物品进入电梯需做好防护，建议在物业允许时段内搬运。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (8, '宠物饲养管理规定', '宠物,犬,猫,遛狗', '饲养宠物需登记并遵守社区文明公约：遛狗须牵绳、及时清理排泄物、避免犬吠扰民。禁养烈性犬，违规将按公约处理。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (9, '老人关怀与紧急求助', '老人,关怀,预警,求助', '社区对独居、高龄老人提供关怀服务。如遇老人健康预警或紧急情况，请立即联系物业或拨打120，同时可在系统中查看相关通知。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (10, '如何联系人工客服', '人工,客服,转人工,投诉', '若智能助手无法解答您的问题，可在问答中说「转人工」或描述复杂投诉、法律纠纷等，系统将为您接入人工客服，请在此对话中继续留言，物业人员将实时回复。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (11, '问候与礼貌用语回复', '你好,您好,谢谢,感谢,辛苦了,再见', '您好！我是智慧社区智能助手，很高兴为您服务。如有报修、公告、缴费、装修等问题，请随时提问。若问题已解决，也欢迎您礼貌道谢；如需人工帮助，可说「转人工」。祝您生活愉快！', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (12, '社区文明公约', '文明,公约,邻里,和谐,规范', '社区倡导邻里互助、文明礼让：公共区域不堆放杂物、不高空抛物、不占用消防通道；夜间保持安静，控制装修与生活噪音；养宠牵绳、及时清便；爱护绿化与公共设施。违反公约者，物业将依据管理规定协调处理。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (13, '消防安全与应急疏散', '消防,安全,火灾,疏散,灭火器', '请勿在楼道、疏散通道停放电动车或堆放物品；不私拉电线、不飞线充电。熟悉楼栋安全出口与疏散路线，发现火情立即拨打119并联系物业。小区定期组织消防演练，请业主积极参与。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (14, '垃圾分类投放指南', '垃圾,分类,投放,回收,环保', '请按「可回收物、有害垃圾、厨余垃圾、其他垃圾」四类投放。大件垃圾请预约清运，勿随意丢弃在小区公共区域。具体投放时段与点位见社区公告或单元门张贴说明。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (15, '车辆与停车管理规定', '停车,车辆,车库,车位,违停', '业主车辆需登记后进出；地下车库请减速慢行，按位停车，勿占消防通道与他人车位。访客车辆可在门岗登记临时进入。长期违停或占用车位，物业将联系车主并依规处理。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (16, '公共区域使用规范', '公共,区域,电梯,大堂,杂物', '电梯内禁止吸烟、蹦跳、阻挡关门；大堂、走廊、楼梯间为公共疏散空间，不得长期堆放私人物品。使用健身器材、儿童游乐设施请注意安全，照看好儿童。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (17, '噪音与邻里安宁管理', '噪音,安静,扰民,装修,时间', '每日22:00至次日8:00为安静时段，请避免产生明显生活噪音。装修施工须遵守物业规定时段。如遇持续噪音扰民，可先友好沟通，必要时联系物业协调。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (18, '智能问答助手使用说明', '智能,问答,助手,使用,帮助', '您可在「智能问答」中文字、语音或上传图片咨询社区问题。支持多轮追问，如「那具体怎么操作？」。复杂问题将接入人工客服，接入后请在本对话继续留言，物业会实时回复；您也可主动结束对话。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (19, '访客登记与门禁使用', '访客,门禁,登记,二维码,进出', '亲友来访可在业主端或门岗登记访客信息；部分小区支持临时通行码。请提醒访客遵守社区管理规定，离开时及时注销登记，保障小区安全。', '2026-05-01 08:00:00');
+INSERT INTO `kb_article` VALUES (20, '节假日社区服务安排', '节假日,服务,值班,安排,春节', '法定节假日期间物业服务中心可能调整营业时间，值班人员保持电话畅通，处理紧急报修与安全巡查。具体安排以社区公告为准，建议提前关注「社区公告」栏目。', '2026-05-01 08:00:00');
+
+-- ----------------------------
+-- Table structure for kb_learn_draft
+-- ----------------------------
+DROP TABLE IF EXISTS `kb_learn_draft`;
+CREATE TABLE `kb_learn_draft`  (
+  `draft_id` bigint NOT NULL AUTO_INCREMENT COMMENT '草稿主键',
+  `source_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '来源：notice/chat/document',
+  `source_id` bigint NULL DEFAULT NULL COMMENT '来源业务ID',
+  `source_ref` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '来源说明',
+  `title` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '标题',
+  `keywords` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '关键词',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '正文',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '0待审核 1已采纳 2已拒绝',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`draft_id`) USING BTREE,
+  INDEX `idx_kb_draft_source`(`source_type`, `source_id`) USING BTREE,
+  INDEX `idx_kb_draft_status`(`status`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '知识库学习草稿表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for ai_chat_session
+-- ----------------------------
+DROP TABLE IF EXISTS `ai_chat_message`;
+DROP TABLE IF EXISTS `cs_service_ticket`;
+DROP TABLE IF EXISTS `ai_chat_session`;
+CREATE TABLE `ai_chat_session`  (
+  `session_id` bigint NOT NULL AUTO_INCREMENT COMMENT '会话主键',
+  `user_id` bigint NOT NULL COMMENT '业主用户ID',
+  `title` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '会话标题',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0AI对话 1人工对话中 2人工已结束',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`session_id`) USING BTREE,
+  INDEX `idx_ai_session_user`(`user_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'AI问答会话表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for ai_chat_message
+-- ----------------------------
+CREATE TABLE `ai_chat_message`  (
+  `message_id` bigint NOT NULL AUTO_INCREMENT COMMENT '消息主键',
+  `session_id` bigint NOT NULL COMMENT '会话ID',
+  `role` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '角色：user/assistant/staff',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '消息内容',
+  `sender_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '发送者显示名（物业人工回复）',
+  `input_type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'text' COMMENT '输入方式：text/voice',
+  `transfer_human` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '是否转人工：0否 1是',
+  `ticket_id` bigint NULL DEFAULT NULL COMMENT '关联客服工单ID',
+  `ref_articles` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '引用知识库文章ID',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`message_id`) USING BTREE,
+  INDEX `idx_ai_message_session`(`session_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'AI问答消息表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for cs_service_ticket
+-- ----------------------------
+CREATE TABLE `cs_service_ticket`  (
+  `ticket_id` bigint NOT NULL AUTO_INCREMENT COMMENT '工单主键',
+  `user_id` bigint NOT NULL COMMENT '业主用户ID',
+  `session_id` bigint NULL DEFAULT NULL COMMENT '来源会话ID',
+  `question` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '用户问题摘要',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0待处理 1处理中 2已完成',
+  `reply` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '客服回复',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`ticket_id`) USING BTREE,
+  INDEX `idx_cs_ticket_user`(`user_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '人工客服工单表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of ai_chat_session / ai_chat_message / cs_service_ticket（演示）
+-- ----------------------------
+INSERT INTO `ai_chat_session` VALUES (1, 2, '停车管理规定咨询', '0', '2026-05-18 10:00:00', '2026-05-18 10:05:00');
+INSERT INTO `ai_chat_session` VALUES (2, 5, '投诉楼道杂物堆放', '1', '2026-05-19 14:20:00', '2026-05-19 15:10:00');
+INSERT INTO `ai_chat_session` VALUES (3, 2, '物业费缴纳咨询', '2', '2026-05-17 09:30:00', '2026-05-17 10:00:00');
+INSERT INTO `ai_chat_session` VALUES (4, 6, '如何在线提交报修', '0', '2026-05-20 11:00:00', '2026-05-20 11:03:00');
+
+INSERT INTO `ai_chat_message` VALUES (1, 1, 'user', '小区停车有什么规定？', '', 'text', '0', NULL, '', '2026-05-18 10:00:00');
+INSERT INTO `ai_chat_message` VALUES (2, 1, 'assistant', '业主车辆需登记后进出；地下车库请减速慢行，按位停车，勿占消防通道与他人车位。访客车辆可在门岗登记临时进入。', '', 'text', '0', NULL, '15', '2026-05-18 10:01:00');
+INSERT INTO `ai_chat_message` VALUES (3, 1, 'user', '地下车库可以安装充电桩吗？', '', 'text', '0', NULL, '', '2026-05-18 10:05:00');
+INSERT INTO `ai_chat_message` VALUES (4, 1, 'assistant', '关于增设新能源充电桩方案，社区将召开业主大会表决，具体安排请关注社区公告。如需个人车位安装，请先向物业报备。', '', 'text', '0', NULL, '15', '2026-05-18 10:05:30');
+
+INSERT INTO `ai_chat_message` VALUES (5, 2, 'user', '我们楼道有人长期堆放杂物，影响通行', '', 'text', '0', NULL, '', '2026-05-19 14:20:00');
+INSERT INTO `ai_chat_message` VALUES (6, 2, 'assistant', '大堂、走廊、楼梯间为公共疏散空间，不得长期堆放私人物品。', '', 'text', '0', NULL, '16', '2026-05-19 14:21:00');
+INSERT INTO `ai_chat_message` VALUES (7, 2, 'user', '转人工', '', 'text', '1', NULL, '', '2026-05-19 14:22:00');
+INSERT INTO `ai_chat_message` VALUES (8, 2, 'assistant', '已为您接入人工客服，请在此对话中继续留言，物业人员将实时回复，请保持信号畅通。', '', 'text', '1', 1, '', '2026-05-19 14:22:01');
+INSERT INTO `ai_chat_message` VALUES (9, 2, 'staff', '您好，我是王管家。已记录您反映的楼道杂物问题，我们将安排人员今日下午上门查看并协调清理。', '王管家', 'text', '0', 1, '', '2026-05-19 14:30:00');
+INSERT INTO `ai_chat_message` VALUES (10, 2, 'user', '好的，大概几点能过来？', '', 'text', '0', NULL, '', '2026-05-19 15:10:00');
+
+INSERT INTO `ai_chat_message` VALUES (11, 3, 'user', '物业费怎么交？', '', 'text', '0', NULL, '', '2026-05-17 09:30:00');
+INSERT INTO `ai_chat_message` VALUES (12, 3, 'assistant', '本系统当前版本暂未开放在线缴费。如需咨询物业费，请携带房本到物业服务中心办理，或拨打物业前台电话。', '', 'text', '0', NULL, '5', '2026-05-17 09:31:00');
+INSERT INTO `ai_chat_message` VALUES (13, 3, 'user', '转人工', '', 'text', '1', NULL, '', '2026-05-17 09:35:00');
+INSERT INTO `ai_chat_message` VALUES (14, 3, 'assistant', '已为您接入人工客服，请在此对话中继续留言。', '', 'text', '1', 2, '', '2026-05-17 09:35:01');
+INSERT INTO `ai_chat_message` VALUES (15, 3, 'staff', '您好，物业费可至物业中心缴纳，工作日 9:00-17:30。', '王管家', 'text', '0', 2, '', '2026-05-17 09:40:00');
+INSERT INTO `ai_chat_message` VALUES (16, 3, 'user', '好的，谢谢', '', 'text', '0', NULL, '', '2026-05-17 09:55:00');
+INSERT INTO `ai_chat_message` VALUES (17, 3, 'staff', '不客气，如有其他问题随时留言。', '王管家', 'text', '0', 2, '', '2026-05-17 10:00:00');
+
+INSERT INTO `ai_chat_message` VALUES (18, 4, 'user', '怎么在线提交报修？', '', 'text', '0', NULL, '', '2026-05-20 11:00:00');
+INSERT INTO `ai_chat_message` VALUES (19, 4, 'assistant', '登录业主端后进入「报修工单」，点击「提交报修」，选择报修类型，填写问题描述并上传现场照片，提交后可在列表查看进度。', '', 'text', '0', NULL, '1', '2026-05-20 11:03:00');
+
+INSERT INTO `cs_service_ticket` VALUES (1, 5, 2, '楼道杂物堆放投诉', '1', '已记录您反映的楼道杂物问题，我们将安排人员上门查看。', '2026-05-19 14:22:00', '2026-05-19 14:30:00');
+INSERT INTO `cs_service_ticket` VALUES (2, 2, 3, '物业费缴纳咨询', '2', '物业费可至物业中心缴纳，工作日 9:00-17:30。', '2026-05-17 09:35:00', '2026-05-17 10:00:00');
 
 -- ----------------------------
 -- Table structure for rp_material
@@ -1111,3 +1283,4 @@ INSERT INTO `sys_user_role` VALUES (3, 3);
 INSERT INTO `sys_user_role` VALUES (4, 4);
 INSERT INTO `sys_user_role` VALUES (5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 2), (11, 2), (12, 2), (13, 2), (14, 2), (15, 2), (16, 2), (17, 2), (18, 2);
 
+SET FOREIGN_KEY_CHECKS = 1;

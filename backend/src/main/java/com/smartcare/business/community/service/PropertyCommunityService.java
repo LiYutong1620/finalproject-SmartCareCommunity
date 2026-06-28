@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.smartcare.business.community.domain.CsNotice;
 import com.smartcare.business.community.mapper.CsNoticeMapper;
 import com.smartcare.business.community.mapper.CsNoticeReadMapper;
+import com.smartcare.business.ai.service.KbLearnService;
 import com.smartcare.common.core.page.TableDataInfo;
 import com.smartcare.common.exception.ServiceException;
 import com.smartcare.framework.security.SecurityUtils;
@@ -26,6 +27,7 @@ public class PropertyCommunityService {
     private final CsNoticeReadMapper noticeReadMapper;
     private final SysUserMapper userMapper;
     private final NoticePublishScheduler publishScheduler;
+    private final KbLearnService kbLearnService;
 
     private Long operatorId() {
         Long id = SecurityUtils.getUserId();
@@ -47,6 +49,9 @@ public class PropertyCommunityService {
         validateNoticeTimes(notice, null);
         applyPublishStatus(notice);
         noticeMapper.insert(notice);
+        if ("1".equals(notice.getStatus())) {
+            kbLearnService.onNoticePublished(notice.getNoticeId());
+        }
     }
 
     public void updateNotice(CsNotice notice) {

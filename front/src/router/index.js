@@ -20,6 +20,7 @@ const ownerRoutes = {
     { path: 'outage', component: () => import('@/views/owner/outage/index.vue'), meta: { title: '停水停电' } },
     { path: 'outage/detail/:id', component: () => import('@/views/owner/outage/detail.vue'), meta: { title: '通知详情' } },
     { path: 'resident', component: () => import('@/views/owner/resident/index.vue'), meta: { title: '住户档案' } },
+    { path: 'assistant', component: () => import('@/views/owner/assistant/index.vue'), meta: { title: '智能问答' } },
     { path: 'profile', component: () => import('@/views/profile/index.vue'), meta: { title: '个人中心' } }
   ]
 }
@@ -47,6 +48,13 @@ const propertyRoutes = {
     { path: 'notice/announce', component: () => import('@/views/property/notice/index.vue'), meta: { title: '社区公告', noticeType: 'announce', parent: '公告通知' } },
     { path: 'notice/outage', component: () => import('@/views/property/notice/index.vue'), meta: { title: '停水停电', noticeType: 'outage', parent: '公告通知' } },
     { path: 'notice', redirect: '/property/notice/announce' },
+    { path: 'ai', redirect: '/property/ai/knowledge' },
+    { path: 'ai/knowledge', component: () => import('@/views/property/ai/knowledge.vue'), meta: { title: '知识库管理', parent: 'AI智能问答管理' } },
+    { path: 'ai/knowledge-learn', component: () => import('@/views/property/ai/knowledge-learn.vue'), meta: { title: '知识库自学习', parent: 'AI智能问答管理' } },
+    { path: 'ai/chat-active', component: () => import('@/views/property/ai/chat-session-list.vue'), meta: { title: '待处理对话', mode: 'active', parent: 'AI智能问答管理' } },
+    { path: 'ai/chat-history', component: () => import('@/views/property/ai/chat-session-list.vue'), meta: { title: '历史对话', mode: 'history', parent: 'AI智能问答管理' } },
+    { path: 'ai/chat-list', redirect: '/property/ai/chat-active' },
+    { path: 'ai/chat/:sessionId', component: () => import('@/views/property/ai/chat.vue'), meta: { title: '对话详情', parent: 'AI智能问答管理' } },
     { path: 'dashboard', component: () => import('@/views/property/dashboard/index.vue'), meta: { title: '数据大屏' } },
     { path: 'config', component: () => import('@/views/system/config/index.vue'), meta: { title: '系统配置' } },
     { path: 'user', component: () => import('@/views/system/user/index.vue'), meta: { title: '用户管理' } },

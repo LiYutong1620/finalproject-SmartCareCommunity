@@ -32,9 +32,23 @@
       />
     </el-card>
 
-    <el-dialog v-model="showAdd" title="提交报修" width="500px" append-to-body>
+    <el-dialog v-model="showAdd" title="提交报修" width="520px" append-to-body @closed="stopVoice">
       <el-form :model="form" label-width="80px">
-        <el-form-item label="故障描述"><el-input v-model="form.description" type="textarea" rows="4" /></el-form-item>
+        <el-form-item label="故障描述">
+          <div class="desc-field">
+            <el-input v-model="form.description" type="textarea" :rows="4" placeholder="请描述故障情况，或点击麦克风语音输入" />
+            <el-button
+              class="voice-btn"
+              :type="listening ? 'danger' : 'default'"
+              circle
+              :title="listening ? '停止录音' : '语音输入'"
+              @click="toggleVoice"
+            >
+              <el-icon><Microphone /></el-icon>
+            </el-button>
+          </div>
+          <div v-if="listening" class="voice-tip">正在聆听，请说话…</div>
+        </el-form-item>
         <el-form-item label="紧急程度">
           <el-select v-model="form.urgency" style="width:100%">
             <el-option label="普通" value="normal" />
@@ -52,9 +66,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, toRef } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listOwnerRepair, submitRepair, cancelRepair, urgeRepair } from '@/api/repair'
+import { useSpeechInput } from '@/composables/useSpeechInput'
 
 const statusMap = { pending: '待分配', processing: '处理中', wait_accept: '待验收', completed: '已完成', cancelled: '已取消' }
 const loading = ref(false)
@@ -63,6 +78,15 @@ const total = ref(0)
 const showAdd = ref(false)
 const query = reactive({ pageNum: 1, pageSize: 10 })
 const form = reactive({ description: '', urgency: 'normal' })
+
+const { listening, toggleVoice, stopVoice, initSpeech } = useSpeechInput(toRef(form, 'description'), {
+  successMessage: '语音已填入描述框，请核对后提交'
+})
+
+onMounted(() => {
+  load()
+  initSpeech()
+})
 
 async function load() {
   loading.value = true
@@ -74,6 +98,10 @@ async function load() {
 }
 
 async function handleSubmit() {
+  if (!form.description?.trim()) {
+    ElMessage.warning('请填写故障描述')
+    return
+  }
   await submitRepair(form)
   ElMessage.success('提交成功')
   showAdd.value = false
@@ -94,6 +122,25 @@ async function handleUrge(row) {
   ElMessage.success('催单成功')
   load()
 }
-
-onMounted(load)
 </script>
+
+<style scoped>
+.desc-field {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  align-items: flex-start;
+}
+.desc-field .el-textarea {
+  flex: 1;
+}
+.voice-btn {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.voice-tip {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #e6a23c;
+}
+</style>

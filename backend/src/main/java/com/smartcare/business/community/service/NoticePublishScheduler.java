@@ -1,6 +1,7 @@
 package com.smartcare.business.community.service;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.smartcare.business.ai.service.KbLearnService;
 import com.smartcare.business.community.domain.CsNotice;
 import com.smartcare.business.community.mapper.CsNoticeMapper;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +14,14 @@ import java.time.LocalDateTime;
 public class NoticePublishScheduler {
 
     private final CsNoticeMapper noticeMapper;
+    private final KbLearnService kbLearnService;
 
     public void processScheduledTasks() {
-        activateDueNotices();
+        int activated = activateDueNotices();
         offlineDueNotices();
+        if (activated > 0) {
+            kbLearnService.syncNewlyPublishedNotices();
+        }
     }
 
     /** 将已到发布时间的待发布公告自动上架 */

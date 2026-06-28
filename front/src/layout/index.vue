@@ -64,7 +64,7 @@
         </div>
       </el-header>
       <el-main class="app-main">
-        <router-view />
+        <router-view :key="$route.fullPath" />
       </el-main>
     </el-container>
   </el-container>
@@ -93,7 +93,8 @@ const menuMap = {
     { path: '/owner/repair', title: '报修工单', icon: 'Tools' },
     { path: '/owner/notice', title: '社区公告', icon: 'Bell' },
     { path: '/owner/outage', title: '停水停电', icon: 'Warning' },
-    { path: '/owner/resident', title: '住户档案', icon: 'User' }
+    { path: '/owner/resident', title: '住户档案', icon: 'User' },
+    { path: '/owner/assistant', title: '智能问答', icon: 'ChatDotRound' }
   ],
   '1': [
     { path: '/worker/order', title: '工单作业', icon: 'Tools' }
@@ -112,6 +113,16 @@ const menuMap = {
     { path: '/property/repair', title: '工单监管', icon: 'Tools' },
     { path: '/property/elder', title: '老人关怀', icon: 'FirstAidKit' },
     {
+      title: 'AI智能问答管理',
+      icon: 'ChatDotRound',
+      children: [
+        { path: '/property/ai/knowledge', title: '知识库管理' },
+        { path: '/property/ai/knowledge-learn', title: '知识库自学习' },
+        { path: '/property/ai/chat-active', title: '待处理对话' },
+        { path: '/property/ai/chat-history', title: '历史对话' }
+      ]
+    },
+    {
       title: '公告通知',
       icon: 'Bell',
       children: [
@@ -126,7 +137,7 @@ const menuMap = {
 
 const defaultOpeneds = computed(() => {
   const type = userStore.userType
-  if (type === '2') return ['社区资源', '公告通知']
+  if (type === '2') return ['社区资源', '公告通知', 'AI智能问答管理']
   return []
 })
 
