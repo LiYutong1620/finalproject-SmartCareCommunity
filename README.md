@@ -1,6 +1,8 @@
 # Smart Care Community（智慧社区）
 
-基于《需求规格说明书（SSR 简略版）》的前后端分离智慧社区项目，参考若依（RuoYi）的页面与 CRUD 写法。**当前版本已实现报修工单、公告通知、住户资源、老人关怀、系统管理等核心功能；未实现第五模块「全平台 AI 智能赋能」。**
+基于《需求规格说明书（SSR 简略版）》的前后端分离智慧社区项目，参考若依（RuoYi）的页面与 CRUD 写法。
+
+**当前版本已实现：** 报修工单、公告通知、住户资源、老人关怀、系统管理，以及 **AI 智能问答（RAG + 人工客服）、知识库管理与自学习、报修语音输入** 等能力。
 
 ---
 
@@ -21,21 +23,23 @@ finalproject/
 | Java 根包 | `com.smartcare` | 后端统一包名 |
 | 数据库 | `smart_care_community` | MySQL 库名 |
 | 配置前缀 | `smartcare.*` | `application.yml` 自定义项 |
+| AI 配置 | `ai.zhipu.*` | 智谱 GLM（密钥见下方说明） |
 
 ### 技术栈
 
 | 层级 | 技术 |
 |------|------|
-| 后端 | Spring Boot 3.2、Spring Security、JWT、MyBatis-Plus、MySQL 8、Knife4j |
+| 后端 | Spring Boot 3.2、Spring Security、JWT、MyBatis-Plus、MySQL 8、Knife4j、OkHttp、Apache POI、PDFBox |
 | 前端 | Vue 3、Vite、Pinia、Vue Router、Element Plus、Axios |
+| AI | 智谱 GLM-4-Plus（RAG 问答）、GLM-4V（图片识别）、GLM-4-Flash（知识抽取） |
 | 数据库 | MySQL 8.0+ |
 
 ### 角色与演示账号
 
 | 账号 | 密码 | 角色 | 说明 |
 |------|------|------|------|
-| property01 | admin123 | 物业 | 资源管理、公告发布、工单监管 |
-| owner01 | admin123 | 业主 | 报修、公告、住户档案 |
+| property01 | admin123 | 物业 | 昵称「王管家」；资源、公告、工单、AI 管理 |
+| owner01 | admin123 | 业主 | 报修、公告、智能问答 |
 | worker01 | admin123 | 维修工 | 工单作业 |
 
 ---
@@ -56,11 +60,23 @@ mysql -u root -p < sql/smart_care_community.sql
 2. 菜单 **运行 SQL 文件**，选择 `sql/smart_care_community.sql`
 3. 执行（脚本会自动 `CREATE DATABASE`、建表并写入演示数据）
 
-> 脚本会先 `DROP TABLE` 再重建，**会清空该库已有数据**，请在导入前确认。
+> 脚本开头会 **预删除全部表** 再重建，**会清空该库已有数据**，请在导入前确认。
 
 修改 `backend/src/main/resources/application.yml` 中的数据库账号密码（默认 `root` / `123456`）。
 
-### 2. 后端
+### 2. 智谱 AI 配置（智能问答 / 知识库自学习必需）
+
+在项目根目录或 `backend/src/main/resources/` 下创建 **`application-local.yml`**（已被 `.gitignore` 忽略，不会提交 Git）：
+
+```yaml
+ai:
+  zhipu:
+    api-key: 你的智谱API密钥
+```
+
+或设置环境变量 `ZHIPU_API_KEY`。未配置时 AI 问答将使用本地知识库兜底，知识库自学习无法调用大模型。
+
+### 3. 后端
 
 ```bash
 cd backend
@@ -70,7 +86,7 @@ mvn spring-boot:run
 - API：http://localhost:8080
 - 接口文档：http://localhost:8080/doc.html
 
-### 3. 前端
+### 4. 前端
 
 ```bash
 cd front
@@ -88,25 +104,23 @@ npm run dev
 
 | 文件 | 作用 |
 |------|------|
-| `sql/smart_care_community.sql` | **唯一主库脚本**：建库、48 张业务表、演示数据，可直接整库导入 |
+| `sql/smart_care_community.sql` | **唯一主库脚本**：建库、全部业务表、演示数据（含 AI 对话、知识库 20 条），可直接整库导入 |
 
-### 3.2 表分组（48 张）
+### 3.2 表分组（主要）
 
 | 前缀 | 说明 | 主要表 |
 |------|------|--------|
-| `cm_*` | 物业资源 | 楼栋、房屋、设备、住户、标签、车位、绑定、入住迁出、违规 |
-| `cs_*` | 社区公告 | `cs_notice`（公告/停水停电）、`cs_notice_read`（已读） |
-| `rp_*` | 报修工单 | 工单、进度、类型、物料、工时、评价等 |
-| `el_*` | 老人关怀 | 预警、健康档案、探访计划等（当前 UI 主要用 `el_alert`） |
-| `sys_*` | 系统 | 用户、消息、配置、登录日志、字典等 |
-| `kb_*` / `mt_*` | 扩展预留 | 知识库、维保计划（表结构预留，前端未全量接入） |
+| `cm_*` | 物业资源 | 楼栋、房屋、住户、标签等 |
+| `cs_*` | 社区公告 | `cs_notice`、`cs_notice_read` |
+| `rp_*` | 报修工单 | 工单、进度、类型、物料等 |
+| `el_*` | 老人关怀 | 预警、健康档案、探访计划等 |
+| `ai_*` / `kb_*` | AI 智能问答 | `ai_chat_session`、`ai_chat_message`、`kb_article`、`kb_learn_draft`、`cs_service_ticket` |
+| `sys_*` | 系统 | 用户、消息、配置、登录日志等 |
 
-### 3.3 当前版本已移除（脚本中不再包含）
-
-以下模块已从业务与数据库中剔除，重新导入后不会创建对应表：
+### 3.3 已移除模块（脚本中不再包含）
 
 - 社区活动、访客预约、邻里话题、亲情账号、业主投票、场地预约、投诉建议
-- 财务缴费（账单、缴费流水、收费项、车位缴费记录）
+- 财务缴费（账单、缴费流水等）
 
 ---
 
@@ -115,25 +129,33 @@ npm run dev
 | 模块 | 业主端 | 维修工端 | 物业端 |
 |------|:------:|:--------:|:------:|
 | 登录 / 个人中心 / 消息 | ✓ | ✓ | ✓ |
-| 报修工单 | ✓ | ✓（作业） | ✓（监管） |
-| 社区公告 / 停水停电 | ✓ | — | ✓（发布） |
-| 住户档案 | ✓（查看） | — | ✓（资源管理） |
+| 报修工单（含语音输入） | ✓ | ✓ | ✓ |
+| 社区公告 / 停水停电 | ✓ | — | ✓ |
+| 住户档案 | ✓ | — | ✓ |
+| **智能问答**（文字/语音/图片、转人工） | ✓ | — | — |
+| **AI 智能问答管理**（知识库、自学习、对话监管） | — | — | ✓ |
 | 老人关怀 | — | — | ✓ |
 | 数据大屏 | — | — | ✓ |
-| 系统管理（用户/配置/日志） | — | — | ✓ |
-| AI 智能赋能 | — | — | **未实现** |
+| 系统管理 | — | — | ✓ |
 
 ### 业主端菜单
 
-报修工单 · 社区公告 · 停水停电 · 住户档案 · 消息中心 · 个人中心
+报修工单 · 社区公告 · 停水停电 · 住户档案 · **智能问答** · 个人中心
 
-### 维修工端菜单
+### 物业端 · AI 智能问答管理
 
-工单作业 · 消息中心 · 个人中心
+- **知识库管理**：条目 CRUD，标题/关键词/正文组合查询
+- **知识库自学习**：从公告、咨询记录抽取知识点（去重），支持 Word/PDF/TXT 批量导入，物业审核后入库
+- **待处理对话**：人工进行中会话，物业可回复
+- **历史对话**：AI 纯问答 + 人工已结束会话，便于核对 AI 回答质量
 
-### 物业端菜单
+### 演示：AI 与对话
 
-数据大屏 · 社区资源 · 工单监管 · 老人关怀 · 公告通知 · 系统配置 · 用户管理 · 登录日志 · 消息中心 · 个人中心
+| 场景 | 操作 |
+|------|------|
+| 转人工 | 业主端智能问答输入「转人工」或含「投诉」等关键词 |
+| 待处理对话 | 物业端查看「投诉楼道杂物堆放」（owner02） |
+| 历史对话 | 含 AI 问答记录与已结束人工对话 |
 
 ---
 
@@ -141,32 +163,27 @@ npm run dev
 
 ```
 com.smartcare
-├── SmartCareApplication.java
 ├── common/                 # AjaxResult、分页、全局异常
-├── framework/              # Security、JWT、验证码、MyBatis-Plus 配置
+├── framework/              # Security、JWT、验证码、MyBatis-Plus、智谱 AI 客户端
 ├── system/                 # 登录、用户、消息、配置、个人中心
 └── business/
-    ├── community/          # 公告（Owner / Property Content API）
-    ├── property/           # 楼栋房屋住户车位等资源
+    ├── ai/                 # RAG 问答、知识库、自学习、人工客服
+    ├── community/          # 公告
+    ├── property/           # 楼栋房屋住户等资源
     ├── repair/             # 报修工单三端
     ├── elder/              # 老人预警
-    └── dashboard/          # 物业数据大屏统计
+    └── dashboard/          # 物业数据大屏
 ```
 
-### 主要 Controller
+### 主要 API 前缀
 
-| 文件 | 路径前缀 | 作用 |
-|------|----------|------|
-| `AuthController` | `/login` 等 | 登录、注册、用户信息 |
-| `ProfileController` | `/system/user/profile` | 个人资料、头像、改密 |
-| `OwnerRepairController` | `/owner/repair` | 业主报修 |
-| `WorkerRepairController` | `/worker/repair` | 维修工作业 |
-| `PropertyRepairController` | `/property/repair` | 物业派单监管 |
-| `OwnerCommunityController` | `/owner/notice`、`/owner/resident` | 业主公告、住户档案 |
-| `PropertyCommunityController` | `/property/content/notice` | 物业公告管理 |
-| `PropertyResourceController` | `/property/*` | 社区资源 CRUD |
-| `ElderCareController` | `/property/elder` | 老人预警处置 |
-| `DashboardController` | `/property/dashboard` | 运营统计 |
+| 前缀 | 作用 |
+|------|------|
+| `/owner/ai/*` | 业主智能问答 |
+| `/property/ai/*` | 物业知识库、自学习、人工对话 |
+| `/owner/repair` | 业主报修 |
+| `/property/content/notice` | 物业公告 |
+| `/property/*` | 社区资源、工单监管等 |
 
 ---
 
@@ -174,34 +191,31 @@ com.smartcare
 
 ```
 front/src/
-├── api/                    # login、profile、repair、owner、property、propertyContent、system
-├── router/index.js         # 三端路由与登录守卫
-├── layout/index.vue        # 侧栏 + 顶栏布局
-├── store/user.js           # 用户状态
-├── utils/                  # auth、request（Axios + JWT）
+├── api/                    # owner、propertyAi、repair、property 等
+├── composables/            # useAutoQuery、useSpeechInput 等
+├── router/index.js
+├── layout/index.vue
 └── views/
-    ├── login/              # 登录注册
-    ├── profile/            # 个人中心（三端共用）
-    ├── owner/              # repair、notice、outage、resident
-    ├── worker/             # order
-    ├── property/           # dashboard、resident、repair、elder、notice
-    └── system/             # user、config、loginlog、message
+    ├── owner/              # repair、assistant（智能问答）、notice …
+    ├── property/ai/        # knowledge、knowledge-learn、chat-session-list、chat
+    └── property/           # dashboard、repair、elder、notice …
 ```
 
 ---
 
 ## 七、其他说明
 
-- **角色区分**：由 `sys_user.user_type` 字段区分（0 业主 / 1 维修工 / 2 物业），前端按类型加载不同菜单。
-- **无 Redis**：验证码存内存，认证使用 JWT 无状态方案。
-- **文件上传**：头像等保存在 `backend/upload/`，通过 `/upload/**` 访问。
-- **`.gitignore`**：已忽略 `node_modules`、`target`、本地上传目录等。
+- **角色区分**：`sys_user.user_type`（0 业主 / 1 维修工 / 2 物业）。
+- **无 Redis**：验证码存内存；认证为 JWT 无状态。
+- **文件上传**：头像等保存在 `backend/upload/`；知识库文档导入支持 `.docx` / `.pdf` / `.txt`。
+- **敏感配置**：`application-local.yml`、`.env`、本地上传目录已在 `.gitignore` 中忽略，**请勿将 API Key 提交到 Git**。
+- **语音识别**：报修与智能问答使用浏览器 Web Speech API，推荐 Chrome / Edge。
 
 ---
 
 ## 八、后续可扩展
 
-1. 维修工物料领用、工时打卡、知识库（`kb_article` 表已预留）
-2. 设备维保计划（`mt_plan` / `mt_record` 表已预留）
+1. 维修工物料领用、工时打卡
+2. 向量检索增强 RAG（当前为关键词检索 + 大模型生成）
 3. 细粒度 RBAC 菜单权限
-4. 第五模块 AI：语音、RAG、智能派单
+4. 报修工单图片上传（`rp_order_image` 表已预留）
