@@ -163,7 +163,7 @@ const registerRules = {
   code: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
 }
 
-const redirectMap = { '0': '/owner/repair', '1': '/worker/order', '2': '/property/dashboard' }
+import { getRoleHome } from '@/utils/auth'
 
 async function loadCaptcha() {
   const res = await getCaptchaImage()
@@ -184,7 +184,7 @@ async function handleLogin() {
   loading.value = true
   try {
     await userStore.login({ ...loginForm })
-    router.push(redirectMap[userStore.userType] || '/')
+    router.push(getRoleHome())
   } catch {
     loadCaptcha()
   } finally {

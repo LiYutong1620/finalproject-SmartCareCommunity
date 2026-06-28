@@ -25,6 +25,7 @@ public class CsNotice extends BaseEntity {
     private LocalDateTime validEnd;
     private String scope;
     private LocalDateTime restoreTime;
+    private LocalDateTime offlineTime;
     private String status;
     private Long createBy;
 }

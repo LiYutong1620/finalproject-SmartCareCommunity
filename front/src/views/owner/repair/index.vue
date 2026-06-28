@@ -1,31 +1,46 @@
 <template>
-  <div>
-    <el-card class="mb-16">
-      <el-button type="primary" @click="showAdd = true">提交报修</el-button>
-    </el-card>
-    <el-card>
-      <el-table :data="list" v-loading="loading">
+  <div class="app-container">
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button type="primary" plain icon="Plus" @click="showAdd = true">提交报修</el-button>
+      </el-col>
+    </el-row>
+
+    <el-card shadow="never" class="table-card">
+      <el-table :data="list" v-loading="loading" border stripe>
+        <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="orderNo" label="工单号" width="180" />
-        <el-table-column prop="description" label="描述" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="description" label="描述" min-width="160" show-overflow-tooltip />
+        <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">{{ statusMap[row.status] || row.status }}</template>
         </el-table-column>
-        <el-table-column prop="urgency" label="紧急程度" width="90" />
-        <el-table-column prop="createTime" label="创建时间" width="170" />
-        <el-table-column label="操作" width="200">
+        <el-table-column prop="urgency" label="紧急程度" width="90" align="center" />
+        <el-table-column prop="createTime" label="创建时间" width="170" align="center" />
+        <el-table-column label="操作" width="160" align="center" fixed="right">
           <template #default="{ row }">
             <el-button v-if="row.status === 'pending'" link type="danger" @click="handleCancel(row)">撤销</el-button>
-            <el-button v-if="!['completed','cancelled'].includes(row.status)" link @click="handleUrge(row)">催单</el-button>
+            <el-button v-if="!['completed','cancelled'].includes(row.status)" link type="primary" @click="handleUrge(row)">催单</el-button>
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination class="mt-16" v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" layout="total, prev, pager, next" @current-change="load" />
+      <Pagination
+        v-show="total > 0"
+        :total="total"
+        v-model:page="query.pageNum"
+        v-model:limit="query.pageSize"
+        @pagination="load"
+      />
     </el-card>
-    <el-dialog v-model="showAdd" title="提交报修" width="500px">
+
+    <el-dialog v-model="showAdd" title="提交报修" width="500px" append-to-body>
       <el-form :model="form" label-width="80px">
         <el-form-item label="故障描述"><el-input v-model="form.description" type="textarea" rows="4" /></el-form-item>
         <el-form-item label="紧急程度">
-          <el-select v-model="form.urgency"><el-option label="普通" value="normal" /><el-option label="较急" value="urgent" /><el-option label="紧急" value="emergency" /></el-select>
+          <el-select v-model="form.urgency" style="width:100%">
+            <el-option label="普通" value="normal" />
+            <el-option label="较急" value="urgent" />
+            <el-option label="紧急" value="emergency" />
+          </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -63,11 +78,12 @@ async function handleSubmit() {
   ElMessage.success('提交成功')
   showAdd.value = false
   form.description = ''
+  query.pageNum = 1
   load()
 }
 
 async function handleCancel(row) {
-  await ElMessageBox.confirm('确认撤销该报修？')
+  await ElMessageBox.confirm('确认撤销该报修？', '提示', { type: 'warning' })
   await cancelRepair(row.orderId)
   ElMessage.success('已撤销')
   load()
@@ -81,5 +97,3 @@ async function handleUrge(row) {
 
 onMounted(load)
 </script>
-
-<style scoped>.mb-16{margin-bottom:16px}.mt-16{margin-top:16px}</style>

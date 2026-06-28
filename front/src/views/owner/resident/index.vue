@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <el-card v-loading="loading">
+  <div class="app-container">
+    <el-card shadow="never" v-loading="loading">
       <el-descriptions title="个人住户档案" :column="2" border>
         <el-descriptions-item label="姓名">{{ profile.name }}</el-descriptions-item>
         <el-descriptions-item label="楼栋房号">{{ profile.buildingNo }} {{ profile.houseNo }}</el-descriptions-item>

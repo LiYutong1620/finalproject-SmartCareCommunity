@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.smartcare.business.community.mapper.CsNoticeMapper">
+
+    <select id="selectOwnerNoticePage" resultType="java.util.Map">
+        SELECT
+            n.notice_id   AS noticeId,
+            n.notice_type AS noticeType,
+            n.title       AS title,
+            n.scope       AS scope,
+            n.restore_time AS restoreTime,
+            n.create_time AS createTime,
+            CASE WHEN r.user_id IS NOT NULL THEN 1 ELSE 0 END AS readFlag
+        FROM cs_notice n
+        LEFT JOIN cs_notice_read r
+            ON r.notice_id = n.notice_id AND r.user_id = #{userId}
+        WHERE n.status = '1'
+          AND n.create_time &lt;= NOW()
+        <if test="noticeType != null and noticeType != ''">
+            AND n.notice_type = #{noticeType}
+        </if>
+        <if test="title != null and title != ''">
+            AND n.title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        <if test="publishTimeStart != null">
+            AND n.create_time &gt;= #{publishTimeStart}
+        </if>
+        <if test="publishTimeEnd != null">
+            AND n.create_time &lt;= #{publishTimeEnd}
+        </if>
+        <if test='readStatus != null and readStatus == "1"'>
+            AND r.user_id IS NOT NULL
+        </if>
+        <if test='readStatus != null and readStatus == "0"'>
+            AND r.user_id IS NULL
+        </if>
+        ORDER BY n.pinned DESC, n.create_time DESC
+    </select>
+
+</mapper>

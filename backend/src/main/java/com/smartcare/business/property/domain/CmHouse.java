@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -21,12 +20,7 @@ public class CmHouse {
     private BigDecimal area;
     private String layout;
     private String ownerName;
-    private String tenantName;
-    private String tenantPhone;
-    private LocalDate leaseStart;
-    private LocalDate leaseEnd;
-    private BigDecimal rentAmount;
-    private String rentStatus;
+    private String remark;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

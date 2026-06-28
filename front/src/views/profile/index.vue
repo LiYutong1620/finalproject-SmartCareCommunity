@@ -1,68 +1,96 @@
 <template>
-  <el-row :gutter="20">
-    <el-col :span="6" :xs="24">
-      <el-card class="profile-card">
-        <div class="avatar-block">
-          <el-upload
-            class="avatar-uploader"
-            :show-file-list="false"
-            :http-request="handleAvatarUpload"
-            accept="image/*"
-          >
-            <el-avatar :size="100" :src="avatarUrl">
-              {{ profile.nickName?.charAt(0) || 'U' }}
-            </el-avatar>
-            <div class="avatar-tip">点击更换头像</div>
-          </el-upload>
-          <h3>{{ profile.nickName || profile.username }}</h3>
-          <p class="sub">{{ roleLabel }}</p>
-        </div>
-      </el-card>
-    </el-col>
-    <el-col :span="18" :xs="24">
-      <el-card>
-        <el-tabs v-model="activeTab">
-          <el-tab-pane label="基本资料" name="info">
-            <el-form ref="infoRef" :model="infoForm" :rules="infoRules" label-width="88px" style="max-width:480px">
-              <el-form-item label="登录账号">
-                <el-input v-model="infoForm.username" disabled />
-              </el-form-item>
-              <el-form-item label="用户昵称" prop="nickName">
-                <el-input v-model="infoForm.nickName" maxlength="30" />
-              </el-form-item>
-              <el-form-item label="手机号码" prop="phone">
-                <el-input v-model="infoForm.phone" maxlength="11" />
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" :loading="saving" @click="submitInfo">保存</el-button>
-              </el-form-item>
-            </el-form>
-          </el-tab-pane>
-          <el-tab-pane label="修改密码" name="pwd">
-            <el-form ref="pwdRef" :model="pwdForm" :rules="pwdRules" label-width="88px" style="max-width:480px">
-              <el-form-item label="旧密码" prop="oldPassword">
-                <el-input v-model="pwdForm.oldPassword" type="password" show-password />
-              </el-form-item>
-              <el-form-item label="新密码" prop="newPassword">
-                <el-input v-model="pwdForm.newPassword" type="password" show-password />
-              </el-form-item>
-              <el-form-item label="确认密码" prop="confirmPassword">
-                <el-input v-model="pwdForm.confirmPassword" type="password" show-password />
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" :loading="saving" @click="submitPwd">保存</el-button>
-              </el-form-item>
-            </el-form>
-          </el-tab-pane>
-        </el-tabs>
-      </el-card>
-    </el-col>
-  </el-row>
+  <div class="app-container profile-page">
+    <el-row :gutter="20">
+      <el-col :span="8" :xs="24">
+        <el-card shadow="never" class="info-card">
+          <div class="profile-header">
+            <el-upload
+              class="avatar-uploader"
+              :show-file-list="false"
+              :http-request="handleAvatarUpload"
+              accept="image/*"
+            >
+              <el-avatar :size="88" :src="avatarUrl" class="avatar">
+                {{ profile.nickName?.charAt(0) || 'U' }}
+              </el-avatar>
+              <div class="avatar-mask">
+                <el-icon><Camera /></el-icon>
+                <span>更换头像</span>
+              </div>
+            </el-upload>
+            <h2>{{ profile.nickName || profile.username }}</h2>
+            <el-tag type="primary" round size="small">{{ roleLabel }}</el-tag>
+            <p class="account">账号：{{ profile.username }}</p>
+          </div>
+          <el-divider />
+          <div class="section-title"><el-icon><User /></el-icon>账户概览</div>
+          <div class="info-item">
+              <span class="label">登录账号</span>
+              <span class="value">{{ profile.username || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">用户昵称</span>
+              <span class="value">{{ profile.nickName || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">手机号码</span>
+              <span class="value">{{ profile.phone || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">账户角色</span>
+              <span class="value">{{ roleLabel }}</span>
+            </div>
+          </el-card>
+        </el-col>
+
+        <el-col :span="16" :xs="24">
+          <el-card shadow="never" class="form-card">
+            <el-tabs v-model="activeTab" class="profile-tabs">
+              <el-tab-pane label="基本资料" name="info">
+                <div class="tab-desc">更新您的昵称与联系方式，保存后立即生效。</div>
+                <el-form ref="infoRef" :model="infoForm" :rules="infoRules" label-width="88px" class="profile-form">
+                  <el-form-item label="登录账号">
+                    <el-input v-model="infoForm.username" disabled />
+                  </el-form-item>
+                  <el-form-item label="用户昵称" prop="nickName">
+                    <el-input v-model="infoForm.nickName" maxlength="30" placeholder="请输入昵称" />
+                  </el-form-item>
+                  <el-form-item label="手机号码" prop="phone">
+                    <el-input v-model="infoForm.phone" maxlength="11" placeholder="请输入手机号" />
+                  </el-form-item>
+                  <el-form-item>
+                    <el-button type="primary" :loading="saving" @click="submitInfo">保存修改</el-button>
+                  </el-form-item>
+                </el-form>
+              </el-tab-pane>
+              <el-tab-pane label="修改密码" name="pwd">
+                <div class="tab-desc">建议定期更换密码，密码长度至少 6 位。</div>
+                <el-form ref="pwdRef" :model="pwdForm" :rules="pwdRules" label-width="88px" class="profile-form">
+                  <el-form-item label="旧密码" prop="oldPassword">
+                    <el-input v-model="pwdForm.oldPassword" type="password" show-password placeholder="请输入旧密码" />
+                  </el-form-item>
+                  <el-form-item label="新密码" prop="newPassword">
+                    <el-input v-model="pwdForm.newPassword" type="password" show-password placeholder="请输入新密码" />
+                  </el-form-item>
+                  <el-form-item label="确认密码" prop="confirmPassword">
+                    <el-input v-model="pwdForm.confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
+                  </el-form-item>
+                  <el-form-item>
+                    <el-button type="primary" :loading="saving" @click="submitPwd">更新密码</el-button>
+                  </el-form-item>
+                </el-form>
+              </el-tab-pane>
+            </el-tabs>
+          </el-card>
+        </el-col>
+      </el-row>
+  </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { Camera, User } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { getProfile, updateProfile, updateUserPwd, uploadAvatar } from '@/api/profile'
 
@@ -73,8 +101,8 @@ const profile = ref({})
 const infoRef = ref()
 const pwdRef = ref()
 
-const roleMap = { '0': '业主', '1': '维修工', '2': '物业' }
-const roleLabel = computed(() => roleMap[profile.value.userType] || '')
+const roleMap = { '0': '业主', '1': '维修工', '2': '物业管理员' }
+const roleLabel = computed(() => roleMap[profile.value.userType] || '用户')
 
 const infoForm = reactive({
   username: '',
@@ -188,21 +216,120 @@ onMounted(loadProfile)
 </script>
 
 <style scoped lang="scss">
-.profile-card {
+.profile-page {
+  :deep(.el-col) {
+    margin-bottom: 20px;
+  }
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
+  padding: 8px 0 4px;
+
+  h2 {
+    margin: 14px 0 8px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #303133;
+  }
+
+  .account {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: #909399;
+  }
 }
-.avatar-block {
-  padding: 12px 0;
-  h3 { margin: 12px 0 4px; }
-  .sub { color: #909399; font-size: 13px; }
-}
+
 .avatar-uploader {
-  display: inline-block;
+  position: relative;
   cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+
+  &:hover .avatar-mask {
+    opacity: 1;
+  }
 }
-.avatar-tip {
+
+.avatar {
+  border: 3px solid #e4e7ed;
+  background: #409eff;
+  font-size: 32px;
+}
+
+.avatar-mask {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
   font-size: 12px;
-  color: #909399;
-  margin-top: 8px;
+  color: #fff;
+}
+
+.info-card,
+.form-card {
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f2f5;
+  font-size: 14px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .label {
+    color: #909399;
+  }
+  .value {
+    color: #303133;
+    font-weight: 500;
+  }
+}
+
+.profile-tabs {
+  :deep(.el-tabs__header) {
+    margin-bottom: 8px;
+  }
+}
+
+.tab-desc {
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  background: #f4f8ff;
+  border-radius: 6px;
+  color: #606266;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.profile-form {
+  max-width: 480px;
 }
 </style>

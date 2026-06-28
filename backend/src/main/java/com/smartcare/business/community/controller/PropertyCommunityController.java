@@ -4,7 +4,10 @@ import com.smartcare.business.community.domain.CsNotice;
 import com.smartcare.business.community.service.PropertyCommunityService;
 import com.smartcare.common.core.domain.AjaxResult;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/property/content")
@@ -17,8 +20,12 @@ public class PropertyCommunityController {
     public AjaxResult noticeList(@RequestParam(defaultValue = "1") int pageNum,
                                  @RequestParam(defaultValue = "10") int pageSize,
                                  @RequestParam(required = false) String noticeType,
-                                 @RequestParam(required = false) String status) {
-        return AjaxResult.success(communityService.noticeManageList(pageNum, pageSize, noticeType, status));
+                                 @RequestParam(required = false) String status,
+                                 @RequestParam(required = false) String title,
+                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime publishTimeStart,
+                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime publishTimeEnd) {
+        return AjaxResult.success(communityService.noticeManageList(
+            pageNum, pageSize, noticeType, status, title, publishTimeStart, publishTimeEnd));
     }
 
     @PostMapping("/notice")

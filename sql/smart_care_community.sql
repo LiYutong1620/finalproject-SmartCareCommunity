@@ -20,34 +20,25 @@ CREATE TABLE `cm_building`  (
   `building_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '楼栋编号',
   `total_floors` int NULL DEFAULT 0 COMMENT '总层数',
   `units_per_floor` int NULL DEFAULT 0 COMMENT '每层户数',
+  `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '备注',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`building_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '楼栋信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '楼栋信息表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_building
 -- ----------------------------
-INSERT INTO `cm_building` VALUES (1, '1栋', 18, 4, '2026-05-17 18:16:04', '2026-05-17 18:25:08');
-
--- ----------------------------
--- Table structure for cm_equipment
--- ----------------------------
-DROP TABLE IF EXISTS `cm_equipment`;
-CREATE TABLE `cm_equipment`  (
-  `equipment_id` bigint NOT NULL AUTO_INCREMENT COMMENT '设备主键',
-  `equip_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '类型：elevator/door/light',
-  `equip_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '设备编号',
-  `location` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '安装位置',
-  `iot_status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'normal' COMMENT '物联网状态',
-  `next_maintain` date NULL DEFAULT NULL COMMENT '下次维保日期',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`equipment_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '小区公共设备表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of cm_equipment
--- ----------------------------
+INSERT INTO `cm_building` VALUES (1, '1栋', 18, 4, '临近小区东门，设有独立快递柜与非机动车棚，物业值班室在一层', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_building` VALUES (2, '2栋', 22, 6, '中庭景观楼，南北双电梯，一层为架空活动区，适合亲子活动', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_building` VALUES (3, '3栋', 15, 3, '靠西侧河道，低楼层视野开阔，噪音较小，绿化覆盖率高', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_building` VALUES (4, '4栋', 33, 8, '超高层塔楼，配备高速电梯与避难层，每层8户，视野极佳', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_building` VALUES (5, '5栋', 12, 2, '小型精品楼栋，总户数少，管理更精细，门禁系统独立', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_building` VALUES (6, '6栋', 20, 5, '标准板式楼，楼间距大，采光充足，南北通透户型较多', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_building` VALUES (7, '7栋', 25, 4, '临近社区会所与游泳池，夏季活动方便，周末人流略多', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_building` VALUES (8, '8栋', 16, 3, '安静内侧楼座，远离主干道，适合居家休息，夜间较静', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_building` VALUES (9, '9栋', 28, 6, '靠近社区北门与商超，生活采购便利，早市步行5分钟', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_building` VALUES (10, '10栋', 11, 2, '南侧楼座，冬季日照时间长，适合老人居住，暖气供应稳定', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
 
 -- ----------------------------
 -- Table structure for cm_house
@@ -60,78 +51,229 @@ CREATE TABLE `cm_house`  (
   `area` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '建筑面积',
   `layout` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '户型',
   `owner_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '业主姓名',
-  `tenant_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '租客姓名',
-  `tenant_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '租客电话',
-  `lease_start` date NULL DEFAULT NULL COMMENT '租期开始',
-  `lease_end` date NULL DEFAULT NULL COMMENT '租期结束',
-  `rent_amount` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '租金',
-  `rent_status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '租赁：0空置 1已租 2待退租',
+  `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '备注',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`house_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '房屋信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 101 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '房屋信息表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_house
 -- ----------------------------
-INSERT INTO `cm_house` VALUES (1, 1, '101', 89.50, '三室两厅', '张三', '', '', NULL, NULL, 0.00, '1', '2026-05-17 18:16:04');
+INSERT INTO `cm_house` VALUES (1, 1, '101', 58.00, '一室一厅', '张三', '1栋101，一室一厅，建筑面积约58.00㎡；张三业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (2, 1, '102', 64.50, '两室一厅', '孙浩', '1栋102，两室一厅，建筑面积约64.50㎡；孙浩业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (3, 1, '201', 71.00, '两室两厅', '', '1栋201，两室两厅，建筑面积约71.00㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (4, 1, '202', 70.00, '三室一厅', '', '1栋202，三室一厅，建筑面积约70.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (5, 1, '301', 76.50, '三室两厅', '', '1栋301，三室两厅，建筑面积约76.50㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (6, 1, '302', 83.00, '四室两厅', '', '1栋302，四室两厅，建筑面积约83.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (7, 1, '401', 82.00, '复式loft', '', '1栋401，复式loft，建筑面积约82.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (8, 1, '501', 88.50, '跃层三居', '', '1栋501，跃层三居，建筑面积约88.50㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (9, 1, '502', 95.00, '精装两居', '', '1栋502，精装两居，建筑面积约95.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (10, 1, '601', 94.00, '阔景四居', '', '1栋601，阔景四居，建筑面积约94.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (11, 2, '101', 61.00, '一室一厅', '李芳', '2栋101，一室一厅，建筑面积约61.00㎡；李芳业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (12, 2, '102', 67.50, '两室一厅', '马超', '2栋102，两室一厅，建筑面积约67.50㎡；马超业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (13, 2, '201', 74.00, '两室两厅', '', '2栋201，两室两厅，建筑面积约74.00㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (14, 2, '202', 73.00, '三室一厅', '', '2栋202，三室一厅，建筑面积约73.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (15, 2, '301', 79.50, '三室两厅', '', '2栋301，三室两厅，建筑面积约79.50㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (16, 2, '302', 86.00, '四室两厅', '', '2栋302，四室两厅，建筑面积约86.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (17, 2, '401', 85.00, '复式loft', '', '2栋401，复式loft，建筑面积约85.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (18, 2, '501', 91.50, '跃层三居', '', '2栋501，跃层三居，建筑面积约91.50㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (19, 2, '502', 98.00, '精装两居', '', '2栋502，精装两居，建筑面积约98.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (20, 2, '601', 97.00, '阔景四居', '', '2栋601，阔景四居，建筑面积约97.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (21, 3, '101', 64.00, '一室一厅', '王磊', '3栋101，一室一厅，建筑面积约64.00㎡；王磊业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (22, 3, '102', 70.50, '两室一厅', '朱琳', '3栋102，两室一厅，建筑面积约70.50㎡；朱琳业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (23, 3, '201', 77.00, '两室两厅', '', '3栋201，两室两厅，建筑面积约77.00㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (24, 3, '202', 76.00, '三室一厅', '', '3栋202，三室一厅，建筑面积约76.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (25, 3, '301', 82.50, '三室两厅', '', '3栋301，三室两厅，建筑面积约82.50㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (26, 3, '302', 89.00, '四室两厅', '', '3栋302，四室两厅，建筑面积约89.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (27, 3, '401', 88.00, '复式loft', '', '3栋401，复式loft，建筑面积约88.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (28, 3, '501', 94.50, '跃层三居', '', '3栋501，跃层三居，建筑面积约94.50㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (29, 3, '502', 101.00, '精装两居', '', '3栋502，精装两居，建筑面积约101.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (30, 3, '601', 100.00, '阔景四居', '', '3栋601，阔景四居，建筑面积约100.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (31, 4, '101', 67.00, '一室一厅', '赵敏', '4栋101，一室一厅，建筑面积约67.00㎡；赵敏业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (32, 4, '102', 73.50, '两室一厅', '胡军', '4栋102，两室一厅，建筑面积约73.50㎡；胡军业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (33, 4, '201', 80.00, '两室两厅', '', '4栋201，两室两厅，建筑面积约80.00㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (34, 4, '202', 79.00, '三室一厅', '', '4栋202，三室一厅，建筑面积约79.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (35, 4, '301', 85.50, '三室两厅', '', '4栋301，三室两厅，建筑面积约85.50㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (36, 4, '302', 92.00, '四室两厅', '', '4栋302，四室两厅，建筑面积约92.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (37, 4, '401', 91.00, '复式loft', '', '4栋401，复式loft，建筑面积约91.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (38, 4, '501', 97.50, '跃层三居', '', '4栋501，跃层三居，建筑面积约97.50㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (39, 4, '502', 104.00, '精装两居', '', '4栋502，精装两居，建筑面积约104.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (40, 4, '601', 103.00, '阔景四居', '', '4栋601，阔景四居，建筑面积约103.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (41, 5, '101', 70.00, '一室一厅', '刘洋', '5栋101，一室一厅，建筑面积约70.00㎡；刘洋业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (42, 5, '102', 76.50, '两室一厅', '林雪', '5栋102，两室一厅，建筑面积约76.50㎡；林雪业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (43, 5, '201', 83.00, '两室两厅', '', '5栋201，两室两厅，建筑面积约83.00㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (44, 5, '202', 82.00, '三室一厅', '', '5栋202，三室一厅，建筑面积约82.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (45, 5, '301', 88.50, '三室两厅', '', '5栋301，三室两厅，建筑面积约88.50㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (46, 5, '302', 95.00, '四室两厅', '', '5栋302，四室两厅，建筑面积约95.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (47, 5, '401', 94.00, '复式loft', '', '5栋401，复式loft，建筑面积约94.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (48, 5, '501', 100.50, '跃层三居', '', '5栋501，跃层三居，建筑面积约100.50㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (49, 5, '502', 107.00, '精装两居', '', '5栋502，精装两居，建筑面积约107.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (50, 5, '601', 106.00, '阔景四居', '', '5栋601，阔景四居，建筑面积约106.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (51, 6, '101', 73.00, '一室一厅', '陈静', '6栋101，一室一厅，建筑面积约73.00㎡；陈静业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (52, 6, '102', 79.50, '两室一厅', '', '6栋102，两室一厅，建筑面积约79.50㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (53, 6, '201', 86.00, '两室两厅', '', '6栋201，两室两厅，建筑面积约86.00㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (54, 6, '202', 85.00, '三室一厅', '', '6栋202，三室一厅，建筑面积约85.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (55, 6, '301', 91.50, '三室两厅', '', '6栋301，三室两厅，建筑面积约91.50㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (56, 6, '302', 98.00, '四室两厅', '', '6栋302，四室两厅，建筑面积约98.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (57, 6, '401', 97.00, '复式loft', '', '6栋401，复式loft，建筑面积约97.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (58, 6, '501', 103.50, '跃层三居', '', '6栋501，跃层三居，建筑面积约103.50㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (59, 6, '502', 110.00, '精装两居', '', '6栋502，精装两居，建筑面积约110.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (60, 6, '601', 109.00, '阔景四居', '', '6栋601，阔景四居，建筑面积约109.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (61, 7, '101', 76.00, '一室一厅', '杨帆', '7栋101，一室一厅，建筑面积约76.00㎡；杨帆业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (62, 7, '102', 82.50, '两室一厅', '', '7栋102，两室一厅，建筑面积约82.50㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (63, 7, '201', 89.00, '两室两厅', '', '7栋201，两室两厅，建筑面积约89.00㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (64, 7, '202', 88.00, '三室一厅', '', '7栋202，三室一厅，建筑面积约88.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (65, 7, '301', 94.50, '三室两厅', '', '7栋301，三室两厅，建筑面积约94.50㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (66, 7, '302', 101.00, '四室两厅', '', '7栋302，四室两厅，建筑面积约101.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (67, 7, '401', 100.00, '复式loft', '', '7栋401，复式loft，建筑面积约100.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (68, 7, '501', 106.50, '跃层三居', '', '7栋501，跃层三居，建筑面积约106.50㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (69, 7, '502', 113.00, '精装两居', '', '7栋502，精装两居，建筑面积约113.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (70, 7, '601', 112.00, '阔景四居', '', '7栋601，阔景四居，建筑面积约112.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (71, 8, '101', 79.00, '一室一厅', '周婷', '8栋101，一室一厅，建筑面积约79.00㎡；周婷业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (72, 8, '102', 85.50, '两室一厅', '', '8栋102，两室一厅，建筑面积约85.50㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (73, 8, '201', 92.00, '两室两厅', '', '8栋201，两室两厅，建筑面积约92.00㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (74, 8, '202', 91.00, '三室一厅', '', '8栋202，三室一厅，建筑面积约91.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (75, 8, '301', 97.50, '三室两厅', '', '8栋301，三室两厅，建筑面积约97.50㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (76, 8, '302', 104.00, '四室两厅', '', '8栋302，四室两厅，建筑面积约104.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (77, 8, '401', 103.00, '复式loft', '', '8栋401，复式loft，建筑面积约103.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (78, 8, '501', 109.50, '跃层三居', '', '8栋501，跃层三居，建筑面积约109.50㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (79, 8, '502', 116.00, '精装两居', '', '8栋502，精装两居，建筑面积约116.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (80, 8, '601', 115.00, '阔景四居', '', '8栋601，阔景四居，建筑面积约115.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (81, 9, '101', 82.00, '一室一厅', '吴刚', '9栋101，一室一厅，建筑面积约82.00㎡；吴刚业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (82, 9, '102', 88.50, '两室一厅', '', '9栋102，两室一厅，建筑面积约88.50㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (83, 9, '201', 95.00, '两室两厅', '', '9栋201，两室两厅，建筑面积约95.00㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (84, 9, '202', 94.00, '三室一厅', '', '9栋202，三室一厅，建筑面积约94.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (85, 9, '301', 100.50, '三室两厅', '', '9栋301，三室两厅，建筑面积约100.50㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (86, 9, '302', 107.00, '四室两厅', '', '9栋302，四室两厅，建筑面积约107.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (87, 9, '401', 106.00, '复式loft', '', '9栋401，复式loft，建筑面积约106.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (88, 9, '501', 112.50, '跃层三居', '', '9栋501，跃层三居，建筑面积约112.50㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (89, 9, '502', 119.00, '精装两居', '', '9栋502，精装两居，建筑面积约119.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (90, 9, '601', 118.00, '阔景四居', '', '9栋601，阔景四居，建筑面积约118.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (91, 10, '101', 85.00, '一室一厅', '郑丽', '10栋101，一室一厅，建筑面积约85.00㎡；郑丽业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (92, 10, '102', 91.50, '两室一厅', '', '10栋102，两室一厅，建筑面积约91.50㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (93, 10, '201', 98.00, '两室两厅', '', '10栋201，两室两厅，建筑面积约98.00㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (94, 10, '202', 97.00, '三室一厅', '', '10栋202，三室一厅，建筑面积约97.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (95, 10, '301', 103.50, '三室两厅', '', '10栋301，三室两厅，建筑面积约103.50㎡；样板展示房，展示现代简约风格，供新业主参考', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (96, 10, '302', 110.00, '四室两厅', '', '10栋302，四室两厅，建筑面积约110.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (97, 10, '401', 109.00, '复式loft', '', '10栋401，复式loft，建筑面积约109.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (98, 10, '501', 115.50, '跃层三居', '', '10栋501，跃层三居，建筑面积约115.50㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (99, 10, '502', 122.00, '精装两居', '', '10栋502，精装两居，建筑面积约122.00㎡；当前空置，已做深度保洁，可拎包入住', '2026-05-01 08:00:00');
+INSERT INTO `cm_house` VALUES (100, 10, '601', 121.00, '阔景四居', '', '10栋601，阔景四居，建筑面积约121.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
 
 -- ----------------------------
--- Table structure for cm_move_apply
+-- 备注数据升级（已有库可单独执行以下语句刷新楼栋/房屋备注）
 -- ----------------------------
-DROP TABLE IF EXISTS `cm_move_apply`;
-CREATE TABLE `cm_move_apply`  (
-  `apply_id` bigint NOT NULL AUTO_INCREMENT COMMENT '申请主键',
-  `resident_id` bigint NULL DEFAULT NULL COMMENT '住户ID',
-  `house_id` bigint NOT NULL COMMENT '房屋ID',
-  `applicant_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '申请人',
-  `applicant_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '申请人电话',
-  `user_id` bigint NULL DEFAULT NULL COMMENT '申请用户ID',
-  `apply_type` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '类型：0入住 1迁出',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0待审 1通过 2驳回',
-  `reject_reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '驳回原因',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申请时间',
-  PRIMARY KEY (`apply_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '入住迁出申请表' ROW_FORMAT = Dynamic;
+UPDATE `cm_building` SET `remark` = '临近小区东门，设有独立快递柜与非机动车棚，物业值班室在一层' WHERE `building_id` = 1;
+UPDATE `cm_building` SET `remark` = '中庭景观楼，南北双电梯，一层为架空活动区，适合亲子活动' WHERE `building_id` = 2;
+UPDATE `cm_building` SET `remark` = '靠西侧河道，低楼层视野开阔，噪音较小，绿化覆盖率高' WHERE `building_id` = 3;
+UPDATE `cm_building` SET `remark` = '超高层塔楼，配备高速电梯与避难层，每层8户，视野极佳' WHERE `building_id` = 4;
+UPDATE `cm_building` SET `remark` = '小型精品楼栋，总户数少，管理更精细，门禁系统独立' WHERE `building_id` = 5;
+UPDATE `cm_building` SET `remark` = '标准板式楼，楼间距大，采光充足，南北通透户型较多' WHERE `building_id` = 6;
+UPDATE `cm_building` SET `remark` = '临近社区会所与游泳池，夏季活动方便，周末人流略多' WHERE `building_id` = 7;
+UPDATE `cm_building` SET `remark` = '安静内侧楼座，远离主干道，适合居家休息，夜间较静' WHERE `building_id` = 8;
+UPDATE `cm_building` SET `remark` = '靠近社区北门与商超，生活采购便利，早市步行5分钟' WHERE `building_id` = 9;
+UPDATE `cm_building` SET `remark` = '南侧楼座，冬季日照时间长，适合老人居住，暖气供应稳定' WHERE `building_id` = 10;
+UPDATE `cm_house` SET `remark` = '1栋101，一室一厅，建筑面积约58.00㎡；张三业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 1;
+UPDATE `cm_house` SET `remark` = '1栋102，两室一厅，建筑面积约64.50㎡；孙浩业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 2;
+UPDATE `cm_house` SET `remark` = '1栋201，两室两厅，建筑面积约71.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 3;
+UPDATE `cm_house` SET `remark` = '1栋202，三室一厅，建筑面积约70.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 4;
+UPDATE `cm_house` SET `remark` = '1栋301，三室两厅，建筑面积约76.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 5;
+UPDATE `cm_house` SET `remark` = '1栋302，四室两厅，建筑面积约83.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 6;
+UPDATE `cm_house` SET `remark` = '1栋401，复式loft，建筑面积约82.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 7;
+UPDATE `cm_house` SET `remark` = '1栋501，跃层三居，建筑面积约88.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 8;
+UPDATE `cm_house` SET `remark` = '1栋502，精装两居，建筑面积约95.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 9;
+UPDATE `cm_house` SET `remark` = '1栋601，阔景四居，建筑面积约94.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 10;
+UPDATE `cm_house` SET `remark` = '2栋101，一室一厅，建筑面积约61.00㎡；李芳业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 11;
+UPDATE `cm_house` SET `remark` = '2栋102，两室一厅，建筑面积约67.50㎡；马超业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 12;
+UPDATE `cm_house` SET `remark` = '2栋201，两室两厅，建筑面积约74.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 13;
+UPDATE `cm_house` SET `remark` = '2栋202，三室一厅，建筑面积约73.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 14;
+UPDATE `cm_house` SET `remark` = '2栋301，三室两厅，建筑面积约79.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 15;
+UPDATE `cm_house` SET `remark` = '2栋302，四室两厅，建筑面积约86.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 16;
+UPDATE `cm_house` SET `remark` = '2栋401，复式loft，建筑面积约85.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 17;
+UPDATE `cm_house` SET `remark` = '2栋501，跃层三居，建筑面积约91.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 18;
+UPDATE `cm_house` SET `remark` = '2栋502，精装两居，建筑面积约98.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 19;
+UPDATE `cm_house` SET `remark` = '2栋601，阔景四居，建筑面积约97.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 20;
+UPDATE `cm_house` SET `remark` = '3栋101，一室一厅，建筑面积约64.00㎡；王磊业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 21;
+UPDATE `cm_house` SET `remark` = '3栋102，两室一厅，建筑面积约70.50㎡；朱琳业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 22;
+UPDATE `cm_house` SET `remark` = '3栋201，两室两厅，建筑面积约77.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 23;
+UPDATE `cm_house` SET `remark` = '3栋202，三室一厅，建筑面积约76.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 24;
+UPDATE `cm_house` SET `remark` = '3栋301，三室两厅，建筑面积约82.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 25;
+UPDATE `cm_house` SET `remark` = '3栋302，四室两厅，建筑面积约89.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 26;
+UPDATE `cm_house` SET `remark` = '3栋401，复式loft，建筑面积约88.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 27;
+UPDATE `cm_house` SET `remark` = '3栋501，跃层三居，建筑面积约94.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 28;
+UPDATE `cm_house` SET `remark` = '3栋502，精装两居，建筑面积约101.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 29;
+UPDATE `cm_house` SET `remark` = '3栋601，阔景四居，建筑面积约100.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 30;
+UPDATE `cm_house` SET `remark` = '4栋101，一室一厅，建筑面积约67.00㎡；赵敏业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 31;
+UPDATE `cm_house` SET `remark` = '4栋102，两室一厅，建筑面积约73.50㎡；胡军业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 32;
+UPDATE `cm_house` SET `remark` = '4栋201，两室两厅，建筑面积约80.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 33;
+UPDATE `cm_house` SET `remark` = '4栋202，三室一厅，建筑面积约79.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 34;
+UPDATE `cm_house` SET `remark` = '4栋301，三室两厅，建筑面积约85.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 35;
+UPDATE `cm_house` SET `remark` = '4栋302，四室两厅，建筑面积约92.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 36;
+UPDATE `cm_house` SET `remark` = '4栋401，复式loft，建筑面积约91.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 37;
+UPDATE `cm_house` SET `remark` = '4栋501，跃层三居，建筑面积约97.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 38;
+UPDATE `cm_house` SET `remark` = '4栋502，精装两居，建筑面积约104.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 39;
+UPDATE `cm_house` SET `remark` = '4栋601，阔景四居，建筑面积约103.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 40;
+UPDATE `cm_house` SET `remark` = '5栋101，一室一厅，建筑面积约70.00㎡；刘洋业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 41;
+UPDATE `cm_house` SET `remark` = '5栋102，两室一厅，建筑面积约76.50㎡；林雪业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 42;
+UPDATE `cm_house` SET `remark` = '5栋201，两室两厅，建筑面积约83.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 43;
+UPDATE `cm_house` SET `remark` = '5栋202，三室一厅，建筑面积约82.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 44;
+UPDATE `cm_house` SET `remark` = '5栋301，三室两厅，建筑面积约88.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 45;
+UPDATE `cm_house` SET `remark` = '5栋302，四室两厅，建筑面积约95.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 46;
+UPDATE `cm_house` SET `remark` = '5栋401，复式loft，建筑面积约94.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 47;
+UPDATE `cm_house` SET `remark` = '5栋501，跃层三居，建筑面积约100.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 48;
+UPDATE `cm_house` SET `remark` = '5栋502，精装两居，建筑面积约107.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 49;
+UPDATE `cm_house` SET `remark` = '5栋601，阔景四居，建筑面积约106.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 50;
+UPDATE `cm_house` SET `remark` = '6栋101，一室一厅，建筑面积约73.00㎡；陈静业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 51;
+UPDATE `cm_house` SET `remark` = '6栋102，两室一厅，建筑面积约79.50㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 52;
+UPDATE `cm_house` SET `remark` = '6栋201，两室两厅，建筑面积约86.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 53;
+UPDATE `cm_house` SET `remark` = '6栋202，三室一厅，建筑面积约85.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 54;
+UPDATE `cm_house` SET `remark` = '6栋301，三室两厅，建筑面积约91.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 55;
+UPDATE `cm_house` SET `remark` = '6栋302，四室两厅，建筑面积约98.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 56;
+UPDATE `cm_house` SET `remark` = '6栋401，复式loft，建筑面积约97.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 57;
+UPDATE `cm_house` SET `remark` = '6栋501，跃层三居，建筑面积约103.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 58;
+UPDATE `cm_house` SET `remark` = '6栋502，精装两居，建筑面积约110.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 59;
+UPDATE `cm_house` SET `remark` = '6栋601，阔景四居，建筑面积约109.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 60;
+UPDATE `cm_house` SET `remark` = '7栋101，一室一厅，建筑面积约76.00㎡；杨帆业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 61;
+UPDATE `cm_house` SET `remark` = '7栋102，两室一厅，建筑面积约82.50㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 62;
+UPDATE `cm_house` SET `remark` = '7栋201，两室两厅，建筑面积约89.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 63;
+UPDATE `cm_house` SET `remark` = '7栋202，三室一厅，建筑面积约88.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 64;
+UPDATE `cm_house` SET `remark` = '7栋301，三室两厅，建筑面积约94.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 65;
+UPDATE `cm_house` SET `remark` = '7栋302，四室两厅，建筑面积约101.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 66;
+UPDATE `cm_house` SET `remark` = '7栋401，复式loft，建筑面积约100.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 67;
+UPDATE `cm_house` SET `remark` = '7栋501，跃层三居，建筑面积约106.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 68;
+UPDATE `cm_house` SET `remark` = '7栋502，精装两居，建筑面积约113.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 69;
+UPDATE `cm_house` SET `remark` = '7栋601，阔景四居，建筑面积约112.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 70;
+UPDATE `cm_house` SET `remark` = '8栋101，一室一厅，建筑面积约79.00㎡；周婷业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 71;
+UPDATE `cm_house` SET `remark` = '8栋102，两室一厅，建筑面积约85.50㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 72;
+UPDATE `cm_house` SET `remark` = '8栋201，两室两厅，建筑面积约92.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 73;
+UPDATE `cm_house` SET `remark` = '8栋202，三室一厅，建筑面积约91.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 74;
+UPDATE `cm_house` SET `remark` = '8栋301，三室两厅，建筑面积约97.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 75;
+UPDATE `cm_house` SET `remark` = '8栋302，四室两厅，建筑面积约104.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 76;
+UPDATE `cm_house` SET `remark` = '8栋401，复式loft，建筑面积约103.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 77;
+UPDATE `cm_house` SET `remark` = '8栋501，跃层三居，建筑面积约109.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 78;
+UPDATE `cm_house` SET `remark` = '8栋502，精装两居，建筑面积约116.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 79;
+UPDATE `cm_house` SET `remark` = '8栋601，阔景四居，建筑面积约115.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 80;
+UPDATE `cm_house` SET `remark` = '9栋101，一室一厅，建筑面积约82.00㎡；吴刚业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 81;
+UPDATE `cm_house` SET `remark` = '9栋102，两室一厅，建筑面积约88.50㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 82;
+UPDATE `cm_house` SET `remark` = '9栋201，两室两厅，建筑面积约95.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 83;
+UPDATE `cm_house` SET `remark` = '9栋202，三室一厅，建筑面积约94.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 84;
+UPDATE `cm_house` SET `remark` = '9栋301，三室两厅，建筑面积约100.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 85;
+UPDATE `cm_house` SET `remark` = '9栋302，四室两厅，建筑面积约107.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 86;
+UPDATE `cm_house` SET `remark` = '9栋401，复式loft，建筑面积约106.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 87;
+UPDATE `cm_house` SET `remark` = '9栋501，跃层三居，建筑面积约112.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 88;
+UPDATE `cm_house` SET `remark` = '9栋502，精装两居，建筑面积约119.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 89;
+UPDATE `cm_house` SET `remark` = '9栋601，阔景四居，建筑面积约118.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 90;
+UPDATE `cm_house` SET `remark` = '10栋101，一室一厅，建筑面积约85.00㎡；郑丽业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 91;
+UPDATE `cm_house` SET `remark` = '10栋102，两室一厅，建筑面积约91.50㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 92;
+UPDATE `cm_house` SET `remark` = '10栋201，两室两厅，建筑面积约98.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 93;
+UPDATE `cm_house` SET `remark` = '10栋202，三室一厅，建筑面积约97.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 94;
+UPDATE `cm_house` SET `remark` = '10栋301，三室两厅，建筑面积约103.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 95;
+UPDATE `cm_house` SET `remark` = '10栋302，四室两厅，建筑面积约110.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 96;
+UPDATE `cm_house` SET `remark` = '10栋401，复式loft，建筑面积约109.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 97;
+UPDATE `cm_house` SET `remark` = '10栋501，跃层三居，建筑面积约115.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 98;
+UPDATE `cm_house` SET `remark` = '10栋502，精装两居，建筑面积约122.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 99;
+UPDATE `cm_house` SET `remark` = '10栋601，阔景四居，建筑面积约121.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 100;
 
--- ----------------------------
--- Records of cm_move_apply
--- ----------------------------
-
--- ----------------------------
--- Table structure for cm_parking
--- ----------------------------
-DROP TABLE IF EXISTS `cm_parking`;
-CREATE TABLE `cm_parking`  (
-  `parking_id` bigint NOT NULL AUTO_INCREMENT COMMENT '车位主键',
-  `parking_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '车位编号',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0空闲 1已绑定',
-  PRIMARY KEY (`parking_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车位资源表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of cm_parking
--- ----------------------------
-INSERT INTO `cm_parking` VALUES (1, 'A-001', '0');
-INSERT INTO `cm_parking` VALUES (2, 'A-002', '0');
-INSERT INTO `cm_parking` VALUES (3, 'B-001', '0');
-
--- ----------------------------
--- Table structure for cm_parking_bind
--- ----------------------------
-DROP TABLE IF EXISTS `cm_parking_bind`;
-CREATE TABLE `cm_parking_bind`  (
-  `bind_id` bigint NOT NULL AUTO_INCREMENT COMMENT '绑定主键',
-  `parking_id` bigint NOT NULL COMMENT '车位ID',
-  `resident_id` bigint NOT NULL COMMENT '住户ID',
-  `bind_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '绑定时间',
-  PRIMARY KEY (`bind_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '车位绑定表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of cm_parking_bind
--- ----------------------------
-
--- ----------------------------
 -- Table structure for cm_resident
 -- ----------------------------
 DROP TABLE IF EXISTS `cm_resident`;
@@ -150,12 +292,26 @@ CREATE TABLE `cm_resident`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`resident_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '住户档案表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '住户档案表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_resident
 -- ----------------------------
-INSERT INTO `cm_resident` VALUES (1, 2, 1, '张三', '', '13800000001', '0', '2024-01-01', '', '', '0', '2026-05-17 18:16:04', '2026-05-17 18:25:08');
+INSERT INTO `cm_resident` VALUES (1, 2, 1, '张三', '', '13810000001', '0', '2023-01-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (2, 5, 11, '李芳', '', '13810000002', '0', '2023-02-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (3, 6, 21, '王磊', '', '13810000003', '0', '2023-03-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (4, 7, 31, '赵敏', '', '13810000004', '0', '2023-04-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (5, 8, 41, '刘洋', '', '13810000005', '0', '2023-05-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (6, 9, 51, '陈静', '', '13810000006', '0', '2023-06-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (7, 10, 61, '杨帆', '', '13810000007', '0', '2023-07-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (8, 11, 71, '周婷', '', '13810000008', '0', '2023-08-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (9, 12, 81, '吴刚', '', '13810000009', '0', '2023-09-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (10, 13, 91, '郑丽', '', '13810000010', '0', '2023-10-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (11, 14, 2, '孙浩', '', '13810000011', '0', '2023-11-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (12, 15, 12, '马超', '', '13810000012', '0', '2023-12-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (13, 16, 22, '朱琳', '', '13810000013', '0', '2023-01-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (14, 17, 32, '胡军', '', '13810000014', '0', '2023-02-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `cm_resident` VALUES (15, 18, 42, '林雪', '', '13810000015', '0', '2023-03-15', '', '', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
 
 -- ----------------------------
 -- Table structure for cm_resident_tag
@@ -193,24 +349,6 @@ CREATE TABLE `cm_resident_tag_rel`  (
 -- ----------------------------
 
 -- ----------------------------
--- Table structure for cm_violation
--- ----------------------------
-DROP TABLE IF EXISTS `cm_violation`;
-CREATE TABLE `cm_violation`  (
-  `violation_id` bigint NOT NULL AUTO_INCREMENT COMMENT '违规主键',
-  `resident_id` bigint NOT NULL COMMENT '住户ID',
-  `violation_type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '违规类型',
-  `measure` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '处理措施',
-  `unlock_date` date NULL DEFAULT NULL COMMENT '解封日期',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '1' COMMENT '状态：1黑名单 0已解除',
-  PRIMARY KEY (`violation_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '违规住户记录表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of cm_violation
--- ----------------------------
-
--- ----------------------------
 -- Table structure for cs_notice
 -- ----------------------------
 DROP TABLE IF EXISTS `cs_notice`;
@@ -225,18 +363,48 @@ CREATE TABLE `cs_notice`  (
   `valid_end` datetime NULL DEFAULT NULL COMMENT '有效结束',
   `scope` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '影响范围',
   `restore_time` datetime NULL DEFAULT NULL COMMENT '恢复时间',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '1' COMMENT '状态：1上架 0下架',
+  `offline_time` datetime NULL DEFAULT NULL COMMENT '定时下架时间',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '1' COMMENT '状态：0下架 1已发布 2待发布',
   `create_by` bigint NULL DEFAULT NULL COMMENT '发布人',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`notice_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '社区公告通知表' ROW_FORMAT = Dynamic;
+  PRIMARY KEY (`notice_id`) USING BTREE,
+  INDEX `idx_notice_list`(`status`, `notice_type`, `create_time`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '社区公告通知表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_notice
 -- ----------------------------
-INSERT INTO `cs_notice` VALUES (1, 'announce', '端午节社区活动通知', '社区将于端午节举办包粽子活动，欢迎报名。', '', 1, NULL, NULL, '', NULL, '1', 4, '2026-05-19 15:18:30', '2026-05-19 15:18:30');
-INSERT INTO `cs_notice` VALUES (2, 'outage', '1栋停水通知', '因管道检修，1栋将于5月20日9:00-17:00停水。', '', 0, NULL, NULL, '1栋全体住户', '2026-05-20 17:00:00', '1', 4, '2026-05-19 15:18:30', '2026-05-19 15:18:30');
+INSERT INTO `cs_notice` VALUES (1, 'announce', '清明节文明祭扫倡议', '清明将至，倡导鲜花祭扫、网络祭扫等文明方式。请勿在楼道、阳台堆放纸钱等易燃物，祭扫后确认火源完全熄灭。', '', 1, NULL, NULL, '', NULL, NULL, '1', 4, '2026-04-02 09:00:00', '2026-04-02 09:00:00');
+INSERT INTO `cs_notice` VALUES (2, 'announce', '春季绿化补种通知', '4月10日至15日，物业将在中心花园及主干道两侧补种灌木与草坪。作业期间请勿进入围挡区域，如有宠物请牵绳绕行。', '', 0, NULL, NULL, '', NULL, '2026-06-15 23:59:59', '1', 4, '2026-04-08 10:00:00', '2026-04-08 10:00:00');
+INSERT INTO `cs_notice` VALUES (3, 'announce', '五一劳动节放假安排', '5月1日至5月3日放假，物业服务中心5月1日9:00-12:00值班，5月2日起正常办公。紧急报修请拨打24小时热线。', '', 0, NULL, NULL, '', NULL, NULL, '0', 4, '2026-04-20 08:30:00', '2026-04-25 18:00:00');
+INSERT INTO `cs_notice` VALUES (4, 'announce', '端午节包粽子活动通知', '社区将于6月9日14:00在活动中心举办包粽子活动，限40组家庭，额满即止。报名请联系楼栋管家或至物业前台登记。', '', 1, NULL, NULL, '', NULL, NULL, '2', 4, '2026-06-05 09:00:00', '2026-06-05 09:00:00');
+INSERT INTO `cs_notice` VALUES (5, 'announce', '夏季消防安全演练安排', '定于5月18日15:00在中心广场进行消防疏散演练，请各楼栋配合物业工作人员指引。演练期间请勿围观堵塞通道。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-05-10 14:00:00', '2026-05-10 14:00:00');
+INSERT INTO `cs_notice` VALUES (6, 'announce', '小区绿化修剪公告', '5月22日至24日将进行绿化修剪，作业时间8:30-17:30。请勿在作业区域停放车辆，修剪期间可能有轻微噪音，敬请谅解。', '', 0, NULL, NULL, '', NULL, '2026-05-31 23:59:59', '1', 4, '2026-05-12 08:00:00', '2026-05-12 08:00:00');
+INSERT INTO `cs_notice` VALUES (7, 'announce', '亲子运动会报名开启', '6月15日举办亲子运动会，设跳绳、接力等项目。线上报名截止6月8日，可在业主群或物业前台填写报名表。', '', 0, NULL, NULL, '', NULL, NULL, '2', 4, '2026-06-01 10:00:00', '2026-06-01 10:00:00');
+INSERT INTO `cs_notice` VALUES (8, 'announce', '电梯年度检修告知', '5月25日起分批检修各栋电梯，单次停梯约2-4小时。具体时段见各单元门口张贴通知，检修期间请优先步行或错峰乘梯。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-05-15 11:00:00', '2026-05-15 11:00:00');
+INSERT INTO `cs_notice` VALUES (9, 'announce', '宠物文明饲养倡议', '请遛宠时使用牵引绳，及时清理宠物排泄物。禁止在公共区域放养，避免犬吠扰民。违反规定者将按公约劝导处理。', '', 0, NULL, NULL, '', NULL, NULL, '0', 4, '2026-04-05 09:00:00', '2026-04-10 09:00:00');
+INSERT INTO `cs_notice` VALUES (10, 'announce', '地下车库清洗通知', '6月6日清洗B1、B2层车库，当日8:00-18:00请尽量驶离或配合移位。清洗后地面湿滑，请注意行车安全。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-05-28 16:00:00', '2026-05-28 16:00:00');
+INSERT INTO `cs_notice` VALUES (11, 'announce', '业主大会表决事项预告', '关于增设新能源充电桩方案，定于6月20日19:00在社区会议室召开业主大会表决。材料已张贴于各栋公告栏，欢迎查阅。', '', 1, NULL, NULL, '', NULL, NULL, '2', 4, '2026-06-10 09:00:00', '2026-06-10 09:00:00');
+INSERT INTO `cs_notice` VALUES (12, 'announce', '蚊虫消杀作业公告', '6月3日晚20:00-22:00全小区消杀，请关好门窗，收好食品。消杀后30分钟内避免开窗，儿童宠物请勿接触药剂喷洒区域。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-05-30 08:00:00', '2026-05-30 08:00:00');
+INSERT INTO `cs_notice` VALUES (13, 'announce', '快递柜系统升级说明', '5月16日22:00-24:00升级快递柜系统，期间可能无法取件。请提前取走重要快件，升级完成后需重新验证手机号。', '', 0, NULL, NULL, '', NULL, '2026-05-20 08:00:00', '1', 4, '2026-05-14 09:30:00', '2026-05-14 09:30:00');
+INSERT INTO `cs_notice` VALUES (14, 'announce', '儿童节礼品领取通知', '6月1日9:00-17:00在一层大堂领取儿童节礼品，每户限领一份。请携带业主身份证明，代领需出示授权信息。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-05-25 10:00:00', '2026-05-25 10:00:00');
+INSERT INTO `cs_notice` VALUES (15, 'announce', '高温防暑温馨提示', '6月起进入高温季节，请注意防暑补水。建议老人儿童减少11:00-15:00户外活动，室内空调温度不宜过低，避免室内外温差过大。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-06-01 07:30:00', '2026-06-01 07:30:00');
+INSERT INTO `cs_notice` VALUES (16, 'outage', '1栋停水检修通知', '因主管道阀门更换，1栋将于5月12日9:00-17:00暂停供水。请提前储水，恢复供水初期水质可能短暂浑浊，放水后即可正常使用。', '', 1, NULL, NULL, '1栋全体住户', '2026-05-12 17:00:00', NULL, '1', 4, '2026-05-11 08:00:00', '2026-05-11 08:00:00');
+INSERT INTO `cs_notice` VALUES (17, 'outage', '2栋配电室停电检修', '2栋配电室设备检修，5月14日8:30-11:30全栋停电。请提前保存电脑数据，电梯将暂停运行，高层住户请合理安排出行。', '', 0, NULL, NULL, '2栋', '2026-05-14 11:30:00', NULL, '1', 4, '2026-05-13 09:00:00', '2026-05-13 09:00:00');
+INSERT INTO `cs_notice` VALUES (18, 'outage', '3栋水泵更换停水', '3栋二次供水水泵更换，5月20日14:00-18:00低区停水。请关闭热水器进水阀，恢复供水后再开启，防止空烧损坏设备。', '', 0, NULL, NULL, '3栋低区', '2026-05-20 18:00:00', NULL, '2', 4, '2026-06-08 14:00:00', '2026-06-08 14:00:00');
+INSERT INTO `cs_notice` VALUES (19, 'outage', '4栋电梯机房停电', '4栋电梯机房维护，5月22日13:00-15:00电梯全部暂停。请提前规划上下楼路线，老人及行动不便住户可联系物业协助。', '', 0, NULL, NULL, '4栋', '2026-05-22 15:00:00', NULL, '1', 4, '2026-05-21 10:00:00', '2026-05-21 10:00:00');
+INSERT INTO `cs_notice` VALUES (20, 'outage', '5栋燃气安全检查停气', '5栋5月25日9:00-12:00停气检修。请提前关闭灶具阀门，恢复通气后先开窗通风再点火，确保安全。', '', 0, NULL, NULL, '5栋', '2026-05-25 12:00:00', NULL, '1', 4, '2026-05-24 08:30:00', '2026-05-24 08:30:00');
+INSERT INTO `cs_notice` VALUES (21, 'outage', '6栋水箱清洗停水', '6栋水箱清洗消毒，4月18日10:00-16:00停水。清洗完成后水质符合标准再恢复供水，如有疑问请联系物业工程部。', '', 0, NULL, NULL, '6栋', '2026-04-18 16:00:00', NULL, '0', 4, '2026-04-15 09:00:00', '2026-04-20 10:00:00');
+INSERT INTO `cs_notice` VALUES (22, 'outage', '7栋线路改造停电', '7栋供电线路改造，6月12日0:00-6:00全栋停电。请提前为手机、应急灯充电，凌晨时段请注意出行安全。', '', 1, NULL, NULL, '7栋', '2026-06-12 06:00:00', NULL, '1', 4, '2026-06-10 12:00:00', '2026-06-10 12:00:00');
+INSERT INTO `cs_notice` VALUES (23, 'outage', '8栋主水管维修停水', '8栋主水管维修，6月18日8:00-12:00停水。工程车可能占用临时车位，请配合现场疏导，带来不便敬请谅解。', '', 0, NULL, NULL, '8栋', '2026-06-18 12:00:00', NULL, '2', 4, '2026-06-15 08:00:00', '2026-06-15 08:00:00');
+INSERT INTO `cs_notice` VALUES (24, 'outage', '9栋公区照明改造停电', '9栋大堂及走廊照明改造，5月28日19:00-22:00公区停电。请使用手机照明，注意台阶安全，改造完成后照明将更加节能明亮。', '', 0, NULL, NULL, '9栋公区', '2026-05-28 22:00:00', NULL, '1', 4, '2026-05-27 15:00:00', '2026-05-27 15:00:00');
+INSERT INTO `cs_notice` VALUES (25, 'outage', '10栋阀门更换停水', '10栋总阀更换，6月2日9:00-11:00停水。停水时间较短，请提前储少量生活用水，恢复后请先放清管道存水。', '', 0, NULL, NULL, '10栋', '2026-06-02 11:00:00', NULL, '1', 4, '2026-06-01 09:00:00', '2026-06-01 09:00:00');
+INSERT INTO `cs_notice` VALUES (26, 'outage', '中心广场活动临时停电', '广场端午活动用电调试，6月8日18:00-20:00周边路灯及景观灯关闭。调试结束后立即恢复，请夜间出行注意瞭望。', '', 0, NULL, NULL, '中心广场周边', '2026-06-08 20:00:00', NULL, '1', 4, '2026-06-07 10:00:00', '2026-06-07 10:00:00');
+INSERT INTO `cs_notice` VALUES (27, 'outage', '地下车库B1消防测试停水', 'B1层消防管道测试，4月25日15:00-17:00临时停水。测试期间可能有警报声，属正常现象，请勿恐慌。', '', 0, NULL, NULL, 'B1车库', '2026-04-25 17:00:00', NULL, '0', 4, '2026-04-22 11:00:00', '2026-04-26 09:00:00');
+INSERT INTO `cs_notice` VALUES (28, 'outage', '1-3栋联动检修停水', '6月25日8:00-18:00，1至3栋低区联动停水检修。影响范围较大，请提前储备24小时用水，物业将在大堂提供应急供水。', '', 0, NULL, NULL, '1-3栋低区', '2026-06-25 18:00:00', NULL, '2', 4, '2026-06-20 09:00:00', '2026-06-20 09:00:00');
+INSERT INTO `cs_notice` VALUES (29, 'outage', '全小区消防联动测试停电', '6月30日10:00-10:30消防联动测试，全小区电梯可能短暂停运，门禁系统切换备用电源。测试结束后自动恢复正常。', '', 0, NULL, NULL, '全小区', '2026-06-30 10:30:00', NULL, '1', 4, '2026-06-28 08:00:00', '2026-06-28 08:00:00');
+INSERT INTO `cs_notice` VALUES (30, 'outage', '4栋计划停水（待发布）', '4栋主供水管计划7月5日8:00-14:00停水检修，具体以现场条件为准。本通知待工程方案确认后正式发布，请提前关注后续更新。', '', 0, NULL, NULL, '4栋', '2026-07-05 14:00:00', NULL, '2', 4, '2026-06-22 09:00:00', '2026-06-22 09:00:00');
 
 -- ----------------------------
 -- Table structure for cs_notice_read
@@ -246,14 +414,14 @@ CREATE TABLE `cs_notice_read`  (
   `notice_id` bigint NOT NULL COMMENT '公告ID',
   `user_id` bigint NOT NULL COMMENT '用户ID',
   `read_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '阅读时间',
-  PRIMARY KEY (`notice_id`, `user_id`) USING BTREE
+  PRIMARY KEY (`notice_id`, `user_id`) USING BTREE,
+  INDEX `idx_user`(`user_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '公告已读记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_notice_read
 -- ----------------------------
-INSERT INTO `cs_notice_read` VALUES (1, 2, '2026-05-19 15:32:47');
-INSERT INTO `cs_notice_read` VALUES (2, 2, '2026-05-19 15:33:15');
+INSERT INTO `cs_notice_read` VALUES (1, 2, '2026-05-02 10:00:00'), (3, 2, '2026-05-06 09:00:00'), (16, 2, '2026-05-12 08:30:00');
 
 -- ----------------------------
 -- Table structure for el_alert
@@ -409,43 +577,6 @@ CREATE TABLE `kb_article`  (
 
 -- ----------------------------
 -- Records of kb_article
--- ----------------------------
-
--- ----------------------------
--- Table structure for mt_plan
--- ----------------------------
-DROP TABLE IF EXISTS `mt_plan`;
-CREATE TABLE `mt_plan`  (
-  `plan_id` bigint NOT NULL AUTO_INCREMENT COMMENT '计划主键',
-  `equipment_id` bigint NOT NULL COMMENT '设备ID',
-  `cycle_type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '周期类型',
-  `worker_id` bigint NULL DEFAULT NULL COMMENT '维保人员ID',
-  `advance_days` int NULL DEFAULT 7 COMMENT '提前天数',
-  `next_date` date NOT NULL COMMENT '下次维保日期',
-  PRIMARY KEY (`plan_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备维保计划表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of mt_plan
--- ----------------------------
-
--- ----------------------------
--- Table structure for mt_record
--- ----------------------------
-DROP TABLE IF EXISTS `mt_record`;
-CREATE TABLE `mt_record`  (
-  `record_id` bigint NOT NULL AUTO_INCREMENT COMMENT '记录主键',
-  `equipment_id` bigint NOT NULL COMMENT '设备ID',
-  `plan_id` bigint NULL DEFAULT NULL COMMENT '计划ID',
-  `parts` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '更换零件',
-  `test_data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '测试数据',
-  `suggestion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '维保建议',
-  `maintain_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '维保时间',
-  PRIMARY KEY (`record_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备维保记录表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of mt_record
 -- ----------------------------
 
 -- ----------------------------
@@ -929,15 +1060,28 @@ CREATE TABLE `sys_user`  (
   PRIMARY KEY (`user_id`) USING BTREE,
   UNIQUE INDEX `uk_username`(`username` ASC) USING BTREE,
   UNIQUE INDEX `uk_phone`(`phone` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统用户表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统用户表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (2, 'owner01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '张三', '13800000001', '', '', '0', NULL, 1, '0', '0', '2026-05-17 18:16:04', '2026-05-17 18:16:04');
+INSERT INTO `sys_user` VALUES (2, 'owner01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '张三', '13810000001', '', '', '0', NULL, 1, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
 INSERT INTO `sys_user` VALUES (3, 'worker01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '李师傅', '13800000002', '', '', '1', NULL, NULL, '0', '0', '2026-05-17 18:16:04', '2026-05-17 18:16:04');
 INSERT INTO `sys_user` VALUES (4, 'property01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '王管家', '13800000003', '', '', '2', NULL, NULL, '0', '0', '2026-05-17 18:16:04', '2026-05-17 18:16:04');
-INSERT INTO `sys_user` VALUES (5, 'owner02', '$2a$10$BAztWWzXjDxqUs05A7C5DuW3vucHZdeXB1TGn6kqgarg6OOz2J6HC', 'Amy', '13123234455', '', '', '0', NULL, NULL, '0', '0', '2026-05-17 18:35:15', '2026-05-17 18:35:15');
+INSERT INTO `sys_user` VALUES (5, 'owner02', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '李芳', '13810000002', '', '', '0', NULL, 11, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (6, 'owner03', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '王磊', '13810000003', '', '', '0', NULL, 21, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (7, 'owner04', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '赵敏', '13810000004', '', '', '0', NULL, 31, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (8, 'owner05', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '刘洋', '13810000005', '', '', '0', NULL, 41, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (9, 'owner06', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '陈静', '13810000006', '', '', '0', NULL, 51, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (10, 'owner07', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '杨帆', '13810000007', '', '', '0', NULL, 61, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (11, 'owner08', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '周婷', '13810000008', '', '', '0', NULL, 71, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (12, 'owner09', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '吴刚', '13810000009', '', '', '0', NULL, 81, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (13, 'owner10', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '郑丽', '13810000010', '', '', '0', NULL, 91, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (14, 'owner11', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '孙浩', '13810000011', '', '', '0', NULL, 2, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (15, 'owner12', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '马超', '13810000012', '', '', '0', NULL, 12, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (16, 'owner13', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '朱琳', '13810000013', '', '', '0', NULL, 22, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (17, 'owner14', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '胡军', '13810000014', '', '', '0', NULL, 32, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
+INSERT INTO `sys_user` VALUES (18, 'owner15', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '林雪', '13810000015', '', '', '0', NULL, 42, '0', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
 
 -- ----------------------------
 -- Table structure for sys_user_device
@@ -971,9 +1115,7 @@ CREATE TABLE `sys_user_role`  (
 -- ----------------------------
 -- Records of sys_user_role
 -- ----------------------------
-INSERT INTO `sys_user_role` VALUES (1, 1);
 INSERT INTO `sys_user_role` VALUES (2, 2);
 INSERT INTO `sys_user_role` VALUES (3, 3);
 INSERT INTO `sys_user_role` VALUES (4, 4);
-
-SET FOREIGN_KEY_CHECKS = 1;
+INSERT INTO `sys_user_role` VALUES (5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 2), (11, 2), (12, 2), (13, 2), (14, 2), (15, 2), (16, 2), (17, 2), (18, 2);

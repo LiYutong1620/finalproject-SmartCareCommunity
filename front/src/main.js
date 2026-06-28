@@ -7,8 +7,10 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import router from './router'
 import './styles/index.scss'
+import Pagination from '@/components/Pagination/index.vue'
 
 const app = createApp(App)
+app.component('Pagination', Pagination)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }

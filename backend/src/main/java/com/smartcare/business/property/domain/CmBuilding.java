@@ -17,4 +17,5 @@ public class CmBuilding extends BaseEntity {
     private String buildingNo;
     private Integer totalFloors;
     private Integer unitsPerFloor;
+    private String remark;
 }
