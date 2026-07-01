@@ -54,13 +54,6 @@ public class SysMessageService {
         return messageMapper.selectPage(new Page<>(pageNum, pageSize), qw);
     }
 
-    public long unreadCount(Long userId) {
-        return messageUserMapper.selectCount(
-            new LambdaQueryWrapper<SysMessageUser>()
-                .eq(SysMessageUser::getUserId, userId)
-                .eq(SysMessageUser::getReadFlag, 0));
-    }
-
     public void markRead(Long messageId, Long userId) {
         SysMessageUser mu = messageUserMapper.selectOne(
             new LambdaQueryWrapper<SysMessageUser>()

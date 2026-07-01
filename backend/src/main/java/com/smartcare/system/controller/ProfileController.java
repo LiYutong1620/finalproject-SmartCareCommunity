@@ -72,6 +72,13 @@ public class ProfileController {
         return AjaxResult.success();
     }
 
+    @DeleteMapping("/deactivate")
+    public AjaxResult deactivate() {
+        Long userId = requireLoginUser().getUserId();
+        userService.deleteUser(userId);
+        return AjaxResult.success("账号已注销");
+    }
+
     @PostMapping("/avatar")
     public AjaxResult uploadAvatar(@RequestParam("avatarfile") MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {

@@ -25,15 +25,21 @@ public class JwtUtils {
     }
 
     public String createToken(Long userId, String username, String userType) {
+        return createToken(userId, username, userType, null);
+    }
+
+    public String createToken(Long userId, String username, String userType, String permissions) {
         long now = System.currentTimeMillis();
-        return Jwts.builder()
+        var builder = Jwts.builder()
             .subject(username)
             .claim("userId", userId)
             .claim("userType", userType)
             .issuedAt(new Date(now))
-            .expiration(new Date(now + expireMinutes * 60 * 1000))
-            .signWith(key())
-            .compact();
+            .expiration(new Date(now + expireMinutes * 60 * 1000));
+        if (permissions != null && !permissions.isEmpty()) {
+            builder.claim("permissions", permissions);
+        }
+        return builder.signWith(key()).compact();
     }
 
     public Claims parseToken(String token) {

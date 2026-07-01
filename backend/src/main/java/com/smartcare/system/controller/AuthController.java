@@ -54,7 +54,7 @@ public class AuthController {
         log.setMsg("登录成功");
         loginLogService.save(log);
         String userType = normalizeUserType(user.getUserType());
-        String token = jwtUtils.createToken(user.getUserId(), user.getUsername(), userType);
+        String token = jwtUtils.createToken(user.getUserId(), user.getUsername(), userType, user.getPermissionCode());
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
         data.put("user", sanitize(user));
@@ -99,6 +99,7 @@ public class AuthController {
         m.put("phone", user.getPhone());
         m.put("avatar", user.getAvatar());
         m.put("userType", normalizeUserType(user.getUserType()));
+        m.put("permissionCode", user.getPermissionCode());
         return m;
     }
 

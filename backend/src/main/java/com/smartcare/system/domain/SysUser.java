@@ -28,6 +28,8 @@ public class SysUser extends BaseEntity {
     private Long buildingId;
     private Long houseId;
     private String status;
+    /** 权限码，逗号分隔，如 "elder_view,elder_manage,dashboard_view" */
+    private String permissionCode;
     @TableLogic(value = "0", delval = "2")
     private String delFlag;
 }

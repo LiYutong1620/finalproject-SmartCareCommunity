@@ -54,6 +54,10 @@ public class SysUserService {
         userMapper.updateById(user);
     }
 
+    public void createUser(SysUser user) {
+        userMapper.insert(user);
+    }
+
     public void updateProfileSelf(SysUser user) {
         SysUser db = userMapper.selectById(user.getUserId());
         if (db == null) {

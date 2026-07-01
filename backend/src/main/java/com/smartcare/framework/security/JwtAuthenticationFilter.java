@@ -15,7 +15,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -32,10 +34,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 Claims claims = jwtUtils.parseToken(token);
                 String username = claims.getSubject();
+                String permissions = claims.get("permissions", String.class);
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     var user = userService.selectByUsername(username);
                     if (user != null) {
-                        LoginUser loginUser = new LoginUser(user, Collections.emptyList());
+                        if (user.getPermissionCode() == null && permissions != null) {
+                            user.setPermissionCode(permissions);
+                        }
+                        List<String> permList = parsePermissionList(user.getPermissionCode());
+                        LoginUser loginUser = new LoginUser(user, permList);
                         var auth = new UsernamePasswordAuthenticationToken(
                             loginUser, null, loginUser.getAuthorities());
                         auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -54,5 +61,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearer.substring(7);
         }
         return null;
+    }
+
+    private List<String> parsePermissionList(String permissionCode) {
+        if (permissionCode == null || permissionCode.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(permissionCode.split(","));
     }
 }
