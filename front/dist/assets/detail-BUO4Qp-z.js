@@ -1,0 +1,1 @@
+import t from"./detail-CN3e15td.js";import{x as e,i as o}from"./index-LV4tKCwR.js";import"./owner-B2xgegQI.js";import"./request-B7PSpugW.js";const n={__name:"detail",setup(r){return(a,c)=>(e(),o(t,{"back-path":"/owner/outage"}))}};export{n as default};
