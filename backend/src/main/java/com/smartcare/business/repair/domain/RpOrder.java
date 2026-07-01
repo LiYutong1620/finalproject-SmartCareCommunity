@@ -32,4 +32,7 @@ public class RpOrder extends BaseEntity {
     private String signImage;
     private String rejectReason;
     private String assignReason;
+    private String aiTypeLabel;
+    private Integer highRisk;
+    private Integer duplicateFlag;
 }
