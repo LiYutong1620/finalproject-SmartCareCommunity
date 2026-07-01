@@ -51,3 +51,19 @@ export function getAlertTrendByType() {
     method: "get",
   });
 }
+
+/** 工单状态分布 */
+export function getOrderStatusDistribution() {
+  return request({
+    url: "/property/dashboard/order-status-distribution",
+    method: "get",
+  });
+}
+
+/** 维修工负载TOP5 */
+export function getWorkerLoad() {
+  return request({
+    url: "/property/dashboard/worker-load",
+    method: "get",
+  });
+}

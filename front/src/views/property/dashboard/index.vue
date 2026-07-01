@@ -1,24 +1,29 @@
-<template>
-  <div class="app-container">
+﻿<template>
+  <div class="dashboard-container">
     <!-- 顶部KPI统计卡片 -->
-    <el-row :gutter="16">
-      <el-col :span="4" v-for="card in kpiCards" :key="card.label">
-        <el-card shadow="hover" class="kpi-card">
-          <div class="kpi-value" :style="{ color: card.color }">
-            {{ card.value }}
+    <el-row :gutter="20">
+      <el-col :span="6" v-for="card in kpiCards" :key="card.label">
+        <div class="kpi-card" :style="{ background: card.bg }">
+          <div class="kpi-icon">
+            <el-icon :size="28" color="#fff"
+              ><component :is="card.icon"
+            /></el-icon>
           </div>
-          <div class="kpi-label">{{ card.label }}</div>
-        </el-card>
+          <div class="kpi-info">
+            <div class="kpi-value">{{ card.value }}</div>
+            <div class="kpi-label">{{ card.label }}</div>
+          </div>
+        </div>
       </el-col>
     </el-row>
 
-    <!-- 指令一：工单完成率（折线图+柱状图，双Y轴，日/周/月切换） -->
-    <el-row :gutter="16" class="chart-row">
+    <!-- 工单完成率趋势 -->
+    <el-row :gutter="20" class="chart-row">
       <el-col :span="24">
-        <el-card shadow="never">
+        <el-card shadow="never" class="chart-card">
           <template #header>
             <div class="chart-header">
-              <span>工单完成率趋势</span>
+              <span class="chart-title">工单完成率趋势</span>
               <el-radio-group
                 v-model="ratePeriod"
                 size="small"
@@ -35,29 +40,53 @@
       </el-col>
     </el-row>
 
-    <!-- 指令二：报修分布（饼图+柱状图，左右并排） -->
-    <el-row :gutter="16" class="chart-row">
+    <!-- 报修分布 -->
+    <el-row :gutter="20" class="chart-row">
       <el-col :span="12">
-        <el-card shadow="never">
-          <template #header>报修分布（按故障类型）</template>
+        <el-card shadow="never" class="chart-card">
+          <template #header
+            ><span class="chart-title">报修类型分布</span></template
+          >
           <div ref="repairTypeRef" class="chart-box"></div>
         </el-card>
       </el-col>
       <el-col :span="12">
-        <el-card shadow="never">
-          <template #header>报修分布（按楼栋）</template>
+        <el-card shadow="never" class="chart-card">
+          <template #header
+            ><span class="chart-title">楼栋报修热力</span></template
+          >
           <div ref="repairBuildingRef" class="chart-box"></div>
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 指令三：预警次数趋势图（双折线图+面积填充+日期选择） -->
-    <el-row :gutter="16" class="chart-row">
+    <!-- 工单状态分布 + 维修工负载 -->
+    <el-row :gutter="20" class="chart-row">
+      <el-col :span="12">
+        <el-card shadow="never" class="chart-card">
+          <template #header
+            ><span class="chart-title">工单状态分布</span></template
+          >
+          <div ref="statusChartRef" class="chart-box"></div>
+        </el-card>
+      </el-col>
+      <el-col :span="12">
+        <el-card shadow="never" class="chart-card">
+          <template #header
+            ><span class="chart-title">维修工负载 TOP5</span></template
+          >
+          <div ref="workerLoadRef" class="chart-box"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <!-- 预警次数趋势 -->
+    <el-row :gutter="20" class="chart-row">
       <el-col :span="24">
-        <el-card shadow="never">
+        <el-card shadow="never" class="chart-card">
           <template #header>
             <div class="chart-header">
-              <span>预警次数趋势</span>
+              <span class="chart-title">预警次数趋势</span>
               <el-date-picker
                 v-model="alertDateRange"
                 type="daterange"
@@ -75,103 +104,41 @@
         </el-card>
       </el-col>
     </el-row>
-
-    <!-- 底部表格区 -->
-    <el-row :gutter="16" class="table-row">
-      <el-col :span="12">
-        <el-card shadow="never">
-          <template #header>高风险老人 TOP10</template>
-          <el-table
-            :data="riskResidents"
-            stripe
-            size="small"
-            style="width: 100%"
-          >
-            <el-table-column type="index" label="排名" width="60" />
-            <el-table-column prop="name" label="姓名" />
-            <el-table-column prop="age" label="年龄" width="70" />
-            <el-table-column prop="alertCount" label="预警次数" width="90" />
-            <el-table-column
-              prop="lastAlertTime"
-              label="最近预警时间"
-              min-width="150"
-            />
-          </el-table>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card shadow="never">
-          <template #header>关怀人员绩效</template>
-          <el-table
-            :data="staffPerformance"
-            stripe
-            size="small"
-            style="width: 100%"
-          >
-            <el-table-column type="index" label="序号" width="60" />
-            <el-table-column prop="name" label="姓名" />
-            <el-table-column
-              prop="totalCareOrders"
-              label="关怀工单数"
-              width="100"
-            />
-            <el-table-column prop="completedOrders" label="完成数" width="80" />
-            <el-table-column
-              prop="completionRate"
-              label="完成率(%)"
-              width="100"
-            >
-              <template #default="{ row }">
-                <el-tag
-                  :type="
-                    row.completionRate >= 80
-                      ? 'success'
-                      : row.completionRate >= 50
-                        ? 'warning'
-                        : 'danger'
-                  "
-                >
-                  {{ row.completionRate }}%
-                </el-tag>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-      </el-col>
-    </el-row>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick, shallowRef } from "vue";
 import * as echarts from "echarts";
+import { Tickets, User, Bell, DataAnalysis } from "@element-plus/icons-vue";
 import {
   getSummary,
   getElderStats,
-  getStaffPerformance,
-  getRiskResidents,
   getCompletionRate,
   getRepairDistribution,
   getAlertTrendByType,
+  getOrderStatusDistribution,
+  getWorkerLoad,
 } from "@/api/dashboard";
 
 const summary = ref({});
 const elderStats = ref({});
-const riskResidents = ref([]);
-const staffPerformance = ref([]);
 const ratePeriod = ref("day");
 
 const rateChartRef = ref(null);
 const repairTypeRef = ref(null);
 const repairBuildingRef = ref(null);
 const alertChartRef = ref(null);
+const statusChartRef = ref(null);
+const workerLoadRef = ref(null);
 
 let rateChart = null;
 let repairTypeChart = null;
 let repairBuildingChart = null;
 let alertChart = null;
+let statusChart = null;
+let workerLoadChart = null;
 
-// 预警日期范围
 const now = new Date();
 const thirtyDaysAgo = new Date(now.getTime() - 29 * 86400000);
 function fmtDate(d) {
@@ -186,21 +153,21 @@ function fmtDate(d) {
 const alertDateRange = ref([fmtDate(thirtyDaysAgo), fmtDate(now)]);
 const dateShortcuts = [
   {
-    text: "近7天",
+    text: "\u8FD17\u5929",
     value: () => {
       const e = new Date();
       return [new Date(e.getTime() - 6 * 86400000), e];
     },
   },
   {
-    text: "近30天",
+    text: "\u8FD130\u5929",
     value: () => {
       const e = new Date();
       return [new Date(e.getTime() - 29 * 86400000), e];
     },
   },
   {
-    text: "近90天",
+    text: "\u8FD190\u5929",
     value: () => {
       const e = new Date();
       return [new Date(e.getTime() - 89 * 86400000), e];
@@ -209,21 +176,37 @@ const dateShortcuts = [
 ];
 
 const kpiCards = ref([
-  { label: "工单完成率", value: "-", color: "#409eff" },
-  { label: "老人总数", value: "-", color: "#67c23a" },
-  { label: "待处理预警", value: "-", color: "#f56c6c" },
-  { label: "本月关怀率", value: "-", color: "#e6a23c" },
-  { label: "独居老人数", value: "-", color: "#909399" },
-  { label: "高风险预警", value: "-", color: "#f56c6c" },
+  {
+    label: "\u5DE5\u5355\u5B8C\u6210\u7387",
+    value: "-",
+    bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    icon: shallowRef(Tickets),
+  },
+  {
+    label: "\u8001\u4EBA\u603B\u6570",
+    value: "-",
+    bg: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+    icon: shallowRef(User),
+  },
+  {
+    label: "\u5F85\u5904\u7406\u9884\u8B66",
+    value: "-",
+    bg: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+    icon: shallowRef(Bell),
+  },
+  {
+    label: "\u72EC\u5C45\u8001\u4EBA\u6570",
+    value: "-",
+    bg: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
+    icon: shallowRef(DataAnalysis),
+  },
 ]);
 
 function updateKpi() {
   kpiCards.value[0].value = (summary.value.completionRate ?? 0) + "%";
   kpiCards.value[1].value = summary.value.elderTotal ?? 0;
   kpiCards.value[2].value = summary.value.pendingAlerts ?? 0;
-  kpiCards.value[3].value = (summary.value.monthlyCareRate ?? 0) + "%";
-  kpiCards.value[4].value = elderStats.value.livingAloneCount ?? 0;
-  kpiCards.value[5].value = elderStats.value.highRiskAlertCount ?? 0;
+  kpiCards.value[3].value = elderStats.value.livingAloneCount ?? 0;
 }
 
 function renderRateChart(trendData) {
@@ -233,67 +216,106 @@ function renderRateChart(trendData) {
     {
       tooltip: {
         trigger: "axis",
-        axisPointer: { type: "cross" },
+        axisPointer: { type: "cross", crossStyle: { color: "#999" } },
+        backgroundColor: "rgba(50,50,50,0.9)",
+        borderColor: "transparent",
+        textStyle: { color: "#fff" },
         formatter(params) {
-          let s = params[0].axisValue + "<br/>";
-          params.forEach((p) => {
-            if (p.seriesName === "完成率")
-              s += p.marker + p.seriesName + ": " + p.data + "%<br/>";
-            else s += p.marker + p.seriesName + ": " + p.data + "<br/>";
+          let s =
+            '<div style="font-weight:600;margin-bottom:4px">' +
+            params[0].axisValue +
+            "</div>";
+          params.forEach(function (p) {
+            var unit = p.seriesName === "\u5B8C\u6210\u7387" ? "%" : " \u5355";
+            s +=
+              p.marker +
+              " " +
+              p.seriesName +
+              ": <b>" +
+              p.data +
+              unit +
+              "</b><br/>";
           });
           return s;
         },
       },
-      legend: { data: ["完成率", "总工单数"], top: 5 },
-      grid: { left: 60, right: 60, top: 50, bottom: 35 },
+      legend: {
+        data: ["\u5B8C\u6210\u7387", "\u603B\u5DE5\u5355\u6570"],
+        top: 8,
+        textStyle: { color: "#666" },
+      },
+      grid: { left: 60, right: 60, top: 55, bottom: 40 },
       xAxis: {
         type: "category",
-        data: trendData.map((d) => d.label),
-        axisLabel: { fontSize: 11 },
+        data: trendData.map(function (d) {
+          return d.label;
+        }),
+        axisLabel: { color: "#888" },
+        axisLine: { lineStyle: { color: "#e0e0e0" } },
       },
       yAxis: [
         {
           type: "value",
-          name: "完成率",
+          name: "\u5B8C\u6210\u7387",
           min: 0,
           max: 100,
-          axisLabel: { formatter: "{value}%" },
-          splitLine: { lineStyle: { type: "dashed" } },
+          axisLabel: { formatter: "{value}%", color: "#888" },
+          splitLine: { lineStyle: { type: "dashed", color: "#f0f0f0" } },
         },
         {
           type: "value",
-          name: "工单数",
+          name: "\u5DE5\u5355\u6570",
           min: 0,
           minInterval: 1,
-          axisLabel: { formatter: "{value}" },
+          axisLabel: { color: "#888" },
           splitLine: { show: false },
         },
       ],
       series: [
         {
-          name: "总工单数",
+          name: "\u603B\u5DE5\u5355\u6570",
           type: "bar",
           yAxisIndex: 1,
-          data: trendData.map((d) => d.total),
+          data: trendData.map(function (d) {
+            return d.total;
+          }),
           itemStyle: {
-            color: "rgba(180,180,180,0.5)",
-            borderRadius: [3, 3, 0, 0],
+            borderRadius: [6, 6, 0, 0],
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "rgba(102,126,234,0.6)" },
+              { offset: 1, color: "rgba(102,126,234,0.15)" },
+            ]),
           },
-          barMaxWidth: 30,
+          barMaxWidth: 28,
         },
         {
-          name: "完成率",
+          name: "\u5B8C\u6210\u7387",
           type: "line",
           yAxisIndex: 0,
-          data: trendData.map((d) => d.rate),
+          data: trendData.map(function (d) {
+            return d.rate;
+          }),
           smooth: true,
-          itemStyle: { color: "#409eff" },
-          lineStyle: { width: 3 },
           symbol: "circle",
           symbolSize: 8,
-          areaStyle: { opacity: 0.08 },
+          itemStyle: { color: "#764ba2", borderWidth: 2, borderColor: "#fff" },
+          lineStyle: {
+            width: 3,
+            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+              { offset: 0, color: "#667eea" },
+              { offset: 1, color: "#764ba2" },
+            ]),
+          },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "rgba(102,126,234,0.25)" },
+              { offset: 1, color: "rgba(118,75,162,0.02)" },
+            ]),
+          },
         },
       ],
+      animationDuration: 1000,
+      animationEasing: "cubicOut",
     },
     true,
   );
@@ -302,20 +324,58 @@ function renderRateChart(trendData) {
 function renderRepairTypeChart(data) {
   if (!repairTypeRef.value || !data || data.length === 0) return;
   if (!repairTypeChart) repairTypeChart = echarts.init(repairTypeRef.value);
+  var colors = [
+    "#667eea",
+    "#764ba2",
+    "#f093fb",
+    "#4facfe",
+    "#43e97b",
+    "#fa709a",
+    "#fee140",
+  ];
   repairTypeChart.setOption(
     {
-      tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
-      legend: { orient: "vertical", right: 10, top: "center" },
-      color: ["#5470c6", "#91cc75", "#fac858", "#ee6666", "#73c0de"],
+      tooltip: {
+        trigger: "item",
+        formatter: "{b}<br/>\u6570\u91CF: {c} ({d}%)",
+        backgroundColor: "rgba(50,50,50,0.9)",
+        borderColor: "transparent",
+        textStyle: { color: "#fff" },
+      },
+      legend: {
+        orient: "vertical",
+        right: 15,
+        top: "center",
+        textStyle: { color: "#666" },
+      },
+      color: colors,
       series: [
         {
           type: "pie",
-          radius: ["35%", "65%"],
+          roseType: "area",
+          radius: ["20%", "70%"],
           center: ["40%", "50%"],
-          label: { show: true, formatter: "{b}\n{d}%" },
-          emphasis: { label: { fontSize: 14, fontWeight: "bold" } },
-          itemStyle: { borderRadius: 6, borderColor: "#fff", borderWidth: 2 },
-          data: data.map((d) => ({ name: d.name || "未分类", value: d.value })),
+          label: {
+            show: true,
+            formatter: "{b}\n{d}%",
+            color: "#555",
+            fontSize: 11,
+          },
+          labelLine: { length: 12, length2: 16 },
+          emphasis: {
+            label: { fontSize: 14, fontWeight: "bold" },
+            itemStyle: { shadowBlur: 20, shadowColor: "rgba(0,0,0,0.15)" },
+          },
+          itemStyle: { borderRadius: 8, borderColor: "#fff", borderWidth: 3 },
+          data: data.map(function (d, i) {
+            return {
+              name: d.name || "\u672A\u5206\u7C7B",
+              value: d.value,
+              itemStyle: { color: colors[i % colors.length] },
+            };
+          }),
+          animationType: "scale",
+          animationEasing: "elasticOut",
         },
       ],
     },
@@ -327,186 +387,473 @@ function renderRepairBuildingChart(data) {
   if (!repairBuildingRef.value || !data || data.length === 0) return;
   if (!repairBuildingChart)
     repairBuildingChart = echarts.init(repairBuildingRef.value);
+  var sorted = data.slice().sort(function (a, b) {
+    return a.value - b.value;
+  });
+  var maxVal = Math.max.apply(
+    null,
+    sorted
+      .map(function (d) {
+        return d.value;
+      })
+      .concat([1]),
+  );
   repairBuildingChart.setOption(
     {
-      tooltip: { trigger: "axis", formatter: "{b}: {c} 单" },
-      grid: { left: 50, right: 20, top: 20, bottom: 35 },
-      xAxis: {
-        type: "category",
-        data: data.map((d) => d.name || "未知"),
-        axisLabel: { fontSize: 11 },
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
+        formatter: "{b}: {c} \u5355",
+        backgroundColor: "rgba(50,50,50,0.9)",
+        borderColor: "transparent",
+        textStyle: { color: "#fff" },
       },
-      yAxis: { type: "value", minInterval: 1 },
+      grid: { left: 80, right: 40, top: 15, bottom: 20 },
+      xAxis: {
+        type: "value",
+        minInterval: 1,
+        axisLabel: { color: "#888" },
+        splitLine: { lineStyle: { type: "dashed", color: "#f0f0f0" } },
+      },
+      yAxis: {
+        type: "category",
+        data: sorted.map(function (d) {
+          return d.name || "\u672A\u77E5";
+        }),
+        axisLabel: { color: "#555", fontSize: 12 },
+        axisLine: { show: false },
+        axisTick: { show: false },
+      },
       series: [
         {
           type: "bar",
-          data: data.map((d) => d.value),
-          itemStyle: { color: "#e6a23c", borderRadius: [4, 4, 0, 0] },
-          barMaxWidth: 40,
+          data: sorted.map(function (d) {
+            return {
+              value: d.value,
+              itemStyle: {
+                borderRadius: [0, 8, 8, 0],
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                  {
+                    offset: 0,
+                    color:
+                      "rgba(102,126,234," +
+                      (0.4 + 0.6 * (d.value / maxVal)) +
+                      ")",
+                  },
+                  {
+                    offset: 1,
+                    color:
+                      "rgba(118,75,162," +
+                      (0.4 + 0.6 * (d.value / maxVal)) +
+                      ")",
+                  },
+                ]),
+              },
+            };
+          }),
+          barMaxWidth: 20,
+          label: {
+            show: true,
+            position: "right",
+            formatter: "{c}",
+            color: "#666",
+            fontSize: 12,
+          },
+        },
+      ],
+      animationDuration: 800,
+      animationEasing: "cubicOut",
+    },
+    true,
+  );
+}
+
+function renderStatusChart(data) {
+  if (!statusChartRef.value || !data || data.length === 0) return;
+  if (!statusChart) statusChart = echarts.init(statusChartRef.value);
+  var colors = [
+    "#43e97b",
+    "#667eea",
+    "#4facfe",
+    "#fa709a",
+    "#fee140",
+    "#a18cd1",
+    "#f093fb",
+  ];
+  var total = data.reduce(function (s, d) {
+    return s + d.value;
+  }, 0);
+  statusChart.setOption(
+    {
+      tooltip: {
+        trigger: "item",
+        formatter: "{b}: {c} ({d}%)",
+        backgroundColor: "rgba(50,50,50,0.9)",
+        borderColor: "transparent",
+        textStyle: { color: "#fff" },
+      },
+      legend: {
+        orient: "horizontal",
+        bottom: 10,
+        textStyle: { color: "#666" },
+      },
+      color: colors,
+      graphic: [
+        {
+          type: "group",
+          left: "center",
+          top: "center",
+          children: [
+            {
+              type: "text",
+              style: {
+                text: String(total),
+                fontSize: 28,
+                fontWeight: "bold",
+                fill: "#333",
+                textAlign: "center",
+                textVerticalAlign: "bottom",
+              },
+              left: "center",
+              top: "38%",
+            },
+            {
+              type: "text",
+              style: {
+                text: "\u5DE5\u5355\u603B\u6570",
+                fontSize: 12,
+                fill: "#999",
+                textAlign: "center",
+                textVerticalAlign: "top",
+              },
+              left: "center",
+              top: "52%",
+            },
+          ],
+        },
+      ],
+      series: [
+        {
+          type: "pie",
+          radius: ["50%", "72%"],
+          center: ["50%", "48%"],
+          avoidLabelOverlap: true,
+          label: { show: false },
+          emphasis: {
+            label: { show: true, fontSize: 14, fontWeight: "bold" },
+            itemStyle: { shadowBlur: 20, shadowColor: "rgba(0,0,0,0.12)" },
+          },
+          itemStyle: { borderRadius: 6, borderColor: "#fff", borderWidth: 2 },
+          data: data.map(function (d, i) {
+            return {
+              name: d.name,
+              value: d.value,
+              itemStyle: { color: colors[i % colors.length] },
+            };
+          }),
+          animationType: "scale",
+          animationEasing: "elasticOut",
         },
       ],
     },
     true,
   );
+}
+
+function renderWorkerLoadChart(data) {
+  if (!workerLoadRef.value || !data || data.length === 0) return;
+  if (!workerLoadChart) workerLoadChart = echarts.init(workerLoadRef.value);
+  var sorted = data.slice().sort(function (a, b) {
+    return a.value - b.value;
+  });
+  workerLoadChart.setOption(
+    {
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
+        formatter: "{b}: {c} \u5355",
+        backgroundColor: "rgba(50,50,50,0.9)",
+        borderColor: "transparent",
+        textStyle: { color: "#fff" },
+      },
+      grid: { left: 80, right: 40, top: 15, bottom: 20 },
+      xAxis: {
+        type: "value",
+        minInterval: 1,
+        axisLabel: { color: "#888" },
+        splitLine: { lineStyle: { type: "dashed", color: "#f0f0f0" } },
+      },
+      yAxis: {
+        type: "category",
+        data: sorted.map(function (d) {
+          return d.name;
+        }),
+        axisLabel: { color: "#555", fontSize: 12 },
+        axisLine: { show: false },
+        axisTick: { show: false },
+      },
+      series: [
+        {
+          type: "bar",
+          data: sorted.map(function (d) {
+            return {
+              value: d.value,
+              itemStyle: {
+                borderRadius: [0, 8, 8, 0],
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                  { offset: 0, color: "#43e97b" },
+                  { offset: 1, color: "#38f9d7" },
+                ]),
+              },
+            };
+          }),
+          barMaxWidth: 20,
+          label: {
+            show: true,
+            position: "right",
+            formatter: "{c}",
+            color: "#666",
+            fontSize: 12,
+          },
+        },
+      ],
+      animationDuration: 800,
+      animationEasing: "cubicOut",
+    },
+    true,
+  );
+}
+
+var alertRawData = {};
+function onAlertDateChange() {
+  renderAlertChart(alertRawData);
 }
 
 function renderAlertChart(alertData) {
   if (!alertChartRef.value) return;
   if (!alertChart) alertChart = echarts.init(alertChartRef.value);
-  let dates = alertData.dates || [];
-  let elderSafety = alertData.elderSafety || [];
-  let deviceAlert = alertData.deviceAlert || [];
+  var dates = alertData.dates || [];
+  var elderSafety = alertData.elderSafety || [];
+  var deviceAlert = alertData.deviceAlert || [];
   if (alertDateRange.value && alertDateRange.value.length === 2) {
-    const [start, end] = alertDateRange.value;
-    const idx = [];
-    dates.forEach((d, i) => {
+    var start = alertDateRange.value[0],
+      end = alertDateRange.value[1];
+    var idx = [];
+    dates.forEach(function (d, i) {
       if (d >= start && d <= end) idx.push(i);
     });
     if (idx.length > 0) {
-      dates = idx.map((i) => dates[i]);
-      elderSafety = idx.map((i) => elderSafety[i]);
-      deviceAlert = idx.map((i) => deviceAlert[i]);
+      dates = idx.map(function (i) {
+        return dates[i];
+      });
+      elderSafety = idx.map(function (i) {
+        return elderSafety[i];
+      });
+      deviceAlert = idx.map(function (i) {
+        return deviceAlert[i];
+      });
     }
   }
-  const xLabels = dates.map((d) => d.substring(5));
+  var xLabels = dates.map(function (d) {
+    return d.substring(5);
+  });
   alertChart.setOption(
     {
       tooltip: {
         trigger: "axis",
-        formatter(params) {
-          let s = params[0].axisValue + "<br/>";
-          params.forEach((p) => {
-            s += p.marker + p.seriesName + ": " + p.data + " 次<br/>";
+        backgroundColor: "rgba(50,50,50,0.9)",
+        borderColor: "transparent",
+        textStyle: { color: "#fff" },
+        formatter: function (params) {
+          var s = "<b>" + params[0].axisValue + "</b><br/>";
+          params.forEach(function (p) {
+            s += p.marker + " " + p.seriesName + ": " + p.data + " \u6B21<br/>";
           });
           return s;
         },
       },
-      legend: { data: ["老人安全预警", "设备预警"], top: 5 },
+      legend: {
+        data: [
+          "\u8001\u4EBA\u5B89\u5168\u9884\u8B66",
+          "\u8BBE\u5907\u9884\u8B66",
+        ],
+        top: 8,
+        textStyle: { color: "#666" },
+      },
       grid: { left: 50, right: 20, top: 50, bottom: 35 },
       xAxis: {
         type: "category",
         data: xLabels,
         boundaryGap: false,
-        axisLabel: { fontSize: 10 },
+        axisLabel: { color: "#888", fontSize: 10 },
+        axisLine: { lineStyle: { color: "#e0e0e0" } },
       },
-      yAxis: { type: "value", minInterval: 1, name: "预警次数" },
+      yAxis: {
+        type: "value",
+        minInterval: 1,
+        name: "\u9884\u8B66\u6B21\u6570",
+        axisLabel: { color: "#888" },
+        splitLine: { lineStyle: { type: "dashed", color: "#f0f0f0" } },
+      },
       series: [
         {
-          name: "老人安全预警",
+          name: "\u8001\u4EBA\u5B89\u5168\u9884\u8B66",
           type: "line",
           data: elderSafety,
           smooth: true,
           symbol: "circle",
-          symbolSize: 5,
-          itemStyle: { color: "#f56c6c" },
+          symbolSize: 6,
+          itemStyle: { color: "#fa709a" },
           lineStyle: { width: 2.5 },
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: "rgba(245,108,108,0.3)" },
-              { offset: 1, color: "rgba(245,108,108,0.02)" },
+              { offset: 0, color: "rgba(250,112,154,0.3)" },
+              { offset: 1, color: "rgba(250,112,154,0.02)" },
             ]),
           },
         },
         {
-          name: "设备预警",
+          name: "\u8BBE\u5907\u9884\u8B66",
           type: "line",
           data: deviceAlert,
           smooth: true,
           symbol: "circle",
-          symbolSize: 5,
-          itemStyle: { color: "#e6a23c" },
+          symbolSize: 6,
+          itemStyle: { color: "#4facfe" },
           lineStyle: { width: 2.5 },
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: "rgba(230,162,60,0.3)" },
-              { offset: 1, color: "rgba(230,162,60,0.02)" },
+              { offset: 0, color: "rgba(79,172,254,0.3)" },
+              { offset: 1, color: "rgba(79,172,254,0.02)" },
             ]),
           },
         },
       ],
+      animationDuration: 1000,
     },
     true,
   );
 }
 
-let alertRawData = {};
-function onAlertDateChange() {
-  renderAlertChart(alertRawData);
-}
-
 async function loadCompletionRate() {
-  const res = await getCompletionRate(ratePeriod.value);
+  var res = await getCompletionRate(ratePeriod.value);
   await nextTick();
   renderRateChart((res.data || {}).trendData || []);
 }
 
 function handleResize() {
-  rateChart?.resize();
-  repairTypeChart?.resize();
-  repairBuildingChart?.resize();
-  alertChart?.resize();
+  rateChart && rateChart.resize();
+  repairTypeChart && repairTypeChart.resize();
+  repairBuildingChart && repairBuildingChart.resize();
+  alertChart && alertChart.resize();
+  statusChart && statusChart.resize();
+  workerLoadChart && workerLoadChart.resize();
 }
 
-onMounted(async () => {
-  const [sumRes, elderRes, staffRes, riskRes, rateRes, distRes, alertRes] =
-    await Promise.all([
-      getSummary(),
-      getElderStats(),
-      getStaffPerformance(),
-      getRiskResidents(),
-      getCompletionRate(ratePeriod.value),
-      getRepairDistribution(),
-      getAlertTrendByType(),
-    ]);
-  summary.value = sumRes.data || {};
-  elderStats.value = elderRes.data || {};
-  riskResidents.value = riskRes.data || [];
-  staffPerformance.value = staffRes.data || [];
+onMounted(async function () {
+  var results = await Promise.all([
+    getSummary(),
+    getElderStats(),
+    getCompletionRate(ratePeriod.value),
+    getRepairDistribution(),
+    getAlertTrendByType(),
+    getOrderStatusDistribution(),
+    getWorkerLoad(),
+  ]);
+  summary.value = results[0].data || {};
+  elderStats.value = results[1].data || {};
   updateKpi();
   await nextTick();
-  renderRateChart((rateRes.data || {}).trendData || []);
-  renderRepairTypeChart((distRes.data || {}).byType || []);
-  renderRepairBuildingChart((distRes.data || {}).byBuilding || []);
-  alertRawData = alertRes.data || {};
+  renderRateChart((results[2].data || {}).trendData || []);
+  renderRepairTypeChart((results[3].data || {}).byType || []);
+  renderRepairBuildingChart((results[3].data || {}).byBuilding || []);
+  alertRawData = results[4].data || {};
   renderAlertChart(alertRawData);
+  renderStatusChart(results[5].data || []);
+  renderWorkerLoadChart(results[6].data || []);
   window.addEventListener("resize", handleResize);
 });
 
-onBeforeUnmount(() => {
+onBeforeUnmount(function () {
   window.removeEventListener("resize", handleResize);
-  rateChart?.dispose();
-  repairTypeChart?.dispose();
-  repairBuildingChart?.dispose();
-  alertChart?.dispose();
+  rateChart && rateChart.dispose();
+  repairTypeChart && repairTypeChart.dispose();
+  repairBuildingChart && repairBuildingChart.dispose();
+  alertChart && alertChart.dispose();
+  statusChart && statusChart.dispose();
+  workerLoadChart && workerLoadChart.dispose();
 });
 </script>
 
 <style scoped>
+.dashboard-container {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: calc(100vh - 60px);
+}
 .kpi-card {
-  text-align: center;
-  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  padding: 20px 24px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+.kpi-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+.kpi-info {
+  flex: 1;
 }
 .kpi-value {
-  font-size: 28px;
-  font-weight: bold;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
 }
 .kpi-label {
-  margin-top: 6px;
-  color: #909399;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.85);
   font-size: 13px;
 }
 .chart-row {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
-.chart-box {
-  height: 320px;
+.chart-card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
-.table-row {
-  margin-bottom: 16px;
+.chart-card :deep(.el-card__header) {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.chart-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
 }
 .chart-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.chart-box {
+  height: 320px;
 }
 </style>
