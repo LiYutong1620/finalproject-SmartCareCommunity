@@ -1,86 +1,65 @@
 /*
- Navicat Premium Dump SQL
-
- Source Server         : 本地
- Source Server Type    : MySQL
- Source Server Version : 80044 (8.0.44)
- Source Host           : 127.0.0.1:3306
- Source Schema         : smart_care_community
-
- Target Server Type    : MySQL
- Target Server Version : 80044 (8.0.44)
- File Encoding         : 65001
-
- Date: 01/07/2026 18:44:14
+ Smart Care Community - 完整数据库脚本
+ 用途：全新导入（会先 DROP 再 CREATE 全部表）
+ 数据库：smart_care_community
+ 更新日期：2026-06-28
 */
+
+CREATE DATABASE IF NOT EXISTS `smart_care_community` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+USE `smart_care_community`;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for ai_chat_message
+-- 预删除全部表（支持重复导入；中断后再次执行也不会报已存在）
 -- ----------------------------
+DROP TABLE IF EXISTS `sys_user_role`;
+DROP TABLE IF EXISTS `sys_user_device`;
+DROP TABLE IF EXISTS `sys_role_menu`;
+DROP TABLE IF EXISTS `sys_message_user`;
+DROP TABLE IF EXISTS `sys_oper_log`;
+DROP TABLE IF EXISTS `sys_login_log`;
+DROP TABLE IF EXISTS `sys_message`;
+DROP TABLE IF EXISTS `sys_menu`;
+DROP TABLE IF EXISTS `sys_user`;
+DROP TABLE IF EXISTS `sys_role`;
+DROP TABLE IF EXISTS `sys_flow_switch`;
+DROP TABLE IF EXISTS `sys_dict_data`;
+DROP TABLE IF EXISTS `sys_dict_type`;
+DROP TABLE IF EXISTS `sys_config`;
+DROP TABLE IF EXISTS `sys_abnormal_login`;
+DROP TABLE IF EXISTS `rp_worker_profile`;
+DROP TABLE IF EXISTS `rp_worker_appeal`;
+DROP TABLE IF EXISTS `rp_work_hour`;
+DROP TABLE IF EXISTS `rp_material`;
+DROP TABLE IF EXISTS `rp_material_apply`;
+DROP TABLE IF EXISTS `rp_order_eval`;
+DROP TABLE IF EXISTS `rp_order_image`;
+DROP TABLE IF EXISTS `rp_order_progress`;
+DROP TABLE IF EXISTS `rp_order`;
+DROP TABLE IF EXISTS `rp_repair_type`;
 DROP TABLE IF EXISTS `ai_chat_message`;
-CREATE TABLE `ai_chat_message`  (
-  `message_id` bigint NOT NULL AUTO_INCREMENT COMMENT '消息主键',
-  `session_id` bigint NOT NULL COMMENT '会话ID',
-  `role` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '角色：user/assistant/staff',
-  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '消息内容',
-  `sender_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '发送者显示名（物业人工回复）',
-  `input_type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'text' COMMENT '输入方式：text/voice',
-  `transfer_human` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '是否转人工：0否 1是',
-  `ticket_id` bigint NULL DEFAULT NULL COMMENT '关联客服工单ID',
-  `ref_articles` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '引用知识库文章ID',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`message_id`) USING BTREE,
-  INDEX `idx_ai_message_session`(`session_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'AI问答消息表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of ai_chat_message
--- ----------------------------
-INSERT INTO `ai_chat_message` VALUES (1, 1, 'user', '小区停车有什么规定？', '', 'text', '0', NULL, '', '2026-05-18 10:00:00');
-INSERT INTO `ai_chat_message` VALUES (2, 1, 'assistant', '业主车辆需登记后进出；地下车库请减速慢行，按位停车，勿占消防通道与他人车位。访客车辆可在门岗登记临时进入。', '', 'text', '0', NULL, '15', '2026-05-18 10:01:00');
-INSERT INTO `ai_chat_message` VALUES (3, 1, 'user', '地下车库可以安装充电桩吗？', '', 'text', '0', NULL, '', '2026-05-18 10:05:00');
-INSERT INTO `ai_chat_message` VALUES (4, 1, 'assistant', '关于增设新能源充电桩方案，社区将召开业主大会表决，具体安排请关注社区公告。如需个人车位安装，请先向物业报备。', '', 'text', '0', NULL, '15', '2026-05-18 10:05:30');
-INSERT INTO `ai_chat_message` VALUES (5, 2, 'user', '我们楼道有人长期堆放杂物，影响通行', '', 'text', '0', NULL, '', '2026-05-19 14:20:00');
-INSERT INTO `ai_chat_message` VALUES (6, 2, 'assistant', '大堂、走廊、楼梯间为公共疏散空间，不得长期堆放私人物品。', '', 'text', '0', NULL, '16', '2026-05-19 14:21:00');
-INSERT INTO `ai_chat_message` VALUES (7, 2, 'user', '转人工', '', 'text', '1', NULL, '', '2026-05-19 14:22:00');
-INSERT INTO `ai_chat_message` VALUES (8, 2, 'assistant', '已为您接入人工客服，请在此对话中继续留言，物业人员将实时回复，请保持信号畅通。', '', 'text', '1', 1, '', '2026-05-19 14:22:01');
-INSERT INTO `ai_chat_message` VALUES (9, 2, 'staff', '您好，我是王管家。已记录您反映的楼道杂物问题，我们将安排人员今日下午上门查看并协调清理。', '王管家', 'text', '0', 1, '', '2026-05-19 14:30:00');
-INSERT INTO `ai_chat_message` VALUES (10, 2, 'user', '好的，大概几点能过来？', '', 'text', '0', NULL, '', '2026-05-19 15:10:00');
-INSERT INTO `ai_chat_message` VALUES (11, 3, 'user', '物业费怎么交？', '', 'text', '0', NULL, '', '2026-05-17 09:30:00');
-INSERT INTO `ai_chat_message` VALUES (12, 3, 'assistant', '本系统当前版本暂未开放在线缴费。如需咨询物业费，请携带房本到物业服务中心办理，或拨打物业前台电话。', '', 'text', '0', NULL, '5', '2026-05-17 09:31:00');
-INSERT INTO `ai_chat_message` VALUES (13, 3, 'user', '转人工', '', 'text', '1', NULL, '', '2026-05-17 09:35:00');
-INSERT INTO `ai_chat_message` VALUES (14, 3, 'assistant', '已为您接入人工客服，请在此对话中继续留言。', '', 'text', '1', 2, '', '2026-05-17 09:35:01');
-INSERT INTO `ai_chat_message` VALUES (15, 3, 'staff', '您好，物业费可至物业中心缴纳，工作日 9:00-17:30。', '王管家', 'text', '0', 2, '', '2026-05-17 09:40:00');
-INSERT INTO `ai_chat_message` VALUES (16, 3, 'user', '好的，谢谢', '', 'text', '0', NULL, '', '2026-05-17 09:55:00');
-INSERT INTO `ai_chat_message` VALUES (17, 3, 'staff', '不客气，如有其他问题随时留言。', '王管家', 'text', '0', 2, '', '2026-05-17 10:00:00');
-INSERT INTO `ai_chat_message` VALUES (18, 4, 'user', '怎么在线提交报修？', '', 'text', '0', NULL, '', '2026-05-20 11:00:00');
-INSERT INTO `ai_chat_message` VALUES (19, 4, 'assistant', '登录业主端后进入「报修工单」，点击「提交报修」，选择报修类型，填写问题描述并上传现场照片，提交后可在列表查看进度。', '', 'text', '0', NULL, '1', '2026-05-20 11:03:00');
-
--- ----------------------------
--- Table structure for ai_chat_session
--- ----------------------------
+DROP TABLE IF EXISTS `cs_service_ticket`;
 DROP TABLE IF EXISTS `ai_chat_session`;
-CREATE TABLE `ai_chat_session`  (
-  `session_id` bigint NOT NULL AUTO_INCREMENT COMMENT '会话主键',
-  `user_id` bigint NOT NULL COMMENT '业主用户ID',
-  `title` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '会话标题',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0AI对话 1人工对话中 2人工已结束',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`session_id`) USING BTREE,
-  INDEX `idx_ai_session_user`(`user_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'AI问答会话表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of ai_chat_session
--- ----------------------------
-INSERT INTO `ai_chat_session` VALUES (1, 2, '停车管理规定咨询', '0', '2026-05-18 10:00:00', '2026-05-18 10:05:00');
-INSERT INTO `ai_chat_session` VALUES (2, 5, '投诉楼道杂物堆放', '1', '2026-05-19 14:20:00', '2026-05-19 15:10:00');
-INSERT INTO `ai_chat_session` VALUES (3, 2, '物业费缴纳咨询', '2', '2026-05-17 09:30:00', '2026-05-17 10:00:00');
-INSERT INTO `ai_chat_session` VALUES (4, 6, '如何在线提交报修', '0', '2026-05-20 11:00:00', '2026-05-20 11:03:00');
+DROP TABLE IF EXISTS `kb_learn_draft`;
+DROP TABLE IF EXISTS `kb_article`;
+DROP TABLE IF EXISTS `el_visit_plan`;
+DROP TABLE IF EXISTS `el_health_threshold`;
+DROP TABLE IF EXISTS `el_health_record`;
+DROP TABLE IF EXISTS `el_disposal_record`;
+DROP TABLE IF EXISTS `el_disposal_plan`;
+DROP TABLE IF EXISTS `el_device`;
+DROP TABLE IF EXISTS `el_care_staff`;
+DROP TABLE IF EXISTS `el_ai_monitor_log`;
+DROP TABLE IF EXISTS `el_care_order`;
+DROP TABLE IF EXISTS `el_alert`;
+DROP TABLE IF EXISTS `cs_notice_read`;
+DROP TABLE IF EXISTS `cs_notice`;
+DROP TABLE IF EXISTS `cm_resident_tag_rel`;
+DROP TABLE IF EXISTS `cm_resident`;
+DROP TABLE IF EXISTS `cm_house`;
+DROP TABLE IF EXISTS `cm_building`;
 
 -- ----------------------------
 -- Table structure for cm_building
@@ -95,7 +74,7 @@ CREATE TABLE `cm_building`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`building_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '楼栋信息表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '楼栋信息表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_building
@@ -125,7 +104,7 @@ CREATE TABLE `cm_house`  (
   `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '备注',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`house_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 101 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '房屋信息表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 101 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '房屋信息表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_house
@@ -232,6 +211,119 @@ INSERT INTO `cm_house` VALUES (99, 10, '502', 122.00, '精装两居', '', '10栋
 INSERT INTO `cm_house` VALUES (100, 10, '601', 121.00, '阔景四居', '', '10栋601，阔景四居，建筑面积约121.00㎡；当前空置，南向采光好，曾做过短期租赁', '2026-05-01 08:00:00');
 
 -- ----------------------------
+-- 备注数据升级（已有库可单独执行以下语句刷新楼栋/房屋备注）
+-- ----------------------------
+UPDATE `cm_building` SET `remark` = '临近小区东门，设有独立快递柜与非机动车棚，物业值班室在一层' WHERE `building_id` = 1;
+UPDATE `cm_building` SET `remark` = '中庭景观楼，南北双电梯，一层为架空活动区，适合亲子活动' WHERE `building_id` = 2;
+UPDATE `cm_building` SET `remark` = '靠西侧河道，低楼层视野开阔，噪音较小，绿化覆盖率高' WHERE `building_id` = 3;
+UPDATE `cm_building` SET `remark` = '超高层塔楼，配备高速电梯与避难层，每层8户，视野极佳' WHERE `building_id` = 4;
+UPDATE `cm_building` SET `remark` = '小型精品楼栋，总户数少，管理更精细，门禁系统独立' WHERE `building_id` = 5;
+UPDATE `cm_building` SET `remark` = '标准板式楼，楼间距大，采光充足，南北通透户型较多' WHERE `building_id` = 6;
+UPDATE `cm_building` SET `remark` = '临近社区会所与游泳池，夏季活动方便，周末人流略多' WHERE `building_id` = 7;
+UPDATE `cm_building` SET `remark` = '安静内侧楼座，远离主干道，适合居家休息，夜间较静' WHERE `building_id` = 8;
+UPDATE `cm_building` SET `remark` = '靠近社区北门与商超，生活采购便利，早市步行5分钟' WHERE `building_id` = 9;
+UPDATE `cm_building` SET `remark` = '南侧楼座，冬季日照时间长，适合老人居住，暖气供应稳定' WHERE `building_id` = 10;
+UPDATE `cm_house` SET `remark` = '1栋101，一室一厅，建筑面积约58.00㎡；张三业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 1;
+UPDATE `cm_house` SET `remark` = '1栋102，两室一厅，建筑面积约64.50㎡；孙浩业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 2;
+UPDATE `cm_house` SET `remark` = '1栋201，两室两厅，建筑面积约71.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 3;
+UPDATE `cm_house` SET `remark` = '1栋202，三室一厅，建筑面积约70.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 4;
+UPDATE `cm_house` SET `remark` = '1栋301，三室两厅，建筑面积约76.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 5;
+UPDATE `cm_house` SET `remark` = '1栋302，四室两厅，建筑面积约83.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 6;
+UPDATE `cm_house` SET `remark` = '1栋401，复式loft，建筑面积约82.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 7;
+UPDATE `cm_house` SET `remark` = '1栋501，跃层三居，建筑面积约88.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 8;
+UPDATE `cm_house` SET `remark` = '1栋502，精装两居，建筑面积约95.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 9;
+UPDATE `cm_house` SET `remark` = '1栋601，阔景四居，建筑面积约94.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 10;
+UPDATE `cm_house` SET `remark` = '2栋101，一室一厅，建筑面积约61.00㎡；李芳业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 11;
+UPDATE `cm_house` SET `remark` = '2栋102，两室一厅，建筑面积约67.50㎡；马超业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 12;
+UPDATE `cm_house` SET `remark` = '2栋201，两室两厅，建筑面积约74.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 13;
+UPDATE `cm_house` SET `remark` = '2栋202，三室一厅，建筑面积约73.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 14;
+UPDATE `cm_house` SET `remark` = '2栋301，三室两厅，建筑面积约79.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 15;
+UPDATE `cm_house` SET `remark` = '2栋302，四室两厅，建筑面积约86.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 16;
+UPDATE `cm_house` SET `remark` = '2栋401，复式loft，建筑面积约85.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 17;
+UPDATE `cm_house` SET `remark` = '2栋501，跃层三居，建筑面积约91.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 18;
+UPDATE `cm_house` SET `remark` = '2栋502，精装两居，建筑面积约98.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 19;
+UPDATE `cm_house` SET `remark` = '2栋601，阔景四居，建筑面积约97.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 20;
+UPDATE `cm_house` SET `remark` = '3栋101，一室一厅，建筑面积约64.00㎡；王磊业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 21;
+UPDATE `cm_house` SET `remark` = '3栋102，两室一厅，建筑面积约70.50㎡；朱琳业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 22;
+UPDATE `cm_house` SET `remark` = '3栋201，两室两厅，建筑面积约77.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 23;
+UPDATE `cm_house` SET `remark` = '3栋202，三室一厅，建筑面积约76.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 24;
+UPDATE `cm_house` SET `remark` = '3栋301，三室两厅，建筑面积约82.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 25;
+UPDATE `cm_house` SET `remark` = '3栋302，四室两厅，建筑面积约89.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 26;
+UPDATE `cm_house` SET `remark` = '3栋401，复式loft，建筑面积约88.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 27;
+UPDATE `cm_house` SET `remark` = '3栋501，跃层三居，建筑面积约94.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 28;
+UPDATE `cm_house` SET `remark` = '3栋502，精装两居，建筑面积约101.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 29;
+UPDATE `cm_house` SET `remark` = '3栋601，阔景四居，建筑面积约100.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 30;
+UPDATE `cm_house` SET `remark` = '4栋101，一室一厅，建筑面积约67.00㎡；赵敏业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 31;
+UPDATE `cm_house` SET `remark` = '4栋102，两室一厅，建筑面积约73.50㎡；胡军业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 32;
+UPDATE `cm_house` SET `remark` = '4栋201，两室两厅，建筑面积约80.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 33;
+UPDATE `cm_house` SET `remark` = '4栋202，三室一厅，建筑面积约79.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 34;
+UPDATE `cm_house` SET `remark` = '4栋301，三室两厅，建筑面积约85.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 35;
+UPDATE `cm_house` SET `remark` = '4栋302，四室两厅，建筑面积约92.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 36;
+UPDATE `cm_house` SET `remark` = '4栋401，复式loft，建筑面积约91.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 37;
+UPDATE `cm_house` SET `remark` = '4栋501，跃层三居，建筑面积约97.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 38;
+UPDATE `cm_house` SET `remark` = '4栋502，精装两居，建筑面积约104.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 39;
+UPDATE `cm_house` SET `remark` = '4栋601，阔景四居，建筑面积约103.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 40;
+UPDATE `cm_house` SET `remark` = '5栋101，一室一厅，建筑面积约70.00㎡；刘洋业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 41;
+UPDATE `cm_house` SET `remark` = '5栋102，两室一厅，建筑面积约76.50㎡；林雪业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 42;
+UPDATE `cm_house` SET `remark` = '5栋201，两室两厅，建筑面积约83.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 43;
+UPDATE `cm_house` SET `remark` = '5栋202，三室一厅，建筑面积约82.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 44;
+UPDATE `cm_house` SET `remark` = '5栋301，三室两厅，建筑面积约88.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 45;
+UPDATE `cm_house` SET `remark` = '5栋302，四室两厅，建筑面积约95.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 46;
+UPDATE `cm_house` SET `remark` = '5栋401，复式loft，建筑面积约94.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 47;
+UPDATE `cm_house` SET `remark` = '5栋501，跃层三居，建筑面积约100.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 48;
+UPDATE `cm_house` SET `remark` = '5栋502，精装两居，建筑面积约107.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 49;
+UPDATE `cm_house` SET `remark` = '5栋601，阔景四居，建筑面积约106.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 50;
+UPDATE `cm_house` SET `remark` = '6栋101，一室一厅，建筑面积约73.00㎡；陈静业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 51;
+UPDATE `cm_house` SET `remark` = '6栋102，两室一厅，建筑面积约79.50㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 52;
+UPDATE `cm_house` SET `remark` = '6栋201，两室两厅，建筑面积约86.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 53;
+UPDATE `cm_house` SET `remark` = '6栋202，三室一厅，建筑面积约85.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 54;
+UPDATE `cm_house` SET `remark` = '6栋301，三室两厅，建筑面积约91.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 55;
+UPDATE `cm_house` SET `remark` = '6栋302，四室两厅，建筑面积约98.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 56;
+UPDATE `cm_house` SET `remark` = '6栋401，复式loft，建筑面积约97.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 57;
+UPDATE `cm_house` SET `remark` = '6栋501，跃层三居，建筑面积约103.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 58;
+UPDATE `cm_house` SET `remark` = '6栋502，精装两居，建筑面积约110.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 59;
+UPDATE `cm_house` SET `remark` = '6栋601，阔景四居，建筑面积约109.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 60;
+UPDATE `cm_house` SET `remark` = '7栋101，一室一厅，建筑面积约76.00㎡；杨帆业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 61;
+UPDATE `cm_house` SET `remark` = '7栋102，两室一厅，建筑面积约82.50㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 62;
+UPDATE `cm_house` SET `remark` = '7栋201，两室两厅，建筑面积约89.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 63;
+UPDATE `cm_house` SET `remark` = '7栋202，三室一厅，建筑面积约88.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 64;
+UPDATE `cm_house` SET `remark` = '7栋301，三室两厅，建筑面积约94.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 65;
+UPDATE `cm_house` SET `remark` = '7栋302，四室两厅，建筑面积约101.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 66;
+UPDATE `cm_house` SET `remark` = '7栋401，复式loft，建筑面积约100.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 67;
+UPDATE `cm_house` SET `remark` = '7栋501，跃层三居，建筑面积约106.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 68;
+UPDATE `cm_house` SET `remark` = '7栋502，精装两居，建筑面积约113.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 69;
+UPDATE `cm_house` SET `remark` = '7栋601，阔景四居，建筑面积约112.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 70;
+UPDATE `cm_house` SET `remark` = '8栋101，一室一厅，建筑面积约79.00㎡；周婷业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 71;
+UPDATE `cm_house` SET `remark` = '8栋102，两室一厅，建筑面积约85.50㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 72;
+UPDATE `cm_house` SET `remark` = '8栋201，两室两厅，建筑面积约92.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 73;
+UPDATE `cm_house` SET `remark` = '8栋202，三室一厅，建筑面积约91.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 74;
+UPDATE `cm_house` SET `remark` = '8栋301，三室两厅，建筑面积约97.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 75;
+UPDATE `cm_house` SET `remark` = '8栋302，四室两厅，建筑面积约104.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 76;
+UPDATE `cm_house` SET `remark` = '8栋401，复式loft，建筑面积约103.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 77;
+UPDATE `cm_house` SET `remark` = '8栋501，跃层三居，建筑面积约109.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 78;
+UPDATE `cm_house` SET `remark` = '8栋502，精装两居，建筑面积约116.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 79;
+UPDATE `cm_house` SET `remark` = '8栋601，阔景四居，建筑面积约115.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 80;
+UPDATE `cm_house` SET `remark` = '9栋101，一室一厅，建筑面积约82.00㎡；吴刚业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 81;
+UPDATE `cm_house` SET `remark` = '9栋102，两室一厅，建筑面积约88.50㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 82;
+UPDATE `cm_house` SET `remark` = '9栋201，两室两厅，建筑面积约95.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 83;
+UPDATE `cm_house` SET `remark` = '9栋202，三室一厅，建筑面积约94.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 84;
+UPDATE `cm_house` SET `remark` = '9栋301，三室两厅，建筑面积约100.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 85;
+UPDATE `cm_house` SET `remark` = '9栋302，四室两厅，建筑面积约107.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 86;
+UPDATE `cm_house` SET `remark` = '9栋401，复式loft，建筑面积约106.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 87;
+UPDATE `cm_house` SET `remark` = '9栋501，跃层三居，建筑面积约112.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 88;
+UPDATE `cm_house` SET `remark` = '9栋502，精装两居，建筑面积约119.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 89;
+UPDATE `cm_house` SET `remark` = '9栋601，阔景四居，建筑面积约118.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 90;
+UPDATE `cm_house` SET `remark` = '10栋101，一室一厅，建筑面积约85.00㎡；郑丽业主已登记入住，档案与系统账号已绑定，日常联系优先使用系统消息' WHERE `house_id` = 91;
+UPDATE `cm_house` SET `remark` = '10栋102，两室一厅，建筑面积约91.50㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 92;
+UPDATE `cm_house` SET `remark` = '10栋201，两室两厅，建筑面积约98.00㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 93;
+UPDATE `cm_house` SET `remark` = '10栋202，三室一厅，建筑面积约97.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 94;
+UPDATE `cm_house` SET `remark` = '10栋301，三室两厅，建筑面积约103.50㎡；样板展示房，展示现代简约风格，供新业主参考' WHERE `house_id` = 95;
+UPDATE `cm_house` SET `remark` = '10栋302，四室两厅，建筑面积约110.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 96;
+UPDATE `cm_house` SET `remark` = '10栋401，复式loft，建筑面积约109.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 97;
+UPDATE `cm_house` SET `remark` = '10栋501，跃层三居，建筑面积约115.50㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 98;
+UPDATE `cm_house` SET `remark` = '10栋502，精装两居，建筑面积约122.00㎡；当前空置，已做深度保洁，可拎包入住' WHERE `house_id` = 99;
+UPDATE `cm_house` SET `remark` = '10栋601，阔景四居，建筑面积约121.00㎡；当前空置，南向采光好，曾做过短期租赁' WHERE `house_id` = 100;
+
 -- Table structure for cm_resident
 -- ----------------------------
 DROP TABLE IF EXISTS `cm_resident`;
@@ -253,7 +345,7 @@ CREATE TABLE `cm_resident`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`resident_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '住户档案表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '住户档案表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_resident
@@ -275,6 +367,27 @@ INSERT INTO `cm_resident` VALUES (14, 17, 32, '胡军', '0', 55, '', '1381000001
 INSERT INTO `cm_resident` VALUES (15, 18, 42, '林雪', '1', 40, '', '13810000015', '0', '2023-03-15', '林涛 13900000015', '', '家中有老人同住，停水停电请优先通知', '0', '2026-05-01 08:00:00', '2026-05-01 08:00:00');
 
 -- ----------------------------
+-- Table structure for cm_resident_tag
+-- ----------------------------
+DROP TABLE IF EXISTS `cm_resident_tag`;
+CREATE TABLE `cm_resident_tag`  (
+  `tag_id` bigint NOT NULL AUTO_INCREMENT COMMENT '标签ID',
+  `tag_name` varchar(50) NOT NULL COMMENT '标签名称',
+  `tag_type` varchar(20) DEFAULT NULL COMMENT '标签类型',
+  PRIMARY KEY (`tag_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '住户标签表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of cm_resident_tag
+-- ----------------------------
+INSERT INTO `cm_resident_tag` VALUES (1, '独居老人', 'care');
+INSERT INTO `cm_resident_tag` VALUES (2, '高龄老人', 'care');
+INSERT INTO `cm_resident_tag` VALUES (3, '残障人士', 'care');
+INSERT INTO `cm_resident_tag` VALUES (4, '低保户', 'social');
+INSERT INTO `cm_resident_tag` VALUES (5, '重点关注', 'risk');
+INSERT INTO `cm_resident_tag` VALUES (6, '党员', 'social');
+
+-- ----------------------------
 -- Table structure for cm_resident_tag_rel
 -- ----------------------------
 DROP TABLE IF EXISTS `cm_resident_tag_rel`;
@@ -282,7 +395,7 @@ CREATE TABLE `cm_resident_tag_rel`  (
   `resident_id` bigint NOT NULL COMMENT '住户ID',
   `tag_id` bigint NOT NULL COMMENT '标签ID',
   PRIMARY KEY (`resident_id`, `tag_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '住户标签关联表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '住户标签关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cm_resident_tag_rel
@@ -316,42 +429,42 @@ CREATE TABLE `cs_notice`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`notice_id`) USING BTREE,
-  INDEX `idx_notice_list`(`status` ASC, `notice_type` ASC, `create_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '社区公告通知表' ROW_FORMAT = DYNAMIC;
+  INDEX `idx_notice_list`(`status`, `notice_type`, `create_time`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '社区公告通知表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_notice
 -- ----------------------------
 INSERT INTO `cs_notice` VALUES (1, 'announce', '清明节文明祭扫倡议', '清明将至，倡导鲜花祭扫、网络祭扫等文明方式。请勿在楼道、阳台堆放纸钱等易燃物，祭扫后确认火源完全熄灭。', '', 1, NULL, NULL, '', NULL, NULL, '1', 4, '2026-04-02 09:00:00', '2026-04-02 09:00:00');
-INSERT INTO `cs_notice` VALUES (2, 'announce', '春季绿化补种通知', '4月10日至15日，物业将在中心花园及主干道两侧补种灌木与草坪。作业期间请勿进入围挡区域，如有宠物请牵绳绕行。', '', 0, NULL, NULL, '', NULL, '2026-06-15 23:59:59', '0', 4, '2026-04-08 10:00:00', '2026-07-01 17:35:23');
+INSERT INTO `cs_notice` VALUES (2, 'announce', '春季绿化补种通知', '4月10日至15日，物业将在中心花园及主干道两侧补种灌木与草坪。作业期间请勿进入围挡区域，如有宠物请牵绳绕行。', '', 0, NULL, NULL, '', NULL, '2026-06-15 23:59:59', '1', 4, '2026-04-08 10:00:00', '2026-04-08 10:00:00');
 INSERT INTO `cs_notice` VALUES (3, 'announce', '五一劳动节放假安排', '5月1日至5月3日放假，物业服务中心5月1日9:00-12:00值班，5月2日起正常办公。紧急报修请拨打24小时热线。', '', 0, NULL, NULL, '', NULL, NULL, '0', 4, '2026-04-20 08:30:00', '2026-04-25 18:00:00');
-INSERT INTO `cs_notice` VALUES (4, 'announce', '端午节包粽子活动通知', '社区将于6月9日14:00在活动中心举办包粽子活动，限40组家庭，额满即止。报名请联系楼栋管家或至物业前台登记。', '', 1, NULL, NULL, '', NULL, NULL, '1', 4, '2026-06-05 09:00:00', '2026-07-01 17:35:23');
+INSERT INTO `cs_notice` VALUES (4, 'announce', '端午节包粽子活动通知', '社区将于6月9日14:00在活动中心举办包粽子活动，限40组家庭，额满即止。报名请联系楼栋管家或至物业前台登记。', '', 1, NULL, NULL, '', NULL, NULL, '2', 4, '2026-06-05 09:00:00', '2026-06-05 09:00:00');
 INSERT INTO `cs_notice` VALUES (5, 'announce', '夏季消防安全演练安排', '定于5月18日15:00在中心广场进行消防疏散演练，请各楼栋配合物业工作人员指引。演练期间请勿围观堵塞通道。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-05-10 14:00:00', '2026-05-10 14:00:00');
-INSERT INTO `cs_notice` VALUES (6, 'announce', '小区绿化修剪公告', '5月22日至24日将进行绿化修剪，作业时间8:30-17:30。请勿在作业区域停放车辆，修剪期间可能有轻微噪音，敬请谅解。', '', 0, NULL, NULL, '', NULL, '2026-05-31 23:59:59', '0', 4, '2026-05-12 08:00:00', '2026-07-01 17:35:23');
-INSERT INTO `cs_notice` VALUES (7, 'announce', '亲子运动会报名开启', '6月15日举办亲子运动会，设跳绳、接力等项目。线上报名截止6月8日，可在业主群或物业前台填写报名表。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-06-01 10:00:00', '2026-07-01 17:35:23');
+INSERT INTO `cs_notice` VALUES (6, 'announce', '小区绿化修剪公告', '5月22日至24日将进行绿化修剪，作业时间8:30-17:30。请勿在作业区域停放车辆，修剪期间可能有轻微噪音，敬请谅解。', '', 0, NULL, NULL, '', NULL, '2026-05-31 23:59:59', '1', 4, '2026-05-12 08:00:00', '2026-05-12 08:00:00');
+INSERT INTO `cs_notice` VALUES (7, 'announce', '亲子运动会报名开启', '6月15日举办亲子运动会，设跳绳、接力等项目。线上报名截止6月8日，可在业主群或物业前台填写报名表。', '', 0, NULL, NULL, '', NULL, NULL, '2', 4, '2026-06-01 10:00:00', '2026-06-01 10:00:00');
 INSERT INTO `cs_notice` VALUES (8, 'announce', '电梯年度检修告知', '5月25日起分批检修各栋电梯，单次停梯约2-4小时。具体时段见各单元门口张贴通知，检修期间请优先步行或错峰乘梯。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-05-15 11:00:00', '2026-05-15 11:00:00');
 INSERT INTO `cs_notice` VALUES (9, 'announce', '宠物文明饲养倡议', '请遛宠时使用牵引绳，及时清理宠物排泄物。禁止在公共区域放养，避免犬吠扰民。违反规定者将按公约劝导处理。', '', 0, NULL, NULL, '', NULL, NULL, '0', 4, '2026-04-05 09:00:00', '2026-04-10 09:00:00');
 INSERT INTO `cs_notice` VALUES (10, 'announce', '地下车库清洗通知', '6月6日清洗B1、B2层车库，当日8:00-18:00请尽量驶离或配合移位。清洗后地面湿滑，请注意行车安全。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-05-28 16:00:00', '2026-05-28 16:00:00');
-INSERT INTO `cs_notice` VALUES (11, 'announce', '业主大会表决事项预告', '关于增设新能源充电桩方案，定于6月20日19:00在社区会议室召开业主大会表决。材料已张贴于各栋公告栏，欢迎查阅。', '', 1, NULL, NULL, '', NULL, NULL, '1', 4, '2026-06-10 09:00:00', '2026-07-01 17:35:23');
+INSERT INTO `cs_notice` VALUES (11, 'announce', '业主大会表决事项预告', '关于增设新能源充电桩方案，定于6月20日19:00在社区会议室召开业主大会表决。材料已张贴于各栋公告栏，欢迎查阅。', '', 1, NULL, NULL, '', NULL, NULL, '2', 4, '2026-06-10 09:00:00', '2026-06-10 09:00:00');
 INSERT INTO `cs_notice` VALUES (12, 'announce', '蚊虫消杀作业公告', '6月3日晚20:00-22:00全小区消杀，请关好门窗，收好食品。消杀后30分钟内避免开窗，儿童宠物请勿接触药剂喷洒区域。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-05-30 08:00:00', '2026-05-30 08:00:00');
-INSERT INTO `cs_notice` VALUES (13, 'announce', '快递柜系统升级说明', '5月16日22:00-24:00升级快递柜系统，期间可能无法取件。请提前取走重要快件，升级完成后需重新验证手机号。', '', 0, NULL, NULL, '', NULL, '2026-05-20 08:00:00', '0', 4, '2026-05-14 09:30:00', '2026-07-01 17:35:23');
+INSERT INTO `cs_notice` VALUES (13, 'announce', '快递柜系统升级说明', '5月16日22:00-24:00升级快递柜系统，期间可能无法取件。请提前取走重要快件，升级完成后需重新验证手机号。', '', 0, NULL, NULL, '', NULL, '2026-05-20 08:00:00', '1', 4, '2026-05-14 09:30:00', '2026-05-14 09:30:00');
 INSERT INTO `cs_notice` VALUES (14, 'announce', '儿童节礼品领取通知', '6月1日9:00-17:00在一层大堂领取儿童节礼品，每户限领一份。请携带业主身份证明，代领需出示授权信息。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-05-25 10:00:00', '2026-05-25 10:00:00');
 INSERT INTO `cs_notice` VALUES (15, 'announce', '高温防暑温馨提示', '6月起进入高温季节，请注意防暑补水。建议老人儿童减少11:00-15:00户外活动，室内空调温度不宜过低，避免室内外温差过大。', '', 0, NULL, NULL, '', NULL, NULL, '1', 4, '2026-06-01 07:30:00', '2026-06-01 07:30:00');
 INSERT INTO `cs_notice` VALUES (16, 'outage', '1栋停水检修通知', '因主管道阀门更换，1栋将于5月12日9:00-17:00暂停供水。请提前储水，恢复供水初期水质可能短暂浑浊，放水后即可正常使用。', '', 1, NULL, NULL, '1栋全体住户', '2026-05-12 17:00:00', NULL, '1', 4, '2026-05-11 08:00:00', '2026-05-11 08:00:00');
 INSERT INTO `cs_notice` VALUES (17, 'outage', '2栋配电室停电检修', '2栋配电室设备检修，5月14日8:30-11:30全栋停电。请提前保存电脑数据，电梯将暂停运行，高层住户请合理安排出行。', '', 0, NULL, NULL, '2栋', '2026-05-14 11:30:00', NULL, '1', 4, '2026-05-13 09:00:00', '2026-05-13 09:00:00');
-INSERT INTO `cs_notice` VALUES (18, 'outage', '3栋水泵更换停水', '3栋二次供水水泵更换，5月20日14:00-18:00低区停水。请关闭热水器进水阀，恢复供水后再开启，防止空烧损坏设备。', '', 0, NULL, NULL, '3栋低区', '2026-05-20 18:00:00', NULL, '1', 4, '2026-06-08 14:00:00', '2026-07-01 17:35:23');
+INSERT INTO `cs_notice` VALUES (18, 'outage', '3栋水泵更换停水', '3栋二次供水水泵更换，5月20日14:00-18:00低区停水。请关闭热水器进水阀，恢复供水后再开启，防止空烧损坏设备。', '', 0, NULL, NULL, '3栋低区', '2026-05-20 18:00:00', NULL, '2', 4, '2026-06-08 14:00:00', '2026-06-08 14:00:00');
 INSERT INTO `cs_notice` VALUES (19, 'outage', '4栋电梯机房停电', '4栋电梯机房维护，5月22日13:00-15:00电梯全部暂停。请提前规划上下楼路线，老人及行动不便住户可联系物业协助。', '', 0, NULL, NULL, '4栋', '2026-05-22 15:00:00', NULL, '1', 4, '2026-05-21 10:00:00', '2026-05-21 10:00:00');
 INSERT INTO `cs_notice` VALUES (20, 'outage', '5栋燃气安全检查停气', '5栋5月25日9:00-12:00停气检修。请提前关闭灶具阀门，恢复通气后先开窗通风再点火，确保安全。', '', 0, NULL, NULL, '5栋', '2026-05-25 12:00:00', NULL, '1', 4, '2026-05-24 08:30:00', '2026-05-24 08:30:00');
 INSERT INTO `cs_notice` VALUES (21, 'outage', '6栋水箱清洗停水', '6栋水箱清洗消毒，4月18日10:00-16:00停水。清洗完成后水质符合标准再恢复供水，如有疑问请联系物业工程部。', '', 0, NULL, NULL, '6栋', '2026-04-18 16:00:00', NULL, '0', 4, '2026-04-15 09:00:00', '2026-04-20 10:00:00');
 INSERT INTO `cs_notice` VALUES (22, 'outage', '7栋线路改造停电', '7栋供电线路改造，6月12日0:00-6:00全栋停电。请提前为手机、应急灯充电，凌晨时段请注意出行安全。', '', 1, NULL, NULL, '7栋', '2026-06-12 06:00:00', NULL, '1', 4, '2026-06-10 12:00:00', '2026-06-10 12:00:00');
-INSERT INTO `cs_notice` VALUES (23, 'outage', '8栋主水管维修停水', '8栋主水管维修，6月18日8:00-12:00停水。工程车可能占用临时车位，请配合现场疏导，带来不便敬请谅解。', '', 0, NULL, NULL, '8栋', '2026-06-18 12:00:00', NULL, '1', 4, '2026-06-15 08:00:00', '2026-07-01 17:35:23');
+INSERT INTO `cs_notice` VALUES (23, 'outage', '8栋主水管维修停水', '8栋主水管维修，6月18日8:00-12:00停水。工程车可能占用临时车位，请配合现场疏导，带来不便敬请谅解。', '', 0, NULL, NULL, '8栋', '2026-06-18 12:00:00', NULL, '2', 4, '2026-06-15 08:00:00', '2026-06-15 08:00:00');
 INSERT INTO `cs_notice` VALUES (24, 'outage', '9栋公区照明改造停电', '9栋大堂及走廊照明改造，5月28日19:00-22:00公区停电。请使用手机照明，注意台阶安全，改造完成后照明将更加节能明亮。', '', 0, NULL, NULL, '9栋公区', '2026-05-28 22:00:00', NULL, '1', 4, '2026-05-27 15:00:00', '2026-05-27 15:00:00');
 INSERT INTO `cs_notice` VALUES (25, 'outage', '10栋阀门更换停水', '10栋总阀更换，6月2日9:00-11:00停水。停水时间较短，请提前储少量生活用水，恢复后请先放清管道存水。', '', 0, NULL, NULL, '10栋', '2026-06-02 11:00:00', NULL, '1', 4, '2026-06-01 09:00:00', '2026-06-01 09:00:00');
 INSERT INTO `cs_notice` VALUES (26, 'outage', '中心广场活动临时停电', '广场端午活动用电调试，6月8日18:00-20:00周边路灯及景观灯关闭。调试结束后立即恢复，请夜间出行注意瞭望。', '', 0, NULL, NULL, '中心广场周边', '2026-06-08 20:00:00', NULL, '1', 4, '2026-06-07 10:00:00', '2026-06-07 10:00:00');
 INSERT INTO `cs_notice` VALUES (27, 'outage', '地下车库B1消防测试停水', 'B1层消防管道测试，4月25日15:00-17:00临时停水。测试期间可能有警报声，属正常现象，请勿恐慌。', '', 0, NULL, NULL, 'B1车库', '2026-04-25 17:00:00', NULL, '0', 4, '2026-04-22 11:00:00', '2026-04-26 09:00:00');
-INSERT INTO `cs_notice` VALUES (28, 'outage', '1-3栋联动检修停水', '6月25日8:00-18:00，1至3栋低区联动停水检修。影响范围较大，请提前储备24小时用水，物业将在大堂提供应急供水。', '', 0, NULL, NULL, '1-3栋低区', '2026-06-25 18:00:00', NULL, '1', 4, '2026-06-20 09:00:00', '2026-07-01 17:35:23');
+INSERT INTO `cs_notice` VALUES (28, 'outage', '1-3栋联动检修停水', '6月25日8:00-18:00，1至3栋低区联动停水检修。影响范围较大，请提前储备24小时用水，物业将在大堂提供应急供水。', '', 0, NULL, NULL, '1-3栋低区', '2026-06-25 18:00:00', NULL, '2', 4, '2026-06-20 09:00:00', '2026-06-20 09:00:00');
 INSERT INTO `cs_notice` VALUES (29, 'outage', '全小区消防联动测试停电', '6月30日10:00-10:30消防联动测试，全小区电梯可能短暂停运，门禁系统切换备用电源。测试结束后自动恢复正常。', '', 0, NULL, NULL, '全小区', '2026-06-30 10:30:00', NULL, '1', 4, '2026-06-28 08:00:00', '2026-06-28 08:00:00');
-INSERT INTO `cs_notice` VALUES (30, 'outage', '4栋计划停水（待发布）', '4栋主供水管计划7月5日8:00-14:00停水检修，具体以现场条件为准。本通知待工程方案确认后正式发布，请提前关注后续更新。', '', 0, NULL, NULL, '4栋', '2026-07-05 14:00:00', NULL, '1', 4, '2026-06-22 09:00:00', '2026-07-01 17:35:23');
+INSERT INTO `cs_notice` VALUES (30, 'outage', '4栋计划停水（待发布）', '4栋主供水管计划7月5日8:00-14:00停水检修，具体以现场条件为准。本通知待工程方案确认后正式发布，请提前关注后续更新。', '', 0, NULL, NULL, '4栋', '2026-07-05 14:00:00', NULL, '2', 4, '2026-06-22 09:00:00', '2026-06-22 09:00:00');
 
 -- ----------------------------
 -- Table structure for cs_notice_read
@@ -362,38 +475,13 @@ CREATE TABLE `cs_notice_read`  (
   `user_id` bigint NOT NULL COMMENT '用户ID',
   `read_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '阅读时间',
   PRIMARY KEY (`notice_id`, `user_id`) USING BTREE,
-  INDEX `idx_user`(`user_id` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '公告已读记录表' ROW_FORMAT = DYNAMIC;
+  INDEX `idx_user`(`user_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '公告已读记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of cs_notice_read
 -- ----------------------------
-INSERT INTO `cs_notice_read` VALUES (1, 2, '2026-05-02 10:00:00');
-INSERT INTO `cs_notice_read` VALUES (3, 2, '2026-05-06 09:00:00');
-INSERT INTO `cs_notice_read` VALUES (16, 2, '2026-05-12 08:30:00');
-
--- ----------------------------
--- Table structure for cs_service_ticket
--- ----------------------------
-DROP TABLE IF EXISTS `cs_service_ticket`;
-CREATE TABLE `cs_service_ticket`  (
-  `ticket_id` bigint NOT NULL AUTO_INCREMENT COMMENT '工单主键',
-  `user_id` bigint NOT NULL COMMENT '业主用户ID',
-  `session_id` bigint NULL DEFAULT NULL COMMENT '来源会话ID',
-  `question` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '用户问题摘要',
-  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0待处理 1处理中 2已完成',
-  `reply` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '客服回复',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`ticket_id`) USING BTREE,
-  INDEX `idx_cs_ticket_user`(`user_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '人工客服工单表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of cs_service_ticket
--- ----------------------------
-INSERT INTO `cs_service_ticket` VALUES (1, 5, 2, '楼道杂物堆放投诉', '1', '已记录您反映的楼道杂物问题，我们将安排人员上门查看。', '2026-05-19 14:22:00', '2026-05-19 14:30:00');
-INSERT INTO `cs_service_ticket` VALUES (2, 2, 3, '物业费缴纳咨询', '2', '物业费可至物业中心缴纳，工作日 9:00-17:30。', '2026-05-17 09:35:00', '2026-05-17 10:00:00');
+INSERT INTO `cs_notice_read` VALUES (1, 2, '2026-05-02 10:00:00'), (3, 2, '2026-05-06 09:00:00'), (16, 2, '2026-05-12 08:30:00');
 
 -- ----------------------------
 -- Table structure for el_alert
@@ -411,7 +499,7 @@ CREATE TABLE `el_alert`  (
   `handle_result` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '处置结果',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '预警时间',
   PRIMARY KEY (`alert_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '老人异常预警表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '老人异常预警表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_alert
@@ -430,10 +518,33 @@ CREATE TABLE `el_care_order`  (
   `result` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '处置结果',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`care_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '独居老人关怀工单表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '独居老人关怀工单表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_care_order
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for el_disposal_record
+-- ----------------------------
+DROP TABLE IF EXISTS `el_disposal_record`;
+CREATE TABLE `el_disposal_record` (
+  `record_id` bigint NOT NULL AUTO_INCREMENT COMMENT '记录主键',
+  `care_id` bigint NULL DEFAULT NULL COMMENT '关联工单ID',
+  `alert_id` bigint NULL DEFAULT NULL COMMENT '关联预警ID',
+  `handler_id` bigint NULL DEFAULT NULL COMMENT '处理人用户ID',
+  `handle_time` datetime NULL DEFAULT NULL COMMENT '处理时间',
+  `check_result` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '核查结果',
+  `support_measure` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '帮扶措施',
+  `disposal_result` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '处置结果',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`record_id`),
+  KEY `idx_care_id` (`care_id`),
+  KEY `idx_alert_id` (`alert_id`)
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '处置记录表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of el_disposal_record
 -- ----------------------------
 
 -- ----------------------------
@@ -447,7 +558,7 @@ CREATE TABLE `el_care_staff`  (
   `staff_type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'grid' COMMENT '类型：grid/volunteer/social',
   `building_ids` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '负责楼栋ID列表',
   PRIMARY KEY (`staff_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '关怀人员台账表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '关怀人员台账表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_care_staff
@@ -461,7 +572,7 @@ CREATE TABLE `el_device`  (
   `device_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '硬件设备ID',
   `resident_id` bigint NOT NULL COMMENT '关联老人住户ID',
   PRIMARY KEY (`device_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '老人紧急求助设备表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '老人紧急求助设备表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_device
@@ -476,7 +587,7 @@ CREATE TABLE `el_disposal_plan`  (
   `level` int NOT NULL COMMENT '等级：1立即上门 2电话确认',
   `rule_desc` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '规则描述',
   PRIMARY KEY (`plan_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '异常事件分级处置预案表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '异常事件分级处置预案表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_disposal_plan
@@ -494,7 +605,7 @@ CREATE TABLE `el_health_record`  (
   `steps` int NULL DEFAULT NULL COMMENT '步数',
   `record_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '采集时间',
   PRIMARY KEY (`record_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '老人健康数据记录表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '老人健康数据记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_health_record
@@ -510,7 +621,7 @@ CREATE TABLE `el_health_threshold`  (
   `min_value` decimal(10, 2) NULL DEFAULT NULL COMMENT '最小阈值',
   `max_value` decimal(10, 2) NULL DEFAULT NULL COMMENT '最大阈值',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '健康数据告警阈值表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '健康数据告警阈值表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_health_threshold
@@ -528,7 +639,7 @@ CREATE TABLE `el_visit_plan`  (
   `next_date` date NOT NULL COMMENT '下次执行日期',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '1' COMMENT '状态：1有效 0停用',
   PRIMARY KEY (`plan_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '定期关怀回访计划表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '定期关怀回访计划表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of el_visit_plan
@@ -545,7 +656,7 @@ CREATE TABLE `kb_article`  (
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '正文',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`article_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修知识库文章表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修知识库文章表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of kb_article
@@ -586,13 +697,94 @@ CREATE TABLE `kb_learn_draft`  (
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '0待审核 1已采纳 2已拒绝',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`draft_id`) USING BTREE,
-  INDEX `idx_kb_draft_source`(`source_type` ASC, `source_id` ASC) USING BTREE,
-  INDEX `idx_kb_draft_status`(`status` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '知识库学习草稿表' ROW_FORMAT = DYNAMIC;
+  INDEX `idx_kb_draft_source`(`source_type`, `source_id`) USING BTREE,
+  INDEX `idx_kb_draft_status`(`status`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '知识库学习草稿表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of kb_learn_draft
+-- Table structure for ai_chat_session
 -- ----------------------------
+DROP TABLE IF EXISTS `ai_chat_message`;
+DROP TABLE IF EXISTS `cs_service_ticket`;
+DROP TABLE IF EXISTS `ai_chat_session`;
+CREATE TABLE `ai_chat_session`  (
+  `session_id` bigint NOT NULL AUTO_INCREMENT COMMENT '会话主键',
+  `user_id` bigint NOT NULL COMMENT '业主用户ID',
+  `title` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '会话标题',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0AI对话 1人工对话中 2人工已结束',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`session_id`) USING BTREE,
+  INDEX `idx_ai_session_user`(`user_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'AI问答会话表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for ai_chat_message
+-- ----------------------------
+CREATE TABLE `ai_chat_message`  (
+  `message_id` bigint NOT NULL AUTO_INCREMENT COMMENT '消息主键',
+  `session_id` bigint NOT NULL COMMENT '会话ID',
+  `role` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '角色：user/assistant/staff',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '消息内容',
+  `sender_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '发送者显示名（物业人工回复）',
+  `input_type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'text' COMMENT '输入方式：text/voice',
+  `transfer_human` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '是否转人工：0否 1是',
+  `ticket_id` bigint NULL DEFAULT NULL COMMENT '关联客服工单ID',
+  `ref_articles` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '引用知识库文章ID',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`message_id`) USING BTREE,
+  INDEX `idx_ai_message_session`(`session_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'AI问答消息表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for cs_service_ticket
+-- ----------------------------
+CREATE TABLE `cs_service_ticket`  (
+  `ticket_id` bigint NOT NULL AUTO_INCREMENT COMMENT '工单主键',
+  `user_id` bigint NOT NULL COMMENT '业主用户ID',
+  `session_id` bigint NULL DEFAULT NULL COMMENT '来源会话ID',
+  `question` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '用户问题摘要',
+  `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0待处理 1处理中 2已完成',
+  `reply` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '客服回复',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`ticket_id`) USING BTREE,
+  INDEX `idx_cs_ticket_user`(`user_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '人工客服工单表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of ai_chat_session / ai_chat_message / cs_service_ticket（演示）
+-- ----------------------------
+INSERT INTO `ai_chat_session` VALUES (1, 2, '停车管理规定咨询', '0', '2026-05-18 10:00:00', '2026-05-18 10:05:00');
+INSERT INTO `ai_chat_session` VALUES (2, 5, '投诉楼道杂物堆放', '1', '2026-05-19 14:20:00', '2026-05-19 15:10:00');
+INSERT INTO `ai_chat_session` VALUES (3, 2, '物业费缴纳咨询', '2', '2026-05-17 09:30:00', '2026-05-17 10:00:00');
+INSERT INTO `ai_chat_session` VALUES (4, 6, '如何在线提交报修', '0', '2026-05-20 11:00:00', '2026-05-20 11:03:00');
+
+INSERT INTO `ai_chat_message` VALUES (1, 1, 'user', '小区停车有什么规定？', '', 'text', '0', NULL, '', '2026-05-18 10:00:00');
+INSERT INTO `ai_chat_message` VALUES (2, 1, 'assistant', '业主车辆需登记后进出；地下车库请减速慢行，按位停车，勿占消防通道与他人车位。访客车辆可在门岗登记临时进入。', '', 'text', '0', NULL, '15', '2026-05-18 10:01:00');
+INSERT INTO `ai_chat_message` VALUES (3, 1, 'user', '地下车库可以安装充电桩吗？', '', 'text', '0', NULL, '', '2026-05-18 10:05:00');
+INSERT INTO `ai_chat_message` VALUES (4, 1, 'assistant', '关于增设新能源充电桩方案，社区将召开业主大会表决，具体安排请关注社区公告。如需个人车位安装，请先向物业报备。', '', 'text', '0', NULL, '15', '2026-05-18 10:05:30');
+
+INSERT INTO `ai_chat_message` VALUES (5, 2, 'user', '我们楼道有人长期堆放杂物，影响通行', '', 'text', '0', NULL, '', '2026-05-19 14:20:00');
+INSERT INTO `ai_chat_message` VALUES (6, 2, 'assistant', '大堂、走廊、楼梯间为公共疏散空间，不得长期堆放私人物品。', '', 'text', '0', NULL, '16', '2026-05-19 14:21:00');
+INSERT INTO `ai_chat_message` VALUES (7, 2, 'user', '转人工', '', 'text', '1', NULL, '', '2026-05-19 14:22:00');
+INSERT INTO `ai_chat_message` VALUES (8, 2, 'assistant', '已为您接入人工客服，请在此对话中继续留言，物业人员将实时回复，请保持信号畅通。', '', 'text', '1', 1, '', '2026-05-19 14:22:01');
+INSERT INTO `ai_chat_message` VALUES (9, 2, 'staff', '您好，我是王管家。已记录您反映的楼道杂物问题，我们将安排人员今日下午上门查看并协调清理。', '王管家', 'text', '0', 1, '', '2026-05-19 14:30:00');
+INSERT INTO `ai_chat_message` VALUES (10, 2, 'user', '好的，大概几点能过来？', '', 'text', '0', NULL, '', '2026-05-19 15:10:00');
+
+INSERT INTO `ai_chat_message` VALUES (11, 3, 'user', '物业费怎么交？', '', 'text', '0', NULL, '', '2026-05-17 09:30:00');
+INSERT INTO `ai_chat_message` VALUES (12, 3, 'assistant', '本系统当前版本暂未开放在线缴费。如需咨询物业费，请携带房本到物业服务中心办理，或拨打物业前台电话。', '', 'text', '0', NULL, '5', '2026-05-17 09:31:00');
+INSERT INTO `ai_chat_message` VALUES (13, 3, 'user', '转人工', '', 'text', '1', NULL, '', '2026-05-17 09:35:00');
+INSERT INTO `ai_chat_message` VALUES (14, 3, 'assistant', '已为您接入人工客服，请在此对话中继续留言。', '', 'text', '1', 2, '', '2026-05-17 09:35:01');
+INSERT INTO `ai_chat_message` VALUES (15, 3, 'staff', '您好，物业费可至物业中心缴纳，工作日 9:00-17:30。', '王管家', 'text', '0', 2, '', '2026-05-17 09:40:00');
+INSERT INTO `ai_chat_message` VALUES (16, 3, 'user', '好的，谢谢', '', 'text', '0', NULL, '', '2026-05-17 09:55:00');
+INSERT INTO `ai_chat_message` VALUES (17, 3, 'staff', '不客气，如有其他问题随时留言。', '王管家', 'text', '0', 2, '', '2026-05-17 10:00:00');
+
+INSERT INTO `ai_chat_message` VALUES (18, 4, 'user', '怎么在线提交报修？', '', 'text', '0', NULL, '', '2026-05-20 11:00:00');
+INSERT INTO `ai_chat_message` VALUES (19, 4, 'assistant', '登录业主端后进入「报修工单」，点击「提交报修」，选择报修类型，填写问题描述并上传现场照片，提交后可在列表查看进度。', '', 'text', '0', NULL, '1', '2026-05-20 11:03:00');
+
+INSERT INTO `cs_service_ticket` VALUES (1, 5, 2, '楼道杂物堆放投诉', '1', '已记录您反映的楼道杂物问题，我们将安排人员上门查看。', '2026-05-19 14:22:00', '2026-05-19 14:30:00');
+INSERT INTO `cs_service_ticket` VALUES (2, 2, 3, '物业费缴纳咨询', '2', '物业费可至物业中心缴纳，工作日 9:00-17:30。', '2026-05-17 09:35:00', '2026-05-17 10:00:00');
 
 -- ----------------------------
 -- Table structure for rp_material
@@ -606,7 +798,7 @@ CREATE TABLE `rp_material`  (
   `quantity` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '数量',
   `unit_price` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '单价',
   PRIMARY KEY (`material_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单耗材登记表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单耗材登记表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_material
@@ -625,7 +817,7 @@ CREATE TABLE `rp_material_apply`  (
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0待审 1通过 2驳回',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申请时间',
   PRIMARY KEY (`apply_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '物料领用申请表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '物料领用申请表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_material_apply
@@ -650,23 +842,18 @@ CREATE TABLE `rp_order`  (
   `material_fee` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '材料费',
   `labor_fee` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '人工费',
   `frozen` tinyint NULL DEFAULT 0 COMMENT '冻结：0否 1是',
-  `sign_image` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '验收签名图',
+  `sign_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '验收签名图',
   `reject_reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '拒单原因',
   `assign_reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '派单原因',
-  `ai_type_label` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT 'AI识别故障类型',
-  `high_risk` tinyint NULL DEFAULT 0 COMMENT '高风险：0否 1是',
-  `duplicate_flag` tinyint NULL DEFAULT 0 COMMENT '重复报修：0否 1是',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`order_id`) USING BTREE,
   UNIQUE INDEX `uk_order_no`(`order_no` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '报修工单表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '报修工单表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_order
 -- ----------------------------
-INSERT INTO `rp_order` VALUES (2, 'RP202607011830043335', 2, NULL, 2, '厕所水管漏水', 'urgent', 'pending', 3, 1, 24, 0.00, 0.00, 0, '', '缺少专业工具或配件', 'AI自动派单', '水管漏水', 0, 0, '2026-07-01 18:30:04', '2026-07-01 18:30:04');
-INSERT INTO `rp_order` VALUES (3, 'RP202607011833447810', 2, NULL, NULL, '消防栓损坏', 'emergency', 'completed', 3, 0, 24, 0.00, 0.00, 0, 'data:image/png;base64,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/eXRRx+VFi1ayKpVq+TKlSsyefJkh+t72AOHDx82t3hS9ubNmzelWbNmonOYqkO7du1k+vTppp0UCCCAAAIIIIAAAggg4E4B3oUAAggggAACsQUsH+A8fvy4DB482PT5rbfeknTp0pljewoNNDZu3FjSpk0rK1euFM0Ajf1cSEiIDBw4MPYppxzre7UiTwlw6uJMupjQ999/b7JWFy5cKJ9//rk2kQ0BBBBAAAHPFaBlCCCAAAIIIIAAAggg4BMClg5wauZl06ZNzcJCefPmlTlz5pgMzD179sT7cXX4uQbuKlSoIIGBgVKwYEGZNWuWaD1p0qSR6tWry48//iga4Bs5cqSsWbMm3nqSe9IW4NSM0+TWldznDx48KOqhGauavbpu3TqpXbt2cqt12/MagM6ZM6dUqVJFQkNDH9hKlSoluXLlEp1HVP82zpw547Z2edKLaAsCCCCAAAIIIIAAAggggAACCFhfwMo9tHSAs0+fPrJ69WrJli2bydzcunWraBBTFxvSj6rHU6dOFZ2fU+/RAN67775rhrPrHJN6T8aMGWXo0KFy6dIlWbp0qTz//PNSp04dExTT667YbAsMpXSAU4OZ5cqVk71794oGAzdu3ChPPPGEK7rssjojIiIkKirKBKNXrFghsbft27eLBjV1kaRGjRqZYKdmzepQ/FGjRpm/Aw1uu6xxVIwAAggggAACCCCAAAKeJkB7EEAAAQS8UMCyAc7PPvtMhgwZYj5JWFiY7N+/3xxrodl6GrjUgGbz5s3lq6++knPnzukls+XJk0d0SHa/fv3M+a5du0rq1KnNNXcUtgCnBtvc8b743jF+/HipXLmynD9/Xl544QVZu3atCQDGd68nn9PM02+++UaWLVv2t23JkiXyySefSMeOHaVSpUoSEBAgR44cER2K/95775nMVZ3SIHv27PL0009LaJwMUP0dHBxsXLp16yYaEI6JifFkDtqGAAIIIICAkwSoBgEEEEAAAQQQQAABzxGwZIBT54zs3bu3UX799dflP//5jzm2FTov5+XLlyVVqlRiy5LUoGaPHj3MwkGa2fnLL7+ILkjkzsCmrX22IepBQUG2U27db9q0STSTVYN1L730kkRGRpoMWLc2wkkvy5Qpk7z22muiwci4W40aNaRLly4yfPhwE8DVLF3N+P30009FMzr1b0IXVzp79qzJBF4R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eirRTeet1BuyZMmiuwc2HbauwczatWuL9luHmhctWtQEV7XPy5Ytk+joaFm1apXoMHGd0zEmJuZ+HZrNuWPHDrOAjWZn6vygsbedO3fK+fPn5fLly5ImTRoJDg6WRo0aiWafaiD5//7v/8z1yZMniw5xZwj6fVoOEEAAAQQQQAABBBBAAAEXCVAtAggggMDDBLw+wBlfByMiIsxpXegnXbp05thZhQYJdcj3+++/b4J9ujiPLgijmZStWrUSDTrGfdesWbMkMDBQFi9ebLI6416P/TtugFMDkrqQjwZKs2TJIpop+vPPP4sGOzWDM/azsY/1fSEhIeZ+fa8GP3WzLWCjx3E3XRBo0qRJotmnV69elc2bN4u2/eOPPxbtr3r+4x//iP0ajhFAAAEEEEAAAc8QoBUIIIAAAggggAACPitgyQCnLfD36quvOvXD6nD04sWLm2HZOremZjcePXpUwsPD4w1s2l7+1FNPyQcffGB+6tD527dvm+P4CluAc8SIEaJDxZ988knRhXyWLFliskN1wSINpOp1nUdTg50aYLUFKzUgqb91qLtmac6ZM0dq1qx5fyi6bQGb0DjD0/V3kyZNRIek62JE8bWNcwgg4P0C9AABBBBAAAEEEEAAAQQQQAABqwlYLsB548YNOXz4sGimoQ4NT8IH+9sjmrWp807qcHRdTEfnqty0aZPJbowvY/NvFdw90bVrV9EFeHbv3i2ff/753TN//6+B2evXr5sLumCPDhXXftSpU0dGjRolBw8elD179ogOhX/vvffMMHHN7NQAqwYoddOgq/5m+LjwDwEEEEAAAQQQQAABBBBAAIHEBLiGAAIWEbBcgFOHdOu3KVasWKJZlXqPPdu8efPMIkW6SFDq1Kmlb9++Zui2ZmXa87ztHg04fvnll+anZmRq5qf5cbfQwKbOcZktW7a7v+7912CovuvixYuycOFCeffdd6VgwYL3LiajHD16tKlH5+dMRjU8igACCCCAAAIIIOAzAnQUAQQQQAABBBDwbAHLBTh///13I65ZluYgiYUta7N+/fpmUR6t7z//+Y98+OGHosHKpFSrw8ODgoLMUPNPPvlENLCpw97Lli0rmuGpC/xovZkzZzaZmvounUtTzzlr04WCNMN14MCBzqqSehBAAAEEVIANAQQQQAABBBBAAAEEEEAgRQQsF+DURXRUUueq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', '', 'AI自动派单', '其他故障', 0, 0, '2026-07-01 18:33:44', '2026-07-01 18:33:44');
 
 -- ----------------------------
 -- Table structure for rp_order_eval
@@ -681,12 +868,11 @@ CREATE TABLE `rp_order_eval`  (
   `appeal_status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '申诉：0无 1中 2通过 3驳回',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评价时间',
   PRIMARY KEY (`eval_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单服务评价表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单服务评价表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_order_eval
 -- ----------------------------
-INSERT INTO `rp_order_eval` VALUES (1, 3, 5, '态度好,技术专业', '好', '0', '2026-07-01 18:38:36');
 
 -- ----------------------------
 -- Table structure for rp_order_image
@@ -697,13 +883,11 @@ CREATE TABLE `rp_order_image`  (
   `order_id` bigint NOT NULL COMMENT '工单ID',
   `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '图片地址',
   PRIMARY KEY (`image_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '报修现场图片表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '报修现场图片表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_order_image
 -- ----------------------------
-INSERT INTO `rp_order_image` VALUES (2, 2, '/upload/repair/20260701/75f420d2dfd64e2085e987e63f208282.jpg');
-INSERT INTO `rp_order_image` VALUES (3, 3, '/upload/repair/20260701/377a5620e516478d898b9a05cbf60162.jpg');
 
 -- ----------------------------
 -- Table structure for rp_order_progress
@@ -717,22 +901,11 @@ CREATE TABLE `rp_order_progress`  (
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '备注',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录时间',
   PRIMARY KEY (`progress_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单进度节点表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单进度节点表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_order_progress
 -- ----------------------------
-INSERT INTO `rp_order_progress` VALUES (4, 2, '提交报修', '2', '业主提交报修单', '2026-07-01 18:30:04');
-INSERT INTO `rp_order_progress` VALUES (5, 2, 'AI智能分析', 'AI', 'AI识别：水管漏水，紧急程度=较急', '2026-07-01 18:30:04');
-INSERT INTO `rp_order_progress` VALUES (6, 2, '派单', 'AI', '指派维修工:3', '2026-07-01 18:30:04');
-INSERT INTO `rp_order_progress` VALUES (7, 2, '催单', '2', '业主发起催单', '2026-07-01 18:31:45');
-INSERT INTO `rp_order_progress` VALUES (8, 3, '提交报修', '2', '业主提交报修单', '2026-07-01 18:33:44');
-INSERT INTO `rp_order_progress` VALUES (9, 3, 'AI智能分析', 'AI', 'AI识别：其他故障，紧急程度=紧急', '2026-07-01 18:33:44');
-INSERT INTO `rp_order_progress` VALUES (10, 3, '派单', 'AI', '指派维修工:3', '2026-07-01 18:33:44');
-INSERT INTO `rp_order_progress` VALUES (11, 2, '拒单', '3', '故障类型不在技能范围', '2026-07-01 18:35:50');
-INSERT INTO `rp_order_progress` VALUES (12, 3, 'wait_accept', 'system', '维修完成待验收', '2026-07-01 18:35:51');
-INSERT INTO `rp_order_progress` VALUES (13, 2, '拒单', '3', '缺少专业工具或配件', '2026-07-01 18:36:01');
-INSERT INTO `rp_order_progress` VALUES (14, 3, '验收完成', '2', '评分:5 标签:态度好,技术专业', '2026-07-01 18:38:36');
 
 -- ----------------------------
 -- Table structure for rp_repair_type
@@ -744,7 +917,7 @@ CREATE TABLE `rp_repair_type`  (
   `type_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '类型名称',
   `order_num` int NULL DEFAULT 0 COMMENT '排序',
   PRIMARY KEY (`type_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '报修故障类型表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '报修故障类型表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_repair_type
@@ -753,30 +926,6 @@ INSERT INTO `rp_repair_type` VALUES (1, 0, '水电', 1);
 INSERT INTO `rp_repair_type` VALUES (2, 1, '水管漏水', 1);
 INSERT INTO `rp_repair_type` VALUES (3, 0, '电路', 2);
 INSERT INTO `rp_repair_type` VALUES (4, 3, '跳闸', 1);
-
--- ----------------------------
--- Table structure for rp_repair_weekly_report
--- ----------------------------
-DROP TABLE IF EXISTS `rp_repair_weekly_report`;
-CREATE TABLE `rp_repair_weekly_report`  (
-  `report_id` bigint NOT NULL AUTO_INCREMENT COMMENT '周报主键',
-  `week_start` date NOT NULL COMMENT '周起始日期',
-  `week_end` date NOT NULL COMMENT '周结束日期',
-  `total_orders` int NULL DEFAULT 0 COMMENT '总工单数',
-  `avg_complete_hours` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '平均完成时长(小时)',
-  `overtime_rate` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '超时率(%)',
-  `duplicate_rate` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '重复报修率(%)',
-  `good_rate` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '好评率(%)',
-  `type_stats` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '按故障类型统计JSON',
-  `worker_stats` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '按维修工统计JSON',
-  `suggestions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT 'AI优化建议',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '生成时间',
-  PRIMARY KEY (`report_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工单AI复盘周报' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of rp_repair_weekly_report
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for rp_work_hour
@@ -790,7 +939,7 @@ CREATE TABLE `rp_work_hour`  (
   `end_time` datetime NULL DEFAULT NULL COMMENT '结束时间',
   `modify_status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '修改审批：0无 1待审',
   PRIMARY KEY (`hour_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修工时打卡表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修工时打卡表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_work_hour
@@ -807,7 +956,7 @@ CREATE TABLE `rp_worker_appeal`  (
   `reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '申诉理由',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0待审 1通过 2驳回',
   PRIMARY KEY (`appeal_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修工差评申诉表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修工差评申诉表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_worker_appeal
@@ -825,7 +974,7 @@ CREATE TABLE `rp_worker_profile`  (
   `avg_score` decimal(3, 2) NULL DEFAULT 5.00 COMMENT '平均评分',
   `eval_count` int NULL DEFAULT 0 COMMENT '评价数',
   PRIMARY KEY (`worker_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修工档案表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '维修工档案表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of rp_worker_profile
@@ -844,7 +993,7 @@ CREATE TABLE `sys_abnormal_login`  (
   `device` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '设备信息',
   `is_self` tinyint NULL DEFAULT 0 COMMENT '是否本人：0否 1是',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '异常登录记录表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '异常登录记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_abnormal_login
@@ -862,7 +1011,7 @@ CREATE TABLE `sys_config`  (
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '备注',
   PRIMARY KEY (`config_id`) USING BTREE,
   UNIQUE INDEX `uk_config_key`(`config_key` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统参数配置表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统参数配置表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_config
@@ -884,7 +1033,7 @@ CREATE TABLE `sys_dict_data`  (
   `dict_type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '字典类型编码',
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '0' COMMENT '状态：0正常 1停用',
   PRIMARY KEY (`dict_code`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '通用字典数据表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '通用字典数据表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_dict_data
@@ -913,7 +1062,7 @@ CREATE TABLE `sys_dict_type`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`dict_id`) USING BTREE,
   UNIQUE INDEX `uk_dict_type`(`dict_type` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '通用字典类型表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '通用字典类型表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_dict_type
@@ -933,7 +1082,7 @@ CREATE TABLE `sys_flow_switch`  (
   `enabled` tinyint NULL DEFAULT 1 COMMENT '是否启用：1是 0否',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '备注',
   PRIMARY KEY (`switch_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '业务流程开关表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '业务流程开关表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_flow_switch
@@ -953,7 +1102,7 @@ CREATE TABLE `sys_login_log`  (
   `login_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '登录时间',
   PRIMARY KEY (`log_id`) USING BTREE,
   INDEX `idx_username_time`(`username` ASC, `login_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 18 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户登录日志表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户登录日志表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_login_log
@@ -970,11 +1119,6 @@ INSERT INTO `sys_login_log` VALUES (9, 'owner01', '0:0:0:0:0:0:0:1', 'Mozilla/5.
 INSERT INTO `sys_login_log` VALUES (10, 'property01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', '0', '登录成功', '2026-05-19 15:53:07');
 INSERT INTO `sys_login_log` VALUES (11, 'property01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', '0', '登录成功', '2026-06-24 16:34:42');
 INSERT INTO `sys_login_log` VALUES (12, 'owner01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', '0', '登录成功', '2026-06-24 16:35:36');
-INSERT INTO `sys_login_log` VALUES (13, 'property01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0', '0', '登录成功', '2026-07-01 17:37:09');
-INSERT INTO `sys_login_log` VALUES (14, 'owner01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0', '0', '登录成功', '2026-07-01 17:43:42');
-INSERT INTO `sys_login_log` VALUES (15, 'owner01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0', '0', '登录成功', '2026-07-01 18:27:12');
-INSERT INTO `sys_login_log` VALUES (16, 'worker01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0', '0', '登录成功', '2026-07-01 18:34:58');
-INSERT INTO `sys_login_log` VALUES (17, 'owner01', '0:0:0:0:0:0:0:1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0', '0', '登录成功', '2026-07-01 18:36:30');
 
 -- ----------------------------
 -- Table structure for sys_menu
@@ -992,7 +1136,7 @@ CREATE TABLE `sys_menu`  (
   `order_num` int NULL DEFAULT 0,
   `status` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '0',
   PRIMARY KEY (`menu_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '菜单权限' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_menu
@@ -1015,17 +1159,12 @@ CREATE TABLE `sys_message`  (
   `recalled` tinyint NULL DEFAULT 0 COMMENT '是否撤回：0否 1是',
   `recall_time` datetime NULL DEFAULT NULL COMMENT '撤回时间',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`message_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '统一消息表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '统一消息表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_message
 -- ----------------------------
-INSERT INTO `sys_message` VALUES (1, 'order', '工单已派单', '工单RP202607011830043335已指派维修人员', 'normal', NULL, '', NULL, NULL, 0, NULL, '2026-07-01 18:30:04', '2026-07-01 18:30:04');
-INSERT INTO `sys_message` VALUES (2, 'order', '新工单派单', '您有新的维修工单 RP202607011830043335，请及时处理', 'normal', NULL, '', NULL, NULL, 0, NULL, '2026-07-01 18:30:04', '2026-07-01 18:30:04');
-INSERT INTO `sys_message` VALUES (3, 'order', '工单已派单', '工单RP202607011833447810已指派维修人员', 'normal', NULL, '', NULL, NULL, 0, NULL, '2026-07-01 18:33:44', '2026-07-01 18:33:44');
-INSERT INTO `sys_message` VALUES (4, 'order', '新工单派单', '您有新的维修工单 RP202607011833447810，请及时处理', 'normal', NULL, '', NULL, NULL, 0, NULL, '2026-07-01 18:33:44', '2026-07-01 18:33:44');
 
 -- ----------------------------
 -- Table structure for sys_message_user
@@ -1039,15 +1178,11 @@ CREATE TABLE `sys_message_user`  (
   `read_time` datetime NULL DEFAULT NULL COMMENT '阅读时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_msg_user`(`message_id` ASC, `user_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户消息已读状态表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户消息已读状态表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_message_user
 -- ----------------------------
-INSERT INTO `sys_message_user` VALUES (1, 1, 2, 0, NULL);
-INSERT INTO `sys_message_user` VALUES (2, 2, 3, 0, NULL);
-INSERT INTO `sys_message_user` VALUES (3, 3, 2, 0, NULL);
-INSERT INTO `sys_message_user` VALUES (4, 4, 3, 0, NULL);
 
 -- ----------------------------
 -- Table structure for sys_oper_log
@@ -1067,7 +1202,7 @@ CREATE TABLE `sys_oper_log`  (
   `error_msg` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '错误信息',
   `oper_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间',
   PRIMARY KEY (`oper_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统操作日志表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统操作日志表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -1086,7 +1221,7 @@ CREATE TABLE `sys_role`  (
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`role_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '角色' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '角色' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_role
@@ -1104,7 +1239,7 @@ CREATE TABLE `sys_role_menu`  (
   `role_id` bigint NOT NULL,
   `menu_id` bigint NOT NULL,
   PRIMARY KEY (`role_id`, `menu_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_role_menu
@@ -1134,7 +1269,7 @@ CREATE TABLE `sys_user`  (
   PRIMARY KEY (`user_id`) USING BTREE,
   UNIQUE INDEX `uk_username`(`username` ASC) USING BTREE,
   UNIQUE INDEX `uk_phone`(`phone` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统用户表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统用户表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_user
@@ -1170,7 +1305,7 @@ CREATE TABLE `sys_user_device`  (
   `trusted` tinyint NULL DEFAULT 0 COMMENT '是否信任：0否 1是',
   `login_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最近登录时间',
   PRIMARY KEY (`device_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户登录设备表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户登录设备表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_user_device
@@ -1184,7 +1319,7 @@ CREATE TABLE `sys_user_role`  (
   `user_id` bigint NOT NULL,
   `role_id` bigint NOT NULL,
   PRIMARY KEY (`user_id`, `role_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_user_role
@@ -1192,19 +1327,37 @@ CREATE TABLE `sys_user_role`  (
 INSERT INTO `sys_user_role` VALUES (2, 2);
 INSERT INTO `sys_user_role` VALUES (3, 3);
 INSERT INTO `sys_user_role` VALUES (4, 4);
-INSERT INTO `sys_user_role` VALUES (5, 2);
-INSERT INTO `sys_user_role` VALUES (6, 2);
-INSERT INTO `sys_user_role` VALUES (7, 2);
-INSERT INTO `sys_user_role` VALUES (8, 2);
-INSERT INTO `sys_user_role` VALUES (9, 2);
-INSERT INTO `sys_user_role` VALUES (10, 2);
-INSERT INTO `sys_user_role` VALUES (11, 2);
-INSERT INTO `sys_user_role` VALUES (12, 2);
-INSERT INTO `sys_user_role` VALUES (13, 2);
-INSERT INTO `sys_user_role` VALUES (14, 2);
-INSERT INTO `sys_user_role` VALUES (15, 2);
-INSERT INTO `sys_user_role` VALUES (16, 2);
-INSERT INTO `sys_user_role` VALUES (17, 2);
-INSERT INTO `sys_user_role` VALUES (18, 2);
+INSERT INTO `sys_user_role` VALUES (5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 2), (11, 2), (12, 2), (13, 2), (14, 2), (15, 2), (16, 2), (17, 2), (18, 2);
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ----------------------------
+-- 权限字段
+-- ----------------------------
+ALTER TABLE sys_user ADD COLUMN permission_code VARCHAR(512) DEFAULT NULL COMMENT '权限码，逗号分隔';
+
+-- 为物业管理员初始化全部权限
+UPDATE sys_user SET permission_code = 'elder_view,elder_manage,elder_staff_manage,dashboard_view,report_export,repair_manage,repair_assign,system_user_manage,system_permission_manage,ai_monitor_view,ai_monitor_config' WHERE username = 'property01';
+
+-- ----------------------------
+-- 独居老人AI安全监测模块
+-- ----------------------------
+
+-- 独居老人标记和活动时间
+ALTER TABLE cm_resident ADD COLUMN is_alone_living TINYINT DEFAULT 0 COMMENT '是否独居';
+ALTER TABLE cm_resident ADD COLUMN last_activity_time DATETIME DEFAULT NULL COMMENT '最后活动时间';
+
+-- AI监测日志表
+CREATE TABLE IF NOT EXISTS `el_ai_monitor_log` (
+    `log_id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '日志ID',
+    `resident_id` BIGINT NOT NULL COMMENT '老人ID',
+    `check_time` DATETIME NOT NULL COMMENT '检测时间',
+    `risk_level` VARCHAR(20) NOT NULL COMMENT '风险等级: green/yellow/red',
+    `reason` VARCHAR(500) NULL DEFAULT NULL COMMENT '风险原因',
+    `ai_response` TEXT NULL COMMENT 'AI原始回复',
+    `alert_id` BIGINT NULL DEFAULT NULL COMMENT '关联预警ID',
+    `create_time` DATETIME NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '独居老人AI监测日志' ROW_FORMAT = Dynamic;
+
+-- 标记部分住户为独居老人用于测试
+UPDATE cm_resident SET is_alone_living = 1, last_activity_time = NOW() WHERE resident_id IN (1, 3, 5);
