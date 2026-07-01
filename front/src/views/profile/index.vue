@@ -11,7 +11,7 @@
               accept="image/*"
             >
               <el-avatar :size="88" :src="avatarUrl" class="avatar">
-                {{ profile.nickName?.charAt(0) || 'U' }}
+                {{ profile.nickName?.charAt(0) || "U" }}
               </el-avatar>
               <div class="avatar-mask">
                 <el-icon><Camera /></el-icon>
@@ -23,215 +23,320 @@
             <p class="account">账号：{{ profile.username }}</p>
           </div>
           <el-divider />
-          <div class="section-title"><el-icon><User /></el-icon>账户概览</div>
+          <div class="section-title">
+            <el-icon><User /></el-icon>账户概览
+          </div>
           <div class="info-item">
-              <span class="label">登录账号</span>
-              <span class="value">{{ profile.username || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">用户昵称</span>
-              <span class="value">{{ profile.nickName || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">手机号码</span>
-              <span class="value">{{ profile.phone || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">性别</span>
-              <span class="value">{{ genderLabel(profile.gender) }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">年龄</span>
-              <span class="value">{{ profile.age != null ? profile.age + ' 岁' : '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">账户角色</span>
-              <span class="value">{{ roleLabel }}</span>
-            </div>
-          </el-card>
-        </el-col>
+            <span class="label">登录账号</span>
+            <span class="value">{{ profile.username || "-" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">用户昵称</span>
+            <span class="value">{{ profile.nickName || "-" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">手机号码</span>
+            <span class="value">{{ profile.phone || "-" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">性别</span>
+            <span class="value">{{ genderLabel(profile.gender) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">年龄</span>
+            <span class="value">{{
+              profile.age != null ? profile.age + " 岁" : "-"
+            }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">账户角色</span>
+            <span class="value">{{ roleLabel }}</span>
+          </div>
+        </el-card>
+      </el-col>
 
-        <el-col :span="16" :xs="24">
-          <el-card shadow="never" class="form-card">
-            <el-tabs v-model="activeTab" class="profile-tabs">
-              <el-tab-pane label="基本资料" name="info">
-                <div class="tab-desc">更新您的昵称、联系方式与基本资料，保存后立即生效。</div>
-                <el-form ref="infoRef" :model="infoForm" :rules="infoRules" label-width="88px" class="profile-form">
-                  <el-form-item label="登录账号">
-                    <el-input v-model="infoForm.username" disabled />
-                  </el-form-item>
-                  <el-form-item label="用户昵称" prop="nickName">
-                    <el-input v-model="infoForm.nickName" maxlength="30" placeholder="请输入昵称" />
-                  </el-form-item>
-                  <el-form-item label="手机号码" prop="phone">
-                    <el-input v-model="infoForm.phone" maxlength="11" placeholder="请输入手机号" />
-                  </el-form-item>
-                  <el-form-item label="性别">
-                    <el-select v-model="infoForm.gender" clearable placeholder="选填" style="width:100%">
-                      <el-option label="男" value="0" />
-                      <el-option label="女" value="1" />
-                    </el-select>
-                  </el-form-item>
-                  <el-form-item label="年龄" prop="age">
-                    <el-input-number v-model="infoForm.age" :min="1" :max="120" controls-position="right" placeholder="选填" style="width:100%" />
-                  </el-form-item>
-                  <el-form-item>
-                    <el-button type="primary" :loading="saving" @click="submitInfo">保存修改</el-button>
-                  </el-form-item>
-                </el-form>
-              </el-tab-pane>
-              <el-tab-pane label="修改密码" name="pwd">
-                <div class="tab-desc">建议定期更换密码，密码长度至少 6 位。</div>
-                <el-form ref="pwdRef" :model="pwdForm" :rules="pwdRules" label-width="88px" class="profile-form">
-                  <el-form-item label="旧密码" prop="oldPassword">
-                    <el-input v-model="pwdForm.oldPassword" type="password" show-password placeholder="请输入旧密码" />
-                  </el-form-item>
-                  <el-form-item label="新密码" prop="newPassword">
-                    <el-input v-model="pwdForm.newPassword" type="password" show-password placeholder="请输入新密码" />
-                  </el-form-item>
-                  <el-form-item label="确认密码" prop="confirmPassword">
-                    <el-input v-model="pwdForm.confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
-                  </el-form-item>
-                  <el-form-item>
-                    <el-button type="primary" :loading="saving" @click="submitPwd">更新密码</el-button>
-                  </el-form-item>
-                </el-form>
-              </el-tab-pane>
-            </el-tabs>
-          </el-card>
-        </el-col>
-      </el-row>
+      <el-col :span="16" :xs="24">
+        <el-card shadow="never" class="form-card">
+          <el-tabs v-model="activeTab" class="profile-tabs">
+            <el-tab-pane label="基本资料" name="info">
+              <div class="tab-desc">
+                更新您的昵称、联系方式与基本资料，保存后立即生效。
+              </div>
+              <el-form
+                ref="infoRef"
+                :model="infoForm"
+                :rules="infoRules"
+                label-width="88px"
+                class="profile-form"
+              >
+                <el-form-item label="登录账号">
+                  <el-input v-model="infoForm.username" disabled />
+                </el-form-item>
+                <el-form-item label="用户昵称" prop="nickName">
+                  <el-input
+                    v-model="infoForm.nickName"
+                    maxlength="30"
+                    placeholder="请输入昵称"
+                  />
+                </el-form-item>
+                <el-form-item label="手机号码" prop="phone">
+                  <el-input
+                    v-model="infoForm.phone"
+                    maxlength="11"
+                    placeholder="请输入手机号"
+                  />
+                </el-form-item>
+                <el-form-item label="性别">
+                  <el-select
+                    v-model="infoForm.gender"
+                    clearable
+                    placeholder="选填"
+                    style="width: 100%"
+                  >
+                    <el-option label="男" value="0" />
+                    <el-option label="女" value="1" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="年龄" prop="age">
+                  <el-input-number
+                    v-model="infoForm.age"
+                    :min="1"
+                    :max="120"
+                    controls-position="right"
+                    placeholder="选填"
+                    style="width: 100%"
+                  />
+                </el-form-item>
+                <el-form-item>
+                  <el-button
+                    type="primary"
+                    :loading="saving"
+                    @click="submitInfo"
+                    >保存修改</el-button
+                  >
+                </el-form-item>
+              </el-form>
+            </el-tab-pane>
+            <el-tab-pane label="注销账号" name="deactivate">
+              <div class="tab-desc" style="background: #fef0f0; color: #f56c6c">
+                注销后账号将无法恢复，所有数据将被清除，请谨慎操作。
+              </div>
+              <div style="padding: 20px 0">
+                <el-button type="danger" @click="handleDeactivate"
+                  >确认注销账号</el-button
+                >
+              </div>
+            </el-tab-pane>
+            <el-tab-pane label="修改密码" name="pwd">
+              <div class="tab-desc">建议定期更换密码，密码长度至少 6 位。</div>
+              <el-form
+                ref="pwdRef"
+                :model="pwdForm"
+                :rules="pwdRules"
+                label-width="88px"
+                class="profile-form"
+              >
+                <el-form-item label="旧密码" prop="oldPassword">
+                  <el-input
+                    v-model="pwdForm.oldPassword"
+                    type="password"
+                    show-password
+                    placeholder="请输入旧密码"
+                  />
+                </el-form-item>
+                <el-form-item label="新密码" prop="newPassword">
+                  <el-input
+                    v-model="pwdForm.newPassword"
+                    type="password"
+                    show-password
+                    placeholder="请输入新密码"
+                  />
+                </el-form-item>
+                <el-form-item label="确认密码" prop="confirmPassword">
+                  <el-input
+                    v-model="pwdForm.confirmPassword"
+                    type="password"
+                    show-password
+                    placeholder="请再次输入新密码"
+                  />
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" :loading="saving" @click="submitPwd"
+                    >更新密码</el-button
+                  >
+                </el-form-item>
+              </el-form>
+            </el-tab-pane>
+          </el-tabs>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Camera, User } from '@element-plus/icons-vue'
-import { useUserStore } from '@/store/user'
-import { getProfile, updateProfile, updateUserPwd, uploadAvatar } from '@/api/profile'
+import { ref, reactive, computed, onMounted } from "vue";
+import { ElMessage } from "element-plus";
+import { Camera, User } from "@element-plus/icons-vue";
+import { useUserStore } from "@/store/user";
+import {
+  getProfile,
+  updateProfile,
+  updateUserPwd,
+  uploadAvatar,
+  deactivateAccount,
+} from "@/api/profile";
+import { ElMessageBox } from "element-plus";
 
-const userStore = useUserStore()
-const activeTab = ref('info')
-const saving = ref(false)
-const profile = ref({})
-const infoRef = ref()
-const pwdRef = ref()
+const userStore = useUserStore();
+const activeTab = ref("info");
+const saving = ref(false);
+const profile = ref({});
+const infoRef = ref();
+const pwdRef = ref();
 
-const roleMap = { '0': '业主', '1': '维修工', '2': '物业管理员' }
-const roleLabel = computed(() => roleMap[profile.value.userType] || '用户')
+const roleMap = { 0: "业主", 1: "维修工", 2: "物业管理员" };
+const roleLabel = computed(() => roleMap[profile.value.userType] || "用户");
 
 function genderLabel(gender) {
-  if (gender === '0') return '男'
-  if (gender === '1') return '女'
-  return '-'
+  if (gender === "0") return "男";
+  if (gender === "1") return "女";
+  return "-";
 }
 
 const infoForm = reactive({
-  username: '',
-  nickName: '',
-  phone: '',
-  avatar: '',
-  gender: '',
-  age: null
-})
+  username: "",
+  nickName: "",
+  phone: "",
+  avatar: "",
+  gender: "",
+  age: null,
+});
 
 const pwdForm = reactive({
-  oldPassword: '',
-  newPassword: '',
-  confirmPassword: ''
-})
+  oldPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+});
 
 const infoRules = {
-  nickName: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
+  nickName: [{ required: true, message: "请输入昵称", trigger: "blur" }],
   phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { pattern: /^1\d{10}$/, message: '手机号格式不正确', trigger: 'blur' }
+    { required: true, message: "请输入手机号", trigger: "blur" },
+    { pattern: /^1\d{10}$/, message: "手机号格式不正确", trigger: "blur" },
   ],
-  age: [{ type: 'number', min: 1, max: 120, message: '年龄应在1-120之间', trigger: 'blur' }]
-}
+  age: [
+    {
+      type: "number",
+      min: 1,
+      max: 120,
+      message: "年龄应在1-120之间",
+      trigger: "blur",
+    },
+  ],
+};
 
 const validateConfirmPwd = (rule, value, callback) => {
-  if (value !== pwdForm.newPassword) callback(new Error('两次密码不一致'))
-  else callback()
-}
+  if (value !== pwdForm.newPassword) callback(new Error("两次密码不一致"));
+  else callback();
+};
 
 const pwdRules = {
-  oldPassword: [{ required: true, message: '请输入旧密码', trigger: 'blur' }],
+  oldPassword: [{ required: true, message: "请输入旧密码", trigger: "blur" }],
   newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, message: '至少6位', trigger: 'blur' }
+    { required: true, message: "请输入新密码", trigger: "blur" },
+    { min: 6, message: "至少6位", trigger: "blur" },
   ],
   confirmPassword: [
-    { required: true, message: '请确认密码', trigger: 'blur' },
-    { validator: validateConfirmPwd, trigger: 'blur' }
-  ]
-}
+    { required: true, message: "请确认密码", trigger: "blur" },
+    { validator: validateConfirmPwd, trigger: "blur" },
+  ],
+};
 
 const avatarUrl = computed(() => {
-  const av = profile.value.avatar || infoForm.avatar
-  if (!av) return ''
-  if (av.startsWith('http') || av.startsWith('data:')) return av
-  return '/api' + av
-})
+  const av = profile.value.avatar || infoForm.avatar;
+  if (!av) return "";
+  if (av.startsWith("http") || av.startsWith("data:")) return av;
+  return "/api" + av;
+});
 
 async function loadProfile() {
-  const res = await getProfile()
-  profile.value = res.data
-  infoForm.username = res.data.username
-  infoForm.nickName = res.data.nickName
-  infoForm.phone = res.data.phone
-  infoForm.avatar = res.data.avatar
-  infoForm.gender = res.data.gender || ''
-  infoForm.age = res.data.age ?? null
+  const res = await getProfile();
+  profile.value = res.data;
+  infoForm.username = res.data.username;
+  infoForm.nickName = res.data.nickName;
+  infoForm.phone = res.data.phone;
+  infoForm.avatar = res.data.avatar;
+  infoForm.gender = res.data.gender || "";
+  infoForm.age = res.data.age ?? null;
 }
 
 async function handleAvatarUpload({ file }) {
-  const res = await uploadAvatar(file)
-  infoForm.avatar = res.data.imgUrl
-  profile.value.avatar = res.data.imgUrl
-  syncUserStore()
-  ElMessage.success('头像已更新')
+  const res = await uploadAvatar(file);
+  infoForm.avatar = res.data.imgUrl;
+  profile.value.avatar = res.data.imgUrl;
+  syncUserStore();
+  ElMessage.success("头像已更新");
 }
 
 async function submitInfo() {
-  await infoRef.value.validate()
-  saving.value = true
+  await infoRef.value.validate();
+  saving.value = true;
   try {
     const payload = {
       nickName: infoForm.nickName,
       phone: infoForm.phone,
       avatar: infoForm.avatar,
       gender: infoForm.gender || null,
-      age: infoForm.age
-    }
-    const res = await updateProfile(payload)
-    profile.value = res.data
-    infoForm.gender = res.data.gender || ''
-    infoForm.age = res.data.age ?? null
-    syncUserStore()
-    ElMessage.success('保存成功')
+      age: infoForm.age,
+    };
+    const res = await updateProfile(payload);
+    profile.value = res.data;
+    infoForm.gender = res.data.gender || "";
+    infoForm.age = res.data.age ?? null;
+    syncUserStore();
+    ElMessage.success("保存成功");
   } finally {
-    saving.value = false
+    saving.value = false;
+  }
+}
+
+async function handleDeactivate() {
+  try {
+    await ElMessageBox.confirm(
+      "注销后账号将无法恢复，确定要注销吗？",
+      "注销账号",
+      {
+        confirmButtonText: "确认注销",
+        cancelButtonText: "取消",
+        type: "warning",
+      },
+    );
+    await deactivateAccount();
+    ElMessage.success("账号已注销");
+    userStore.logout();
+    window.location.href = "/login";
+  } catch (e) {
+    if (e !== "cancel") ElMessage.error(e.message || "注销失败");
   }
 }
 
 async function submitPwd() {
-  await pwdRef.value.validate()
-  saving.value = true
+  await pwdRef.value.validate();
+  saving.value = true;
   try {
     await updateUserPwd({
       oldPassword: pwdForm.oldPassword,
-      newPassword: pwdForm.newPassword
-    })
-    ElMessage.success('密码修改成功，请重新登录')
-    pwdForm.oldPassword = ''
-    pwdForm.newPassword = ''
-    pwdForm.confirmPassword = ''
-    userStore.logout()
-    window.location.href = '/login'
+      newPassword: pwdForm.newPassword,
+    });
+    ElMessage.success("密码修改成功，请重新登录");
+    pwdForm.oldPassword = "";
+    pwdForm.newPassword = "";
+    pwdForm.confirmPassword = "";
+    userStore.logout();
+    window.location.href = "/login";
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
@@ -240,12 +345,12 @@ function syncUserStore() {
     ...userStore.user,
     nickName: profile.value.nickName,
     phone: profile.value.phone,
-    avatar: profile.value.avatar
-  }
-  localStorage.setItem('smartcare_user', JSON.stringify(userStore.user))
+    avatar: profile.value.avatar,
+  };
+  localStorage.setItem("smartcare_user", JSON.stringify(userStore.user));
 }
 
-onMounted(loadProfile)
+onMounted(loadProfile);
 </script>
 
 <style scoped lang="scss">

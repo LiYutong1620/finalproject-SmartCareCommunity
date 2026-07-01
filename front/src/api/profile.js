@@ -1,24 +1,32 @@
-import request from '@/utils/request'
+import request from "@/utils/request";
 
 export function getProfile() {
-  return request({ url: '/system/user/profile', method: 'get' })
+  return request({ url: "/system/user/profile", method: "get" });
 }
 
 export function updateProfile(data) {
-  return request({ url: '/system/user/profile', method: 'put', data })
+  return request({ url: "/system/user/profile", method: "put", data });
 }
 
 export function updateUserPwd(data) {
-  return request({ url: '/system/user/profile/updatePwd', method: 'put', data })
+  return request({
+    url: "/system/user/profile/updatePwd",
+    method: "put",
+    data,
+  });
 }
 
 export function uploadAvatar(file) {
-  const formData = new FormData()
-  formData.append('avatarfile', file)
+  const formData = new FormData();
+  formData.append("avatarfile", file);
   return request({
-    url: '/system/user/profile/avatar',
-    method: 'post',
+    url: "/system/user/profile/avatar",
+    method: "post",
     data: formData,
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}
+
+export function deactivateAccount() {
+  return request({ url: "/system/user/profile/deactivate", method: "delete" });
 }

@@ -1,74 +1,81 @@
 <template>
-  <div class="app-container">
-    <el-form :inline="true" class="search-form">
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
-
-    <el-card shadow="never" class="table-card">
-      <el-table :data="list" v-loading="loading" border stripe>
+  <div class="app-container elder-archive">
+    <el-card shadow="never">
+      <template #header>
+        <div class="card-header">
+          <span>独居老人列表</span>
+          <el-button icon="Refresh" @click="loadElders" :loading="elderLoading"
+            >刷新</el-button
+          >
+        </div>
+      </template>
+      <el-table :data="elderList" v-loading="elderLoading" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column prop="alertId" label="ID" width="80" align="center" />
-        <el-table-column prop="residentId" label="老人档案ID" width="110" align="center" />
-        <el-table-column prop="alertType" label="预警类型" width="100" />
-        <el-table-column prop="alertLevel" label="等级" width="70" align="center" />
-        <el-table-column prop="content" label="内容" min-width="160" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态" width="90" align="center" />
-        <el-table-column label="操作" width="100" align="center" fixed="right">
+        <el-table-column prop="name" label="姓名" width="100" />
+        <el-table-column prop="age" label="年龄" width="70" align="center" />
+        <el-table-column prop="gender" label="性别" width="70" align="center">
+          <template #default="{ row }">{{
+            row.gender === "0" ? "男" : "女"
+          }}</template>
+        </el-table-column>
+        <el-table-column prop="phone" label="联系电话" width="130" />
+        <el-table-column
+          prop="emergencyContact"
+          label="紧急联系人"
+          width="130"
+        />
+        <el-table-column
+          prop="address"
+          label="住址"
+          min-width="160"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="livingAlone"
+          label="独居标记"
+          width="90"
+          align="center"
+        >
           <template #default="{ row }">
-            <el-button v-if="row.status === 'pending'" link type="primary" @click="handle(row)">处置</el-button>
+            <el-tag v-if="row.livingAlone === '1'" type="warning" size="small"
+              >独居</el-tag
+            >
+            <el-tag v-else type="success" size="small">非独居</el-tag>
           </template>
         </el-table-column>
       </el-table>
-      <Pagination
-        v-show="total > 0"
-        :total="total"
-        v-model:page="query.pageNum"
-        v-model:limit="query.pageSize"
-        @pagination="load"
-      />
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { listElderAlert, handleElderAlert } from '@/api/property'
+import { ref, onMounted } from "vue";
+import { getAloneElders } from "@/api/elderAi";
 
-const loading = ref(false)
-const list = ref([])
-const total = ref(0)
-const query = reactive({ pageNum: 1, pageSize: 10 })
+const elderLoading = ref(false);
+const elderList = ref([]);
 
-async function load() {
-  loading.value = true
+async function loadElders() {
+  elderLoading.value = true;
   try {
-    const res = await listElderAlert(query)
-    list.value = res.data.rows
-    total.value = res.data.total
-  } finally { loading.value = false }
+    const res = await getAloneElders();
+    elderList.value = res.data || [];
+  } finally {
+    elderLoading.value = false;
+  }
 }
 
-function handleQuery() {
-  query.pageNum = 1
-  load()
-}
-
-function resetQuery() {
-  query.pageNum = 1
-  query.pageSize = 10
-  load()
-}
-
-async function handle(row) {
-  const { value } = await ElMessageBox.prompt('请输入处置结果', '处置预警')
-  await handleElderAlert({ alertId: row.alertId, handleResult: value, status: 'handled' })
-  ElMessage.success('处置完成')
-  load()
-}
-
-onMounted(load)
+onMounted(loadElders);
 </script>
+
+<style scoped lang="scss">
+.elder-archive {
+  padding: 16px;
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+</style>
