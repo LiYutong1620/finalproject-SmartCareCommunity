@@ -77,6 +77,20 @@ public class SysMessageService {
         messageMapper.updateById(msg);
     }
 
+    public long unreadCount(Long userId) {
+        List<Long> msgIds = messageUserMapper.selectList(
+            new LambdaQueryWrapper<SysMessageUser>()
+                .eq(SysMessageUser::getUserId, userId)
+                .eq(SysMessageUser::getReadFlag, 0))
+            .stream().map(SysMessageUser::getMessageId).toList();
+        if (msgIds.isEmpty()) {
+            return 0;
+        }
+        return messageMapper.selectCount(new LambdaQueryWrapper<SysMessage>()
+            .in(SysMessage::getMessageId, msgIds)
+            .eq(SysMessage::getRecalled, 0));
+    }
+
     public void updatePriority(Long messageId, String priority) {
         SysMessage msg = new SysMessage();
         msg.setMessageId(messageId);
