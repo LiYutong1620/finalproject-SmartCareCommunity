@@ -97,7 +97,9 @@ const menuMap = {
     { path: '/owner/assistant', title: '智能问答', icon: 'ChatDotRound' }
   ],
   '1': [
-    { path: '/worker/order', title: '工单作业', icon: 'Tools' }
+    { path: '/worker/order', title: '工单作业', icon: 'Tools' },
+    { path: '/worker/order/messages', title: '消息通知', icon: 'Bell' },
+    { path: '/worker/order/knowledge', title: '维修知识库', icon: 'Reading' }
   ],
   '2': [
     { path: '/property/dashboard', title: '数据大屏', icon: 'DataAnalysis' },
@@ -111,6 +113,8 @@ const menuMap = {
       ]
     },
     { path: '/property/repair', title: '工单监管', icon: 'Tools' },
+    { path: '/property/repair/ai-report', title: 'AI复盘周报', icon: 'DataAnalysis' },
+    { path: '/property/repair/ai-trend', title: '服务质量趋势', icon: 'TrendCharts' },
     { path: '/property/elder', title: '老人关怀', icon: 'FirstAidKit' },
     {
       title: 'AI智能问答管理',

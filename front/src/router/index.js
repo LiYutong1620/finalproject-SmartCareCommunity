@@ -15,6 +15,8 @@ const ownerRoutes = {
   meta: { title: '业主端', roles: ['0'] },
   children: [
     { path: 'repair', component: () => import('@/views/owner/repair/index.vue'), meta: { title: '报修工单' } },
+    { path: 'repair/accept/:orderId', component: () => import('@/views/owner/repair/accept.vue'), meta: { title: '验收工单' } }, // 喵
+    { path: 'repair/detail/:orderId', component: () => import('@/views/owner/repair/detail.vue'), meta: { title: '工单进度' } }, // 喵
     { path: 'notice', component: () => import('@/views/owner/notice/index.vue'), meta: { title: '社区公告' } },
     { path: 'notice/detail/:id', component: () => import('@/views/owner/notice/detail.vue'), meta: { title: '公告详情' } },
     { path: 'outage', component: () => import('@/views/owner/outage/index.vue'), meta: { title: '停水停电' } },
@@ -31,6 +33,9 @@ const workerRoutes = {
   meta: { title: '维修工端', roles: ['1'] },
   children: [
     { path: 'order', component: () => import('@/views/worker/order/index.vue'), meta: { title: '工单作业' } },
+    { path: 'order/profile', component: () => import('@/views/worker/order/profile.vue'), meta: { title: '个人状态' } },
+    { path: 'order/messages', component: () => import('@/views/worker/order/messages.vue'), meta: { title: '消息通知' } },
+    { path: 'order/knowledge', component: () => import('@/views/worker/order/knowledge.vue'), meta: { title: '维修知识库' } },
     { path: 'profile', component: () => import('@/views/profile/index.vue'), meta: { title: '个人中心' } }
   ]
 }
@@ -44,6 +49,10 @@ const propertyRoutes = {
     { path: 'house', component: () => import('@/views/property/house/index.vue'), meta: { title: '房屋管理', parent: '社区资源' } },
     { path: 'resident', component: () => import('@/views/property/resident/index.vue'), meta: { title: '住户档案', parent: '社区资源' } },
     { path: 'repair', component: () => import('@/views/property/repair/index.vue'), meta: { title: '工单监管' } },
+    { path: 'repair/detail/:orderId', component: () => import('@/views/property/repair/detail.vue'), meta: { title: '工单详情' } },
+    { path: 'repair/type-manage', component: () => import('@/views/property/repair/type-manage.vue'), meta: { title: '报修类型管理' } },
+    { path: 'repair/ai-report', component: () => import('@/views/property/repair/ai-report.vue'), meta: { title: 'AI复盘周报' } },
+    { path: 'repair/ai-trend', component: () => import('@/views/property/repair/ai-trend.vue'), meta: { title: '服务质量趋势' } },
     { path: 'elder', component: () => import('@/views/property/elder/index.vue'), meta: { title: '老人关怀' } },
     { path: 'notice/announce', component: () => import('@/views/property/notice/index.vue'), meta: { title: '社区公告', noticeType: 'announce', parent: '公告通知' } },
     { path: 'notice/outage', component: () => import('@/views/property/notice/index.vue'), meta: { title: '停水停电', noticeType: 'outage', parent: '公告通知' } },
