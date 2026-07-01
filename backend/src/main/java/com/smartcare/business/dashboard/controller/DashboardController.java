@@ -62,4 +62,16 @@ public class DashboardController {
     public AjaxResult alertTrendByType() {
         return AjaxResult.success(dashboardService.getAlertTrendByType());
     }
+
+    /** 工单状态分布 */
+    @GetMapping("/order-status-distribution")
+    public AjaxResult orderStatusDistribution() {
+        return AjaxResult.success(dashboardService.getOrderStatusDistribution());
+    }
+
+    /** 维修工负载TOP5 */
+    @GetMapping("/worker-load")
+    public AjaxResult workerLoad() {
+        return AjaxResult.success(dashboardService.getWorkerLoad());
+    }
 }

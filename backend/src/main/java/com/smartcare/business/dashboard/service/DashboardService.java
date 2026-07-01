@@ -384,6 +384,61 @@ public class DashboardService {
     }
 
     /**
+     * 报修工单状态分布
+     */
+    public List<Map<String, Object>> getOrderStatusDistribution() {
+        List<RpOrder> allOrders = orderMapper.selectList(null);
+        Map<String, Long> statusCount = allOrders.stream()
+            .collect(Collectors.groupingBy(o -> {
+                String s = o.getStatus();
+                if (s == null) return "未知";
+                return switch (s) {
+                    case "pending" -> "待接单";
+                    case "assigned" -> "已派单";
+                    case "accepted" -> "已接单";
+                    case "in_progress" -> "维修中";
+                    case "completed" -> "已完成";
+                    case "evaluated" -> "已评价";
+                    case "rejected" -> "已拒绝";
+                    default -> s;
+                };
+            }, Collectors.counting()));
+        return statusCount.entrySet().stream()
+            .map(e -> {
+                Map<String, Object> m = new HashMap<>();
+                m.put("name", e.getKey());
+                m.put("value", e.getValue());
+                return m;
+            })
+            .sorted((a, b) -> Long.compare((Long) b.get("value"), (Long) a.get("value")))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 维修工负载TOP5
+     */
+    public List<Map<String, Object>> getWorkerLoad() {
+        List<RpOrder> allOrders = orderMapper.selectList(
+            new LambdaQueryWrapper<RpOrder>().isNotNull(RpOrder::getWorkerId));
+        Map<Long, Long> workerCount = allOrders.stream()
+            .collect(Collectors.groupingBy(RpOrder::getWorkerId, Collectors.counting()));
+
+        // 查询维修工姓名
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<Long, Long> entry : workerCount.entrySet()) {
+            String name = jdbcTemplate.queryForList(
+                "SELECT nick_name FROM sys_user WHERE user_id = ?", String.class, entry.getKey())
+                .stream().findFirst().orElse("维修工#" + entry.getKey());
+            Map<String, Object> item = new HashMap<>();
+            item.put("name", name);
+            item.put("value", entry.getValue());
+            result.add(item);
+        }
+        result.sort((a, b) -> Long.compare((Long) b.get("value"), (Long) a.get("value")));
+        return result.size() > 5 ? result.subList(0, 5) : result;
+    }
+
+    /**
      * 构建近30天的趋势列表（补齐无数据的日期为0）
      */
     private List<Map<String, Object>> buildTrendList(Map<String, Long> dailyCount) {

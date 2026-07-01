@@ -40,10 +40,12 @@ public class ElderCareController {
                                 @RequestParam(defaultValue = "10") int pageSize,
                                 @RequestParam(required = false) String alertType,
                                 @RequestParam(required = false) String keyword,
+                                @RequestParam(required = false) String status,
                                 @RequestParam(defaultValue = "createTime") String orderBy,
                                 @RequestParam(defaultValue = "desc") String orderDir) {
         Page<ElAlert> page = alertMapper.selectPage(new Page<>(pageNum, pageSize),
             new LambdaQueryWrapper<ElAlert>()
+                .eq(status != null && !status.isEmpty(), ElAlert::getStatus, status)
                 .eq(alertType != null && !alertType.isEmpty(), ElAlert::getAlertType, alertType)
                 .like(keyword != null && !keyword.isEmpty(), ElAlert::getContent, keyword)
                 .orderByDesc("desc".equals(orderDir), ElAlert::getCreateTime)
