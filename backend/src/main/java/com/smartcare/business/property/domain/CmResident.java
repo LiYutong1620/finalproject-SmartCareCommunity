@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -30,6 +31,8 @@ public class CmResident extends BaseEntity {
     private String familyMembers;
     private String remark;
     private String delFlag;
+    private Integer isAloneLiving;
+    private LocalDateTime lastActivityTime;
 
     @TableField(exist = false)
     private java.util.List<Long> tagIds;

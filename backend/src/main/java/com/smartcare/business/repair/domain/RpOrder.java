@@ -32,10 +32,4 @@ public class RpOrder extends BaseEntity {
     private String signImage;
     private String rejectReason;
     private String assignReason;
-    /** AI识别故障类型标签 */
-    private String aiTypeLabel;
-    /** 高风险标记：0否 1是 */
-    private Integer highRisk;
-    /** 重复报修标记：0否 1是 */
-    private Integer duplicateFlag;
 }

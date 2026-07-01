@@ -1,41 +1,65 @@
 package com.smartcare.business.dashboard.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.smartcare.business.elder.domain.ElAlert;
-import com.smartcare.business.elder.mapper.ElAlertMapper;
-import com.smartcare.business.repair.domain.RpOrder;
-import com.smartcare.business.repair.mapper.RpOrderMapper;
+import com.smartcare.business.dashboard.service.DashboardService;
 import com.smartcare.common.core.domain.AjaxResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/property/dashboard")
 @RequiredArgsConstructor
 public class DashboardController {
 
-    private final RpOrderMapper orderMapper;
-    private final ElAlertMapper alertMapper;
+    private final DashboardService dashboardService;
 
-    @GetMapping("/stats")
-    public AjaxResult stats() {
-        long totalOrders = orderMapper.selectCount(null);
-        long completedOrders = orderMapper.selectCount(
-            new LambdaQueryWrapper<RpOrder>().eq(RpOrder::getStatus, "completed"));
-        long pendingAlerts = alertMapper.selectCount(
-            new LambdaQueryWrapper<ElAlert>().eq(ElAlert::getStatus, "pending"));
+    @GetMapping("/summary")
+    public AjaxResult summary() {
+        return AjaxResult.success(dashboardService.getSummaryStats());
+    }
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("totalOrders", totalOrders);
-        data.put("completedOrders", completedOrders);
-        data.put("completionRate", totalOrders == 0 ? 0 :
-            Math.round(completedOrders * 10000.0 / totalOrders) / 100.0);
-        data.put("pendingAlerts", pendingAlerts);
-        return AjaxResult.success(data);
+    @GetMapping("/elder-stats")
+    public AjaxResult elderStats() {
+        return AjaxResult.success(dashboardService.getElderStats());
+    }
+
+    @GetMapping("/alert-trend")
+    public AjaxResult alertTrend() {
+        return AjaxResult.success(dashboardService.getAlertTrend());
+    }
+
+    @GetMapping("/order-trend")
+    public AjaxResult orderTrend() {
+        return AjaxResult.success(dashboardService.getOrderTrend());
+    }
+
+    @GetMapping("/staff-performance")
+    public AjaxResult staffPerformance() {
+        return AjaxResult.success(dashboardService.getStaffPerformance());
+    }
+
+    @GetMapping("/risk-residents")
+    public AjaxResult riskResidents() {
+        return AjaxResult.success(dashboardService.getRiskResidents());
+    }
+
+    /** 工单完成率（按日/周/月） */
+    @GetMapping("/completion-rate")
+    public AjaxResult completionRate(@RequestParam(defaultValue = "month") String period) {
+        return AjaxResult.success(dashboardService.getCompletionRateTrend(period));
+    }
+
+    /** 报修分布（按故障类型 + 按楼栋） */
+    @GetMapping("/repair-distribution")
+    public AjaxResult repairDistribution() {
+        return AjaxResult.success(dashboardService.getRepairDistribution());
+    }
+
+    /** 预警趋势（按预警类型分类：老人安全预警 / 设备预警） */
+    @GetMapping("/alert-trend-by-type")
+    public AjaxResult alertTrendByType() {
+        return AjaxResult.success(dashboardService.getAlertTrendByType());
     }
 }
