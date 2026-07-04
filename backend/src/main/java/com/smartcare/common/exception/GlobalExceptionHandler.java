@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
         log.error("数据库访问异常", e);
         String msg = e.getMostSpecificCause() != null ? e.getMostSpecificCause().getMessage() : e.getMessage();
         if (msg != null && (msg.contains("Unknown column") || msg.contains("doesn't exist"))) {
-            return AjaxResult.error("数据库结构未更新，请重新导入 sql/smart_care_community.sql 或执行 sql/upgrade_after_merge.sql");
+            return AjaxResult.error("数据库结构未更新，请重新导入 sql/smart_care_community.sql");
         }
         if (msg != null && (msg.contains("Data too long") || msg.contains("Data truncation"))) {
             return AjaxResult.error("数据长度超出限制，请联系管理员检查表结构");

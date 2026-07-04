@@ -35,7 +35,7 @@ public class DatabaseSchemaValidator implements ApplicationRunner {
                     "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?",
                 Integer.class, parts[0], parts[1]);
             if (count == null || count == 0) {
-                log.error("缺少数据库字段 {}.{}，请执行 sql/smart_care_community.sql 整库导入，或 sql/upgrade_after_merge.sql 增量升级",
+                log.error("缺少数据库字段 {}.{}，请重新导入 sql/smart_care_community.sql",
                     parts[0], parts[1]);
             }
         }
