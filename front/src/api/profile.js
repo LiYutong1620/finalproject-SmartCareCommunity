@@ -8,6 +8,14 @@ export function updateProfile(data) {
   return request({ url: "/system/user/profile", method: "put", data });
 }
 
+export function sendProfilePhoneCode(phone) {
+  return request({
+    url: "/system/user/profile/phone/send-code",
+    method: "post",
+    data: { phone },
+  });
+}
+
 export function updateUserPwd(data) {
   return request({
     url: "/system/user/profile/updatePwd",
@@ -25,8 +33,4 @@ export function uploadAvatar(file) {
     data: formData,
     headers: { "Content-Type": "multipart/form-data" },
   });
-}
-
-export function deactivateAccount() {
-  return request({ url: "/system/user/profile/deactivate", method: "delete" });
 }

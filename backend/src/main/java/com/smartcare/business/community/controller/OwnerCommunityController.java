@@ -45,7 +45,8 @@ public class OwnerCommunityController {
 
     @PutMapping("/owner/resident/emergency")
     public AjaxResult updateEmergency(@RequestBody Map<String, String> body) {
-        communityService.updateEmergencyContact(body.get("emergencyContact"));
+        communityService.updateEmergencyContact(
+            body.get("emergencyName"), body.get("emergencyPhone"), body.get("emergencyRelation"));
         return AjaxResult.success();
     }
 }

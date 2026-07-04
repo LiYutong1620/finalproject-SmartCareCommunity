@@ -1,16 +1,8 @@
 <template>
-  <el-container class="layout-container">
+  <el-container class="layout-container" :class="roleThemeClass">
     <el-aside :width="sidebarWidth" class="aside">
       <div class="logo">
-        <img
-          v-if="!collapsed"
-          src=""
-          alt=""
-          class="logo-icon"
-          style="display: none"
-        />
-        <span v-if="!collapsed" class="logo-title">SmartCare</span>
-        <span v-else class="logo-mini">SC</span>
+        <AppLogo :size="32" :collapsed="collapsed" theme="light" />
       </div>
       <el-scrollbar class="menu-scroll">
         <el-menu
@@ -18,9 +10,9 @@
           :default-openeds="defaultOpeneds"
           :collapse="collapsed"
           router
-          background-color="#1d2935"
-          text-color="#a8b4c2"
-          active-text-color="#ffffff"
+          background-color="transparent"
+          text-color="var(--brand-sidebar-text)"
+          active-text-color="var(--brand-sidebar-text-active)"
         >
           <template v-for="item in menus" :key="item.path || item.title">
             <el-sub-menu v-if="item.children?.length" :index="item.title">
@@ -61,9 +53,11 @@
         <div class="navbar-right">
           <el-dropdown trigger="click" @command="handleCommand">
             <div class="user-info">
-              <el-avatar :size="30" :src="avatarSrc">{{
-                avatarText
-              }}</el-avatar>
+              <el-avatar
+                :size="30"
+                :src="avatarSrc"
+                :style="avatarFallbackStyle"
+              >{{ avatarText }}</el-avatar>
               <span class="nick-name">{{
                 userStore.nickName || userStore.user?.username
               }}</span>
@@ -82,7 +76,7 @@
           </el-dropdown>
         </div>
       </el-header>
-      <el-main class="app-main">
+      <el-main class="app-main" :class="{ 'app-main--full': route.meta.fullHeight }">
         <router-view :key="$route.fullPath" />
       </el-main>
     </el-container>
@@ -91,7 +85,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { ElMessageBox } from "element-plus";
 import {
   ArrowDown,
@@ -101,15 +95,21 @@ import {
   Expand,
 } from "@element-plus/icons-vue";
 import { useUserStore } from "@/store/user";
+import AppLogo from "@/components/AppLogo.vue";
+import { getRoleAvatarColor } from "@/utils/avatar";
+import { getRoleThemeClass } from "@/constants/brand";
 
 const userStore = useUserStore();
 const router = useRouter();
+const route = useRoute();
 const collapsed = ref(false);
 
 const sidebarWidth = computed(() => (collapsed.value ? "64px" : "210px"));
 
 const roleMap = { 0: "业主端", 1: "维修工端", 2: "物业端" };
 const roleLabel = computed(() => roleMap[userStore.userType] || "");
+
+const roleThemeClass = computed(() => getRoleThemeClass(userStore.userType));
 
 const profilePathMap = {
   0: "/owner/profile",
@@ -125,7 +125,18 @@ const menuMap = {
     { path: "/owner/resident", title: "住户档案", icon: "User" },
     { path: "/owner/assistant", title: "智能问答", icon: "ChatDotRound" },
   ],
-  1: [{ path: "/worker/order", title: "工单作业", icon: "Tools" }],
+  1: [
+    { path: "/worker/home", title: "首页", icon: "HomeFilled" },
+    {
+      title: "任务中心",
+      icon: "Tools",
+      children: [
+        { path: "/worker/order/todo", title: "待办任务" },
+        { path: "/worker/order/history", title: "历史记录" },
+      ],
+    },
+    { path: "/worker/order/work-status", title: "我的资质", icon: "Medal" },
+  ],
   2: [
     { path: "/property/dashboard", title: "数据大屏", icon: "DataAnalysis" },
     {
@@ -142,7 +153,9 @@ const menuMap = {
       icon: "Tools",
       children: [
         { path: "/property/repair", title: "工单监管" },
-        { path: "/property/skill", title: "技能标签" },
+        { path: "/property/repair/type", title: "报修类型" },
+        { path: "/property/repair/ai-report", title: "工单复盘" },
+        { path: "/property/skill", title: "维修工资质" },
       ],
     },
     {
@@ -152,6 +165,7 @@ const menuMap = {
         { path: "/property/elder", title: "老人档案" },
         { path: "/property/elder-ai-monitor", title: "AI安全监测" },
         { path: "/property/elder-utility", title: "水电监测" },
+        { path: "/property/elder/staff", title: "关怀人员" },
       ],
     },
     {
@@ -173,11 +187,12 @@ const menuMap = {
       ],
     },
     {
-      title: "系统管理",
-      icon: "Setting",
+      title: "用户管理",
+      icon: "UserFilled",
       children: [
-        { path: "/property/user", title: "用户管理" },
-        { path: "/property/permission", title: "权限管理" },
+        { path: "/property/users/owner", title: "业主管理" },
+        { path: "/property/users/worker", title: "维修工管理" },
+        { path: "/property/users/property", title: "物业管理" },
       ],
     },
   ],
@@ -185,6 +200,9 @@ const menuMap = {
 
 const defaultOpeneds = computed(() => {
   const type = userStore.userType;
+  if (type === "1" && route.path.startsWith("/worker/order")) {
+    return ["任务中心"];
+  }
   if (type === "2") return [];
   return [];
 });
@@ -201,6 +219,15 @@ const avatarSrc = computed(() => {
 const avatarText = computed(() => {
   const name = userStore.nickName || userStore.user?.username || "U";
   return name.charAt(0).toUpperCase();
+});
+
+const avatarFallbackStyle = computed(() => {
+  if (avatarSrc.value) return {};
+  return {
+    backgroundColor: getRoleAvatarColor(userStore.userType),
+    color: "#fff",
+    fontWeight: 600,
+  };
 });
 
 function handleCommand(cmd) {
@@ -237,31 +264,34 @@ onMounted(() => {
   height: 100vh;
 }
 .aside {
-  background: #1d2935;
+  background: linear-gradient(
+    180deg,
+    var(--brand-sidebar-bg) 0%,
+    var(--brand-sidebar-bg-end) 100%
+  );
+  border-right: 1px solid var(--brand-border);
   transition: width 0.28s ease;
   overflow: hidden;
-  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.15);
 }
 .logo {
   height: 56px;
-  line-height: 56px;
-  text-align: center;
-  background: #162029;
-  color: #fff;
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: 1px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  .logo-mini {
-    font-size: 16px;
-    font-weight: 700;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--brand-border);
+  overflow: hidden;
 }
 .menu-scroll {
   height: calc(100vh - 56px);
-  :deep(.el-menu) {
+  :deep(.el-menu),
+  :deep(.el-menu--inline) {
     border-right: none;
     padding: 6px 0;
+    background-color: transparent !important;
+  }
+  :deep(.el-sub-menu .el-menu) {
+    background-color: transparent !important;
   }
   :deep(.el-menu-item) {
     height: 44px;
@@ -269,11 +299,14 @@ onMounted(() => {
     margin: 2px 8px;
     border-radius: 6px;
     &.is-active {
-      background: rgba(64, 158, 255, 0.2) !important;
-      color: #fff;
+      background: var(--brand-surface) !important;
+      color: var(--brand-sidebar-text-active) !important;
+      font-weight: 600;
+      box-shadow: 0 1px 4px rgba(74, 108, 140, 0.08);
     }
     &:hover:not(.is-active) {
-      background: rgba(255, 255, 255, 0.05) !important;
+      background: rgba(255, 255, 255, 0.55) !important;
+      color: var(--brand-sidebar-text-active) !important;
     }
   }
   :deep(.el-sub-menu__title) {
@@ -282,8 +315,17 @@ onMounted(() => {
     margin: 2px 8px;
     border-radius: 6px;
     &:hover {
-      background: rgba(255, 255, 255, 0.05) !important;
+      background: rgba(255, 255, 255, 0.55) !important;
+      color: var(--brand-sidebar-text-active) !important;
     }
+  }
+  :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
+    color: var(--brand-sidebar-text-active) !important;
+    font-weight: 600;
+  }
+  :deep(.el-sub-menu .el-menu-item.is-active) {
+    background: var(--brand-surface) !important;
+    box-shadow: 0 1px 4px rgba(74, 108, 140, 0.08);
   }
   :deep(.el-sub-menu .el-menu-item) {
     padding-left: 52px !important;
@@ -292,7 +334,7 @@ onMounted(() => {
 }
 .main-wrap {
   flex-direction: column;
-  background: #f5f7fa;
+  background: var(--brand-content-bg);
 }
 .navbar {
   height: 56px;
@@ -300,8 +342,8 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.06);
+  background: var(--brand-content-bg);
+  border-bottom: 1px solid var(--brand-content-border);
   z-index: 10;
 }
 .navbar-left {
@@ -315,7 +357,7 @@ onMounted(() => {
   color: #5a5e66;
   transition: color 0.2s;
   &:hover {
-    color: #409eff;
+    color: var(--brand-primary);
   }
 }
 .navbar-right {
@@ -339,7 +381,7 @@ onMounted(() => {
   }
   .nick-name {
     font-size: 14px;
-    color: #303133;
+    color: var(--brand-text);
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -354,5 +396,13 @@ onMounted(() => {
 .app-main {
   padding: 0;
   overflow: auto;
+  overflow-x: hidden;
+  background: var(--brand-content-bg);
+
+  &--full {
+    overflow: hidden;
+    height: calc(100vh - 56px);
+    min-height: 0;
+  }
 }
 </style>

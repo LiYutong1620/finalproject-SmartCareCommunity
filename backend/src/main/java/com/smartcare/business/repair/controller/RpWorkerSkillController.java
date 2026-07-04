@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/system/worker-skill")
@@ -37,6 +38,9 @@ public class RpWorkerSkillController {
         if (!StringUtils.hasText(skill.getSkillName())) {
             throw new ServiceException("技能名称不能为空");
         }
+        if (!StringUtils.hasText(skill.getAuditStatus())) {
+            skill.setAuditStatus("1");
+        }
         skillMapper.insert(skill);
         return AjaxResult.success();
     }
@@ -58,15 +62,31 @@ public class RpWorkerSkillController {
         return AjaxResult.success();
     }
 
+    /** 审核技能申请：approved=true 通过，false 驳回 */
+    @PutMapping("/audit/{skillId}")
+    public AjaxResult audit(@PathVariable Long skillId, @RequestBody Map<String, Object> body) {
+        RpWorkerSkill skill = skillMapper.selectById(skillId);
+        if (skill == null) {
+            throw new ServiceException("技能记录不存在");
+        }
+        boolean approved = Boolean.TRUE.equals(body.get("approved"));
+        String rejectReason = body.get("rejectReason") != null ? String.valueOf(body.get("rejectReason")) : null;
+        if (!approved) {
+            if (!StringUtils.hasText(rejectReason) || rejectReason.trim().length() < 2) {
+                throw new ServiceException("请填写驳回原因");
+            }
+            skill.setAuditRemark(rejectReason.trim());
+        } else {
+            skill.setAuditRemark(null);
+        }
+        skill.setAuditStatus(approved ? "1" : "2");
+        skillMapper.updateById(skill);
+        return AjaxResult.success();
+    }
+
     /** 获取所有不重复的技能名称（用于AI派单的技能字典） */
     @GetMapping("/dict")
     public AjaxResult dict() {
-        List<RpWorkerSkill> all = skillMapper.selectList(null);
-        List<String> names = all.stream()
-            .map(RpWorkerSkill::getSkillName)
-            .distinct()
-            .sorted()
-            .toList();
-        return AjaxResult.success(names);
+        return AjaxResult.success(com.smartcare.business.repair.support.WorkerSkillCatalog.ALL_SKILLS);
     }
 }

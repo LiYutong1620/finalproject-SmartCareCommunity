@@ -11,16 +11,19 @@ import com.smartcare.business.property.domain.CmResident;
 import com.smartcare.business.property.mapper.CmBuildingMapper;
 import com.smartcare.business.property.mapper.CmHouseMapper;
 import com.smartcare.business.property.mapper.CmResidentMapper;
+import com.smartcare.business.property.service.ResidentCareTagService;
 import com.smartcare.common.core.page.TableDataInfo;
 import com.smartcare.common.exception.ServiceException;
 import com.smartcare.framework.security.SecurityUtils;
 import com.smartcare.system.domain.SysUser;
-import com.smartcare.system.mapper.SysUserMapper;
+import com.smartcare.system.service.UserAccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -32,7 +35,8 @@ public class OwnerCommunityService {
     private final CmResidentMapper residentMapper;
     private final CmHouseMapper houseMapper;
     private final CmBuildingMapper buildingMapper;
-    private final SysUserMapper userMapper;
+    private final UserAccountService accountService;
+    private final ResidentCareTagService careTagService;
 
     private Long currentUserId() {
         Long id = SecurityUtils.getUserId();
@@ -98,20 +102,40 @@ public class OwnerCommunityService {
             .eq(CmResident::getUserId, userId)
             .eq(CmResident::getDelFlag, "0")
             .last("LIMIT 1"));
-        SysUser user = userMapper.selectById(userId);
+        SysUser user = accountService.findById(userId);
         Map<String, Object> vo = new LinkedHashMap<>();
         if (r != null) {
             vo.put("name", r.getName());
             vo.put("gender", r.getGender());
             vo.put("age", r.getAge());
             vo.put("phone", r.getPhone());
-            vo.put("emergencyContact", r.getEmergencyContact());
+            vo.put("livingStatus", StringUtils.hasText(r.getLivingStatus()) ? r.getLivingStatus() : "1");
+            vo.put("livingStatusLabel", livingStatusLabel(r.getLivingStatus()));
+            vo.put("isOwner", r.getIsOwner() != null ? r.getIsOwner() : 1);
+            vo.put("ownerName", r.getOwnerName());
+            vo.put("ownerPhone", r.getOwnerPhone());
+            vo.put("ownerRelation", r.getOwnerRelation());
+            vo.put("emergencyName", r.getEmergencyName());
+            vo.put("emergencyPhone", r.getEmergencyPhone());
+            vo.put("emergencyRelation", r.getEmergencyRelation());
+            vo.put("emergencyContact", formatEmergency(r));
             vo.put("remark", r.getRemark());
             vo.put("moveInDate", r.getMoveInDate());
+            vo.put("residentType", r.getResidentType());
+            vo.put("residentTypeLabel", r.getIsOwner() != null && r.getIsOwner() == 0 ? "非产权住户" : "产权人");
             vo.put("houseId", r.getHouseId());
+            vo.put("archiveTime", r.getCreateTime());
+            vo.put("careTags", careTagService.computeAllDisplayTags(r));
+            vo.put("elderCareTarget", careTagService.isAiMonitorTarget(r));
+            if (r.getMoveInDate() != null) {
+                vo.put("stayDays", ChronoUnit.DAYS.between(r.getMoveInDate(), LocalDate.now()));
+            }
             CmHouse house = houseMapper.selectById(r.getHouseId());
             if (house != null) {
                 vo.put("houseNo", house.getHouseNo());
+                vo.put("houseArea", house.getArea());
+                vo.put("houseLayout", house.getLayout());
+                vo.put("houseRemark", house.getRemark());
                 CmBuilding b = buildingMapper.selectById(house.getBuildingId());
                 vo.put("buildingNo", b != null ? b.getBuildingNo() : "");
             }
@@ -119,18 +143,55 @@ public class OwnerCommunityService {
             vo.put("name", user.getNickName());
             vo.put("phone", user.getPhone());
             vo.put("houseId", user.getHouseId());
+            if (user.getHouseId() != null) {
+                CmHouse house = houseMapper.selectById(user.getHouseId());
+                if (house != null) {
+                    vo.put("houseNo", house.getHouseNo());
+                    vo.put("houseArea", house.getArea());
+                    vo.put("houseLayout", house.getLayout());
+                    CmBuilding b = buildingMapper.selectById(house.getBuildingId());
+                    vo.put("buildingNo", b != null ? b.getBuildingNo() : "");
+                }
+            }
+        }
+        if (user != null) {
+            vo.put("username", user.getUsername());
         }
         return vo;
     }
 
-    public void updateEmergencyContact(String emergencyContact) {
+    public void updateEmergencyContact(String emergencyName, String emergencyPhone, String emergencyRelation) {
         Long userId = currentUserId();
         CmResident r = residentMapper.selectOne(new LambdaQueryWrapper<CmResident>()
             .eq(CmResident::getUserId, userId)
             .eq(CmResident::getDelFlag, "0")
             .last("LIMIT 1"));
         if (r == null) throw new ServiceException("未找到住户档案，请联系物业登记");
-        r.setEmergencyContact(emergencyContact);
+        if (StringUtils.hasText(emergencyName) || StringUtils.hasText(emergencyPhone)) {
+            if (!StringUtils.hasText(emergencyName)) throw new ServiceException("请填写紧急联系人姓名");
+            if (!StringUtils.hasText(emergencyPhone) || !emergencyPhone.matches("^1\\d{10}$")) {
+                throw new ServiceException("请填写正确的紧急联系人电话");
+            }
+            if (!StringUtils.hasText(emergencyRelation)) throw new ServiceException("请选择与您的关系");
+        }
+        r.setEmergencyName(emergencyName != null ? emergencyName : "");
+        r.setEmergencyPhone(emergencyPhone != null ? emergencyPhone : "");
+        r.setEmergencyRelation(emergencyRelation != null ? emergencyRelation : "");
+        r.setEmergencyContact(formatEmergency(r));
         residentMapper.updateById(r);
+    }
+
+    private String livingStatusLabel(String status) {
+        if ("2".equals(status)) return "空置";
+        if ("3".equals(status)) return "出租";
+        return "在住";
+    }
+
+    private String formatEmergency(CmResident r) {
+        if (StringUtils.hasText(r.getEmergencyName()) || StringUtils.hasText(r.getEmergencyPhone())) {
+            String rel = StringUtils.hasText(r.getEmergencyRelation()) ? "（" + r.getEmergencyRelation() + "）" : "";
+            return r.getEmergencyName() + rel + (StringUtils.hasText(r.getEmergencyPhone()) ? " " + r.getEmergencyPhone() : "");
+        }
+        return r.getEmergencyContact();
     }
 }

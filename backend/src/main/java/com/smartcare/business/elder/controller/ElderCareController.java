@@ -4,14 +4,18 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.smartcare.business.elder.domain.*;
 import com.smartcare.business.elder.mapper.ElAlertMapper;
+import com.smartcare.business.elder.mapper.ElAiMonitorLogMapper;
 import com.smartcare.business.elder.mapper.ElCareOrderMapper;
 import com.smartcare.business.elder.mapper.ElDisposalRecordMapper;
+import com.smartcare.business.elder.mapper.ElTempGuardianMapper;
 import com.smartcare.business.elder.service.*;
 import com.smartcare.common.core.domain.AjaxResult;
 import com.smartcare.common.core.page.TableDataInfo;
 import com.smartcare.framework.security.SecurityUtils;
+import com.smartcare.system.service.UserAccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -24,14 +28,15 @@ import java.util.stream.Collectors;
 public class ElderCareController {
 
     private final ElAlertMapper alertMapper;
+    private final ElAiMonitorLogMapper monitorLogMapper;
     private final ElCareOrderMapper careOrderMapper;
     private final ElDisposalRecordMapper disposalRecordMapper;
     private final ElCareStaffService careStaffService;
-    private final ElHealthMonitorService healthMonitorService;
-    private final ElDisposalPlanService disposalPlanService;
+    private final ElCareStaffTypeService careStaffTypeService;
     private final ElCareOrderService careOrderService;
-    private final ElUtilityMonitorService utilityMonitorService;
     private final JdbcTemplate jdbcTemplate;
+    private final UserAccountService accountService;
+    private final ElTempGuardianMapper tempGuardianMapper;
 
     // ==================== 预警管理 ====================
 
@@ -40,20 +45,25 @@ public class ElderCareController {
                                 @RequestParam(defaultValue = "10") int pageSize,
                                 @RequestParam(required = false) String alertType,
                                 @RequestParam(required = false) String keyword,
-                                @RequestParam(required = false) String status,
-                                @RequestParam(defaultValue = "createTime") String orderBy,
-                                @RequestParam(defaultValue = "desc") String orderDir) {
+                                @RequestParam(required = false) String status) {
+        LambdaQueryWrapper<ElAlert> alertQw = new LambdaQueryWrapper<ElAlert>();
+        if (StringUtils.hasText(status)) {
+            if ("processing".equals(status)) {
+                alertQw.in(ElAlert::getStatus, "processing", "handled");
+            } else {
+                alertQw.eq(ElAlert::getStatus, status);
+            }
+        }
         Page<ElAlert> page = alertMapper.selectPage(new Page<>(pageNum, pageSize),
-            new LambdaQueryWrapper<ElAlert>()
-                .eq(status != null && !status.isEmpty(), ElAlert::getStatus, status)
+            alertQw
                 .eq(alertType != null && !alertType.isEmpty(), ElAlert::getAlertType, alertType)
                 .like(keyword != null && !keyword.isEmpty(), ElAlert::getContent, keyword)
-                .orderByDesc("desc".equals(orderDir), ElAlert::getCreateTime)
-                .orderByAsc("asc".equals(orderDir), ElAlert::getCreateTime));
+                .last("ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'processing' THEN 1 WHEN 'handled' THEN 2 WHEN 'closed' THEN 3 ELSE 4 END ASC, create_time DESC"));
 
         // 填充老人姓名和处理人姓名
         List<ElAlert> records = page.getRecords();
         fillAlertNames(records);
+        records.forEach(this::enrichAlertDisplay);
 
         return AjaxResult.success(new TableDataInfo(page.getTotal(), records));
     }
@@ -66,57 +76,130 @@ public class ElderCareController {
         return AjaxResult.success();
     }
 
-    @PutMapping("/alert/handle")
-    public AjaxResult handle(@RequestBody ElAlert alert) {
-        alert.setHandlerId(SecurityUtils.getUserId());
-        alert.setHandleTime(LocalDateTime.now());
-        alert.setStatus("handled");
-        alertMapper.updateById(alert);
-        return AjaxResult.success();
-    }
-
     /** 预警详情（包含老人信息、处置记录） */
     @GetMapping("/alert/{alertId}")
     public AjaxResult alertDetail(@PathVariable Long alertId) {
         ElAlert alert = alertMapper.selectById(alertId);
         if (alert == null) return AjaxResult.error("预警不存在");
-        // 填充老人信息
         fillAlertElderInfo(alert);
-        // 获取处置记录
+        enrichAlertDisplay(alert);
         List<ElDisposalRecord> records = disposalRecordMapper.selectList(
             new LambdaQueryWrapper<ElDisposalRecord>()
                 .eq(ElDisposalRecord::getAlertId, alertId)
                 .orderByDesc(ElDisposalRecord::getHandleTime)
         );
         fillRecordHandlerNames(records);
+        ElCareOrder careOrder = careOrderService.getByAlertId(alertId);
+        if (careOrder != null) {
+            fillOrderNames(List.of(careOrder));
+        }
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("alert", alert);
         result.put("records", records);
+        result.put("careOrder", careOrder);
         return AjaxResult.success(result);
     }
 
-    /** 预警闭环（填写处置记录后状态变为已闭环） */
+    /** 预警详情内指派关怀人员（同步工单指派 + 预警进入处理中） */
+    @PutMapping("/alert/{alertId}/assign")
+    public AjaxResult assignAlertCare(@PathVariable Long alertId, @RequestBody Map<String, Object> body) {
+        ElAlert alert = alertMapper.selectById(alertId);
+        if (alert == null) return AjaxResult.error("预警不存在");
+        if ("closed".equals(alert.getStatus())) {
+            return AjaxResult.error("预警已完成，无法指派");
+        }
+        Long staffId = Optional.ofNullable(body.get("staffId"))
+            .map(Object::toString).map(Long::valueOf).orElse(null);
+        if (staffId == null) {
+            return AjaxResult.error("请选择关怀人员");
+        }
+        ElCareOrder order = careOrderService.getByAlertId(alertId);
+        if (order == null) {
+            return AjaxResult.error("未找到关联关怀工单");
+        }
+        careOrderService.assignCareOrder(order.getCareId(), staffId);
+        ElAlert upd = new ElAlert();
+        upd.setAlertId(alertId);
+        upd.setStatus("processing");
+        upd.setHandlerId(SecurityUtils.getUserId());
+        if (alert.getProcessStartTime() == null) {
+            upd.setProcessStartTime(LocalDateTime.now());
+        }
+        alertMapper.updateById(upd);
+        return AjaxResult.success();
+    }
+
+    /** 开始处理预警（状态变为处理中） */
+    @PutMapping("/alert/{alertId}/process")
+    public AjaxResult processAlert(@PathVariable Long alertId) {
+        ElAlert alert = alertMapper.selectById(alertId);
+        if (alert == null) return AjaxResult.error("预警不存在");
+        if ("closed".equals(alert.getStatus())) {
+            return AjaxResult.error("预警已完成，无法变更");
+        }
+        ElAlert upd = new ElAlert();
+        upd.setAlertId(alertId);
+        upd.setStatus("processing");
+        upd.setHandlerId(SecurityUtils.getUserId());
+        if (alert.getProcessStartTime() == null) {
+            upd.setProcessStartTime(LocalDateTime.now());
+        }
+        alertMapper.updateById(upd);
+        return AjaxResult.success();
+    }
+
+    /** 预警闭环（填写处置记录后状态变为已完成） */
     @PutMapping("/alert/{alertId}/close")
     public AjaxResult closeAlert(@PathVariable Long alertId, @RequestBody Map<String, Object> body) {
         ElAlert alert = alertMapper.selectById(alertId);
         if (alert == null) return AjaxResult.error("预警不存在");
-        // 创建处置记录
+        String checkResult = parseStr(body.get("checkResult"));
+        String disposalResult = parseStr(body.get("disposalResult"));
+        if (!StringUtils.hasText(checkResult)) {
+            return AjaxResult.error("请填写上门核查情况");
+        }
+        if (!StringUtils.hasText(disposalResult)) {
+            return AjaxResult.error("请填写处理结果");
+        }
+        LocalDateTime visitTime = parseDateTime(body.get("visitTime"));
+        if (visitTime == null) {
+            return AjaxResult.error("请选择上门核查时间");
+        }
+        LocalDateTime completeTime = LocalDateTime.now();
+
+        ElCareOrder order = careOrderService.getByAlertId(alertId);
+        if (order != null && !"completed".equals(order.getStatus())) {
+            ElCareOrder orderUpd = new ElCareOrder();
+            orderUpd.setCareId(order.getCareId());
+            orderUpd.setStatus("completed");
+            orderUpd.setCheckResult(checkResult);
+            orderUpd.setDisposalResult(disposalResult);
+            orderUpd.setResult("上门核查：" + checkResult + " | 处理结果：" + disposalResult);
+            orderUpd.setCompleteTime(completeTime);
+            careOrderMapper.updateById(orderUpd);
+        }
+
         ElDisposalRecord record = new ElDisposalRecord();
         record.setAlertId(alertId);
+        if (order != null) {
+            record.setCareId(order.getCareId());
+        }
         record.setHandlerId(SecurityUtils.getUserId());
-        record.setHandleTime(LocalDateTime.now());
-        record.setCheckResult(parseStr(body.get("checkResult")));
-        record.setSupportMeasure(parseStr(body.get("supportMeasure")));
-        record.setDisposalResult(parseStr(body.get("disposalResult")));
-        record.setCreateTime(LocalDateTime.now());
+        record.setHandleTime(visitTime);
+        record.setCheckResult(checkResult);
+        record.setDisposalResult(disposalResult);
+        record.setCreateTime(completeTime);
         disposalRecordMapper.insert(record);
-        // 更新预警状态为已闭环
+
         ElAlert upd = new ElAlert();
         upd.setAlertId(alertId);
         upd.setStatus("closed");
         upd.setHandlerId(SecurityUtils.getUserId());
-        upd.setHandleTime(LocalDateTime.now());
-        upd.setHandleResult(parseStr(body.get("disposalResult")));
+        upd.setHandleTime(completeTime);
+        upd.setHandleResult(disposalResult);
+        if (alert.getProcessStartTime() == null) {
+            upd.setProcessStartTime(visitTime);
+        }
         alertMapper.updateById(upd);
         return AjaxResult.success();
     }
@@ -144,7 +227,31 @@ public class ElderCareController {
         return AjaxResult.success();
     }
 
+    // ==================== 关怀人员类型 ====================
+
+    @GetMapping("/staff-type/list")
+    public AjaxResult staffTypeList() {
+        return AjaxResult.success(careStaffTypeService.listAll());
+    }
+
+    @PostMapping("/staff-type")
+    public AjaxResult addStaffType(@RequestBody Map<String, String> body) {
+        careStaffTypeService.add(body.get("typeName"));
+        return AjaxResult.success();
+    }
+
+    @DeleteMapping("/staff-type/{typeId}")
+    public AjaxResult deleteStaffType(@PathVariable Long typeId) {
+        careStaffTypeService.delete(typeId);
+        return AjaxResult.success();
+    }
+
     // ==================== 关怀人员 ====================
+
+    @GetMapping("/staff/by-resident/{residentId}")
+    public AjaxResult staffByResident(@PathVariable Long residentId) {
+        return AjaxResult.success(careStaffService.listByResidentBuilding(residentId));
+    }
 
     @GetMapping("/staff/list")
     public AjaxResult staffList(@RequestParam(defaultValue = "1") int pageNum,
@@ -169,54 +276,6 @@ public class ElderCareController {
     @DeleteMapping("/staff/{staffId}")
     public AjaxResult deleteStaff(@PathVariable Long staffId) {
         careStaffService.delete(staffId);
-        return AjaxResult.success();
-    }
-
-    // ==================== 健康监测 ====================
-
-    @PostMapping("/health/record")
-    public AjaxResult recordHealth(@RequestBody Map<String, Object> body) {
-        Long residentId = Optional.ofNullable(body.get("residentId"))
-            .map(Object::toString).map(Long::valueOf).orElse(null);
-        ElHealthRecord record = new ElHealthRecord();
-        record.setHeartRate(parseInt(body.get("heartRate")));
-        record.setBloodPressure(parseStr(body.get("bloodPressure")));
-        record.setSteps(parseInt(body.get("steps")));
-        healthMonitorService.recordHealthData(residentId, record);
-        return AjaxResult.success();
-    }
-
-    @GetMapping("/health/{residentId}")
-    public AjaxResult healthRecords(@PathVariable Long residentId,
-                                    @RequestParam(defaultValue = "1") int pageNum,
-                                    @RequestParam(defaultValue = "10") int pageSize) {
-        return AjaxResult.success(healthMonitorService.listHealthRecords(residentId, pageNum, pageSize));
-    }
-
-    // ==================== 处置预案 ====================
-
-    @GetMapping("/disposal-plan/list")
-    public AjaxResult disposalPlanList(@RequestParam(defaultValue = "1") int pageNum,
-                                       @RequestParam(defaultValue = "10") int pageSize,
-                                       @RequestParam(required = false) Integer level) {
-        return AjaxResult.success(disposalPlanService.list(pageNum, pageSize, level));
-    }
-
-    @PostMapping("/disposal-plan")
-    public AjaxResult addDisposalPlan(@RequestBody ElDisposalPlan plan) {
-        disposalPlanService.add(plan);
-        return AjaxResult.success();
-    }
-
-    @PutMapping("/disposal-plan")
-    public AjaxResult updateDisposalPlan(@RequestBody ElDisposalPlan plan) {
-        disposalPlanService.update(plan);
-        return AjaxResult.success();
-    }
-
-    @DeleteMapping("/disposal-plan/{planId}")
-    public AjaxResult deleteDisposalPlan(@PathVariable Long planId) {
-        disposalPlanService.delete(planId);
         return AjaxResult.success();
     }
 
@@ -301,6 +360,7 @@ public class ElderCareController {
             String ids = residentIds.stream().map(String::valueOf).collect(Collectors.joining(","));
             List<Map<String, Object>> residents = jdbcTemplate.queryForList(
                 "SELECT r.resident_id, r.name, r.phone, r.emergency_contact, " +
+                "r.emergency_name, r.emergency_phone, r.emergency_relation, " +
                 "CONCAT(b.building_no, h.house_no) as address " +
                 "FROM cm_resident r " +
                 "LEFT JOIN cm_house h ON r.house_id = h.house_id " +
@@ -316,7 +376,7 @@ public class ElderCareController {
                     a.setResidentName((String) info.get("name"));
                     a.setAddress((String) info.get("address"));
                     a.setElderPhone((String) info.get("phone"));
-                    a.setFamilyPhone((String) info.get("emergency_contact"));
+                    a.setFamilyPhone(formatEmergencyContact(info));
                 } else {
                     a.setResidentName("未知");
                 }
@@ -326,13 +386,7 @@ public class ElderCareController {
         List<Long> handlerIds = alerts.stream().map(ElAlert::getHandlerId)
             .filter(id -> id != null).distinct().collect(Collectors.toList());
         if (!handlerIds.isEmpty()) {
-            String ids = handlerIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-            List<Map<String, Object>> users = jdbcTemplate.queryForList(
-                "SELECT user_id, nick_name FROM sys_user WHERE user_id IN (" + ids + ")");
-            Map<Long, String> handlerMap = users.stream().collect(Collectors.toMap(
-                r -> ((Number) r.get("user_id")).longValue(),
-                r -> (String) r.get("nick_name"),
-                (a, b) -> a));
+            Map<Long, String> handlerMap = accountService.findDisplayNames(handlerIds);
             alerts.forEach(a -> {
                 if (a.getHandlerId() != null) {
                     a.setHandlerName(handlerMap.getOrDefault(a.getHandlerId(), "未知"));
@@ -346,19 +400,49 @@ public class ElderCareController {
         fillAlertNames(List.of(alert));
     }
 
+    /** 拆分预警规则描述与 AI 建议（兼容旧数据 content 含「| AI建议：」） */
+    private void enrichAlertDisplay(ElAlert alert) {
+        if (alert == null) {
+            return;
+        }
+        String content = alert.getContent();
+        String reason = content;
+        String aiFromContent = null;
+        if (StringUtils.hasText(content)) {
+            int idx = content.indexOf(" | AI建议：");
+            if (idx >= 0) {
+                reason = content.substring(0, idx).trim();
+                aiFromContent = content.substring(idx + " | AI建议：".length()).trim();
+            }
+        }
+        alert.setAlertReason(reason);
+
+        ElAiMonitorLog monitorLog = monitorLogMapper.selectOne(
+            new LambdaQueryWrapper<ElAiMonitorLog>()
+                .eq(ElAiMonitorLog::getAlertId, alert.getAlertId())
+                .orderByDesc(ElAiMonitorLog::getCheckTime)
+                .last("LIMIT 1")
+        );
+        if (monitorLog != null) {
+            if (StringUtils.hasText(monitorLog.getReason())) {
+                alert.setAlertReason(monitorLog.getReason());
+            }
+            if (StringUtils.hasText(monitorLog.getAiResponse())) {
+                alert.setAiSuggestion(monitorLog.getAiResponse());
+            }
+        }
+        if (!StringUtils.hasText(alert.getAiSuggestion()) && StringUtils.hasText(aiFromContent)) {
+            alert.setAiSuggestion(aiFromContent);
+        }
+    }
+
     /** 填充处置记录的处理人姓名 */
     private void fillRecordHandlerNames(List<ElDisposalRecord> records) {
         if (records == null || records.isEmpty()) return;
         List<Long> handlerIds = records.stream().map(ElDisposalRecord::getHandlerId)
             .filter(Objects::nonNull).distinct().collect(Collectors.toList());
         if (!handlerIds.isEmpty()) {
-            String ids = handlerIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-            List<Map<String, Object>> users = jdbcTemplate.queryForList(
-                "SELECT user_id, nick_name FROM sys_user WHERE user_id IN (" + ids + ")");
-            Map<Long, String> nameMap = users.stream().collect(Collectors.toMap(
-                r -> ((Number) r.get("user_id")).longValue(),
-                r -> (String) r.get("nick_name"),
-                (a, b) -> a));
+            Map<Long, String> nameMap = accountService.findDisplayNames(handlerIds);
             records.forEach(r -> r.setHandlerName(nameMap.getOrDefault(r.getHandlerId(), "未知")));
         }
     }
@@ -371,12 +455,29 @@ public class ElderCareController {
         if (!residentIds.isEmpty()) {
             String ids = residentIds.stream().map(String::valueOf).collect(Collectors.joining(","));
             List<Map<String, Object>> residents = jdbcTemplate.queryForList(
-                "SELECT resident_id, name FROM cm_resident WHERE resident_id IN (" + ids + ")");
-            Map<Long, String> nameMap = residents.stream().collect(Collectors.toMap(
+                "SELECT r.resident_id, r.name, h.building_id, " +
+                "CONCAT(IFNULL(b.building_no,''), IFNULL(h.house_no,'')) as address " +
+                "FROM cm_resident r " +
+                "LEFT JOIN cm_house h ON r.house_id = h.house_id " +
+                "LEFT JOIN cm_building b ON h.building_id = b.building_id " +
+                "WHERE r.resident_id IN (" + ids + ")");
+            Map<Long, Map<String, Object>> residentMap = residents.stream().collect(Collectors.toMap(
                 r -> ((Number) r.get("resident_id")).longValue(),
-                r -> (String) r.get("name"),
+                r -> r,
                 (a, b) -> a));
-            orders.forEach(o -> o.setElderName(nameMap.getOrDefault(o.getResidentId(), "未知")));
+            orders.forEach(o -> {
+                Map<String, Object> info = residentMap.get(o.getResidentId());
+                if (info != null) {
+                    o.setElderName((String) info.get("name"));
+                    o.setAddress((String) info.get("address"));
+                    Object bid = info.get("building_id");
+                    if (bid != null) {
+                        o.setBuildingId(((Number) bid).longValue());
+                    }
+                } else {
+                    o.setElderName("未知");
+                }
+            });
         }
         // 获取指派人员姓名
         List<Long> assigneeIds = orders.stream().map(ElCareOrder::getAssigneeId)
@@ -408,5 +509,65 @@ public class ElderCareController {
 
     private String parseStr(Object value) {
         return value != null ? value.toString() : null;
+    }
+
+    private LocalDateTime parseDateTime(Object value) {
+        if (value == null || !StringUtils.hasText(value.toString())) {
+            return null;
+        }
+        String text = value.toString().trim();
+        try {
+            if (text.contains("T")) {
+                return LocalDateTime.parse(text.replace(" ", "T").substring(0, Math.min(19, text.length())));
+            }
+            return LocalDateTime.parse(text, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        } catch (Exception e) {
+            try {
+                return LocalDateTime.parse(text, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+    }
+
+    private String formatEmergencyContact(Map<String, Object> info) {
+        String name = info.get("emergency_name") != null ? info.get("emergency_name").toString() : "";
+        String phone = info.get("emergency_phone") != null ? info.get("emergency_phone").toString() : "";
+        String relation = info.get("emergency_relation") != null ? info.get("emergency_relation").toString() : "";
+        if (StringUtils.hasText(name) || StringUtils.hasText(phone)) {
+            String rel = StringUtils.hasText(relation) ? "（" + relation + "）" : "";
+            return name + rel + (StringUtils.hasText(phone) ? " " + phone : "");
+        }
+        Object legacy = info.get("emergency_contact");
+        return legacy != null ? legacy.toString() : "";
+    }
+
+    // ==================== 临时监护登记 ====================
+
+    @GetMapping("/temp-guardian/list")
+    public AjaxResult tempGuardianList(@RequestParam(required = false) Long residentId) {
+        List<ElTempGuardian> list = tempGuardianMapper.selectList(
+            new LambdaQueryWrapper<ElTempGuardian>()
+                .eq(residentId != null, ElTempGuardian::getResidentId, residentId)
+                .orderByDesc(ElTempGuardian::getStartTime)
+        );
+        return AjaxResult.success(list);
+    }
+
+    @PostMapping("/temp-guardian")
+    public AjaxResult addTempGuardian(@RequestBody ElTempGuardian guardian) {
+        guardian.setStatus("1");
+        guardian.setCreateTime(LocalDateTime.now());
+        tempGuardianMapper.insert(guardian);
+        return AjaxResult.success();
+    }
+
+    @PutMapping("/temp-guardian/{id}/close")
+    public AjaxResult closeTempGuardian(@PathVariable Long id) {
+        ElTempGuardian upd = new ElTempGuardian();
+        upd.setId(id);
+        upd.setStatus("0");
+        tempGuardianMapper.updateById(upd);
+        return AjaxResult.success();
     }
 }

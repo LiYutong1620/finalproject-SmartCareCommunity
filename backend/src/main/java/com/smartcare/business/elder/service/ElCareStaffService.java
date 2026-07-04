@@ -4,6 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.smartcare.business.elder.domain.ElCareStaff;
 import com.smartcare.business.elder.mapper.ElCareStaffMapper;
+import com.smartcare.business.property.domain.CmHouse;
+import com.smartcare.business.property.domain.CmResident;
+import com.smartcare.business.property.mapper.CmHouseMapper;
+import com.smartcare.business.property.mapper.CmResidentMapper;
 import com.smartcare.common.core.page.TableDataInfo;
 import com.smartcare.common.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +24,9 @@ import java.util.stream.Collectors;
 public class ElCareStaffService {
 
     private final ElCareStaffMapper staffMapper;
+    private final CmResidentMapper residentMapper;
+    private final CmHouseMapper houseMapper;
+    private final ElCareStaffTypeService staffTypeService;
 
     public TableDataInfo list(int pageNum, int pageSize, Long buildingId, String staffType) {
         LambdaQueryWrapper<ElCareStaff> qw = new LambdaQueryWrapper<ElCareStaff>()
@@ -37,6 +44,29 @@ public class ElCareStaffService {
             .eq(StringUtils.hasText(staffType), ElCareStaff::getStaffType, staffType)
             .orderByDesc(ElCareStaff::getStaffId);
         return staffMapper.selectList(qw);
+    }
+
+    /** 负责指定老人所在楼栋的关怀人员 */
+    public List<ElCareStaff> listByResidentBuilding(Long residentId) {
+        Long buildingId = resolveBuildingId(residentId);
+        if (buildingId == null) {
+            return listAll(null);
+        }
+        return staffMapper.selectList(new LambdaQueryWrapper<ElCareStaff>()
+            .apply("FIND_IN_SET({0}, building_ids) > 0", String.valueOf(buildingId))
+            .orderByDesc(ElCareStaff::getStaffId));
+    }
+
+    private Long resolveBuildingId(Long residentId) {
+        if (residentId == null) {
+            return null;
+        }
+        CmResident resident = residentMapper.selectById(residentId);
+        if (resident == null || resident.getHouseId() == null) {
+            return null;
+        }
+        CmHouse house = houseMapper.selectById(resident.getHouseId());
+        return house != null ? house.getBuildingId() : null;
     }
 
     @Transactional
@@ -69,6 +99,8 @@ public class ElCareStaffService {
         if (!staff.getPhone().matches("^1\\d{10}$")) {
             throw new ServiceException("手机号格式不正确");
         }
+        staffTypeService.assertTypeExists(staff.getStaffType());
+        staff.setStaffType(staff.getStaffType().trim());
         if (StringUtils.hasText(staff.getBuildingIds())) {
             List<String> ids = Arrays.stream(staff.getBuildingIds().split(","))
                 .map(String::trim)

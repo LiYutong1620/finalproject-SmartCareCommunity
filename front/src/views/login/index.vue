@@ -1,182 +1,169 @@
 <template>
-  <div class="login-container">
-    <div class="login-card">
-      <div class="login-title">
-        <h1>Smart Care Community</h1>
-        <p>智慧社区服务平台</p>
+  <AuthShell>
+    <div class="login-body">
+    <div class="auth-header">
+      <h2>欢迎登录</h2>
+      <p>智护社区 · 请选择角色并登录</p>
+    </div>
+
+    <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" label-width="0" class="auth-form">
+      <el-form-item prop="userType">
+        <el-select v-model="loginForm.userType" placeholder="登录角色" size="large" style="width: 100%">
+          <el-option label="业主端" value="0">
+            <span class="role-option"><el-icon><User /></el-icon> 业主端</span>
+          </el-option>
+          <el-option label="维修工端" value="1">
+            <span class="role-option"><el-icon><Tools /></el-icon> 维修工端</span>
+          </el-option>
+          <el-option label="物业端" value="2">
+            <span class="role-option"><el-icon><OfficeBuilding /></el-icon> 物业端</span>
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item prop="username">
+        <el-input v-model="loginForm.username" placeholder="账号" prefix-icon="User" size="large" />
+      </el-form-item>
+      <el-form-item prop="password">
+        <el-input
+          v-model="loginForm.password"
+          type="password"
+          placeholder="密码"
+          prefix-icon="Lock"
+          size="large"
+          show-password
+          @keyup.enter="handleLogin"
+        />
+      </el-form-item>
+      <el-form-item prop="code" v-if="captchaEnabled">
+        <div class="captcha-row">
+          <el-input
+            v-model="loginForm.code"
+            placeholder="验证码"
+            prefix-icon="Key"
+            size="large"
+            maxlength="6"
+            @keyup.enter="handleLogin"
+          />
+          <img
+            v-if="captchaImg"
+            :src="captchaImg"
+            class="captcha-img"
+            title="点击刷新验证码"
+            alt="验证码"
+            @click="loadCaptcha"
+          />
+        </div>
+      </el-form-item>
+
+      <div class="form-extra">
+        <span class="register-hint">
+          还没有账号？
+          <router-link to="/register" class="link primary">立即注册</router-link>
+        </span>
+        <router-link to="/forgot-password" class="link">忘记密码？</router-link>
       </div>
 
-      <el-tabs v-model="activeTab" class="login-tabs" @tab-change="onTabChange">
-        <el-tab-pane label="登录" name="login">
-          <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" label-width="0">
-            <el-form-item prop="username">
-              <el-input v-model="loginForm.username" placeholder="账号" prefix-icon="User" size="large" />
-            </el-form-item>
-            <el-form-item prop="password">
-              <el-input
-                v-model="loginForm.password"
-                type="password"
-                placeholder="密码"
-                prefix-icon="Lock"
-                size="large"
-                show-password
-                @keyup.enter="handleLogin"
-              />
-            </el-form-item>
-            <el-form-item prop="code" v-if="captchaEnabled">
-              <div class="captcha-row">
-                <el-input
-                  v-model="loginForm.code"
-                  placeholder="验证码"
-                  prefix-icon="Key"
-                  size="large"
-                  maxlength="6"
-                  @keyup.enter="handleLogin"
-                />
-                <img
-                  v-if="captchaImg"
-                  :src="captchaImg"
-                  class="captcha-img"
-                  title="点击刷新验证码"
-                  alt="验证码"
-                  @click="loadCaptcha"
-                />
-              </div>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="handleLogin">
-                登 录
-              </el-button>
-            </el-form-item>
-          </el-form>
-        </el-tab-pane>
+      <el-form-item>
+        <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="handleLogin">
+          登 录
+        </el-button>
+      </el-form-item>
+    </el-form>
 
-        <el-tab-pane label="注册" name="register">
-          <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" label-width="0">
-            <el-form-item prop="username">
-              <el-input v-model="registerForm.username" placeholder="登录账号（至少4位）" prefix-icon="User" size="large" />
-            </el-form-item>
-            <el-form-item prop="nickName">
-              <el-input v-model="registerForm.nickName" placeholder="昵称（选填）" prefix-icon="UserFilled" size="large" />
-            </el-form-item>
-            <el-form-item prop="phone">
-              <el-input v-model="registerForm.phone" placeholder="手机号" prefix-icon="Iphone" size="large" />
-            </el-form-item>
-            <el-form-item prop="password">
-              <el-input v-model="registerForm.password" type="password" placeholder="密码（至少6位）" prefix-icon="Lock" size="large" show-password />
-            </el-form-item>
-            <el-form-item prop="confirmPassword">
-              <el-input v-model="registerForm.confirmPassword" type="password" placeholder="确认密码" prefix-icon="Lock" size="large" show-password />
-            </el-form-item>
-            <el-form-item prop="code" v-if="captchaEnabled">
-              <div class="captcha-row">
-                <el-input v-model="registerForm.code" placeholder="验证码" prefix-icon="Key" size="large" maxlength="6" />
-                <img
-                  v-if="captchaImg"
-                  :src="captchaImg"
-                  class="captcha-img"
-                  title="点击刷新验证码"
-                  alt="验证码"
-                  @click="loadCaptcha"
-                />
-              </div>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="handleRegister">
-                注 册
-              </el-button>
-            </el-form-item>
-          </el-form>
-          <p class="register-tip">业主自助注册，注册后可使用报修、公告、缴费等功能</p>
-        </el-tab-pane>
-      </el-tabs>
-
-      <p class="demo-tip">演示账号: property01 / owner01 / worker01 &nbsp; 密码 admin123</p>
+    <div class="demo-section">
+      <div class="demo-roles">
+        <button
+          v-for="item in demoRoles"
+          :key="item.userType"
+          type="button"
+          class="demo-chip"
+          :class="{ active: selectedDemo === item.userType }"
+          @click="fillDemo(item)"
+        >
+          <el-icon><component :is="item.icon" /></el-icon>
+          <span>{{ item.label }}</span>
+        </button>
+      </div>
     </div>
-  </div>
+    </div>
+  </AuthShell>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { User, Tools, OfficeBuilding } from '@element-plus/icons-vue'
+import AuthShell from '@/components/AuthShell.vue'
 import { useUserStore } from '@/store/user'
-import { getCaptchaImage, register } from '@/api/login'
+import { getCaptchaImage } from '@/api/login'
+import { getRoleHome } from '@/utils/auth'
+
+const DEMO_ACCOUNTS = {
+  '0': { username: 'owner01', password: 'admin123', label: '业主', icon: User },
+  '1': { username: 'worker01', password: 'admin123', label: '维修工', icon: Tools },
+  '2': { username: 'property01', password: 'admin123', label: '物业', icon: OfficeBuilding }
+}
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
-const activeTab = ref('login')
 const loading = ref(false)
 const captchaEnabled = ref(true)
 const captchaImg = ref('')
 const loginFormRef = ref()
-const registerFormRef = ref()
 
 const loginForm = reactive({
-  username: 'property01',
-  password: 'admin123',
-  code: '',
-  uuid: ''
-})
-
-const registerForm = reactive({
+  userType: '0',
   username: '',
-  nickName: '',
-  phone: '',
   password: '',
-  confirmPassword: '',
   code: '',
   uuid: ''
 })
 
-const loginRules = {
+const selectedDemo = ref(null)
+
+const demoRoles = Object.entries(DEMO_ACCOUNTS).map(([userType, v]) => ({
+  userType,
+  label: v.label,
+  icon: v.icon,
+  username: v.username,
+  password: v.password
+}))
+
+const loginRules = computed(() => ({
+  userType: [{ required: true, message: '请选择登录角色', trigger: 'change' }],
   username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
-}
+  ...(captchaEnabled.value
+    ? { code: [{ required: true, message: '请输入验证码', trigger: 'blur' }] }
+    : {})
+}))
 
-const validateConfirm = (rule, value, callback) => {
-  if (value !== registerForm.password) {
-    callback(new Error('两次输入的密码不一致'))
-  } else {
-    callback()
-  }
-}
+watch(() => loginForm.userType, () => {
+  selectedDemo.value = null
+})
 
-const registerRules = {
-  username: [
-    { required: true, message: '请输入账号', trigger: 'blur' },
-    { min: 4, message: '账号至少4位', trigger: 'blur' }
-  ],
-  phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { pattern: /^1\d{10}$/, message: '手机号格式不正确', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码至少6位', trigger: 'blur' }
-  ],
-  confirmPassword: [
-    { required: true, message: '请确认密码', trigger: 'blur' },
-    { validator: validateConfirm, trigger: 'blur' }
-  ],
-  code: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
+function fillDemo(item) {
+  selectedDemo.value = item.userType
+  loginForm.userType = item.userType
+  loginForm.username = item.username
+  loginForm.password = item.password
 }
-
-import { getRoleHome } from '@/utils/auth'
 
 async function loadCaptcha() {
-  const res = await getCaptchaImage()
-  captchaEnabled.value = res.data.captchaEnabled !== false
-  loginForm.uuid = res.data.uuid
-  registerForm.uuid = res.data.uuid
-  loginForm.code = ''
-  registerForm.code = ''
-  captchaImg.value = res.data.img ? `data:image/jpeg;base64,${res.data.img}` : ''
-}
-
-function onTabChange() {
-  loadCaptcha()
+  try {
+    const res = await getCaptchaImage()
+    captchaEnabled.value = res.data.captchaEnabled !== false
+    loginForm.uuid = res.data.uuid
+    loginForm.code = ''
+    captchaImg.value = res.data.img ? `data:image/jpeg;base64,${res.data.img}` : ''
+  } catch {
+    captchaEnabled.value = false
+    captchaImg.value = ''
+    loginForm.uuid = ''
+    ElMessage.warning('验证码加载失败，请确认后端已启动')
+  }
 }
 
 async function handleLogin() {
@@ -192,71 +179,20 @@ async function handleLogin() {
   }
 }
 
-async function handleRegister() {
-  await registerFormRef.value.validate()
-  loading.value = true
-  try {
-    await register({ ...registerForm })
-    ElMessage.success('注册成功，请登录')
-    activeTab.value = 'login'
-    loginForm.username = registerForm.username
+onMounted(() => {
+  if (route.query.username) {
+    loginForm.username = route.query.username
     loginForm.password = ''
-    registerForm.password = ''
-    registerForm.confirmPassword = ''
-    await loadCaptcha()
-  } catch {
-    loadCaptcha()
-  } finally {
-    loading.value = false
+    loginForm.userType = '0'
   }
-}
-
-onMounted(loadCaptcha)
+  loadCaptcha()
+})
 </script>
 
 <style scoped lang="scss">
-.login-card {
-  width: 420px;
-  padding: 36px 40px 28px;
-}
-.login-tabs {
-  :deep(.el-tabs__header) {
-    margin-bottom: 24px;
-  }
-  :deep(.el-tabs__item) {
-    font-size: 16px;
-  }
-}
-.captcha-row {
-  display: flex;
+.role-option {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  width: 100%;
-  .el-input {
-    flex: 1;
-  }
-}
-.captcha-img {
-  width: 120px;
-  height: 40px;
-  cursor: pointer;
-  border-radius: 4px;
-  border: 1px solid #dcdfe6;
-  object-fit: cover;
-}
-.submit-btn {
-  width: 100%;
-}
-.register-tip {
-  text-align: center;
-  color: #909399;
-  font-size: 12px;
-  margin-top: -8px;
-}
-.demo-tip {
-  text-align: center;
-  color: #999;
-  font-size: 12px;
-  margin-top: 16px;
+  gap: 6px;
 }
 </style>

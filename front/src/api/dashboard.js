@@ -8,25 +8,6 @@ export function getElderStats() {
   return request({ url: "/property/dashboard/elder-stats", method: "get" });
 }
 
-export function getAlertTrend() {
-  return request({ url: "/property/dashboard/alert-trend", method: "get" });
-}
-
-export function getOrderTrend() {
-  return request({ url: "/property/dashboard/order-trend", method: "get" });
-}
-
-export function getStaffPerformance() {
-  return request({
-    url: "/property/dashboard/staff-performance",
-    method: "get",
-  });
-}
-
-export function getRiskResidents() {
-  return request({ url: "/property/dashboard/risk-residents", method: "get" });
-}
-
 /** 工单完成率趋势（日/周/月） */
 export function getCompletionRate(period) {
   return request({
@@ -44,26 +25,34 @@ export function getRepairDistribution() {
   });
 }
 
-/** 预警趋势（按类型分类） */
-export function getAlertTrendByType() {
+/** 预警处理趋势 */
+export function getAlertProcessTrend() {
   return request({
-    url: "/property/dashboard/alert-trend-by-type",
+    url: "/property/dashboard/alert-process-trend",
     method: "get",
   });
 }
 
-/** 工单状态分布 */
-export function getOrderStatusDistribution() {
+/** 住户结构 */
+export function getResidentStructure() {
   return request({
-    url: "/property/dashboard/order-status-distribution",
+    url: "/property/dashboard/resident-structure",
     method: "get",
   });
 }
 
-/** 维修工负载TOP5 */
-export function getWorkerLoad() {
+/** 房屋结构 */
+export function getHouseStructure() {
   return request({
-    url: "/property/dashboard/worker-load",
+    url: "/property/dashboard/house-structure",
+    method: "get",
+  });
+}
+
+/** AI 安全预测 */
+export function getAiSafetyPrediction() {
+  return request({
+    url: "/property/dashboard/ai-safety-prediction",
     method: "get",
   });
 }

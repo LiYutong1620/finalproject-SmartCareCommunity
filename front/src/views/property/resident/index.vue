@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <div class="page-toolbar">
+  <div class="app-container property-table-page">
+    <div class="filter-panel">
       <el-form inline class="search-form">
         <el-form-item label="楼栋">
           <el-select v-model="q.buildingId" clearable placeholder="全部楼栋" style="width:120px">
@@ -8,8 +8,8 @@
           </el-select>
         </el-form-item>
         <el-form-item label="标签">
-          <el-select v-model="q.tagId" clearable placeholder="全部标签" style="width:120px">
-            <el-option v-for="t in tags" :key="t.tagId" :label="t.tagName" :value="t.tagId" />
+          <el-select v-model="q.tagId" clearable placeholder="全部标签" style="width:130px">
+            <el-option v-for="t in filterTagOptions" :key="t.tagId" :label="t.tagName" :value="t.tagId" />
           </el-select>
         </el-form-item>
         <el-form-item label="姓名">
@@ -30,31 +30,57 @@
           <el-button icon="Refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-      <div class="toolbar-actions">
+      <div class="filter-actions">
         <el-button type="success" @click="openResident()">创建档案</el-button>
         <el-button @click="openTagMgr">标签管理</el-button>
       </div>
     </div>
 
-    <el-card shadow="never">
-      <el-table :data="residents" v-loading="loading" border stripe>
-        <el-table-column prop="buildingNo" label="楼栋" width="70" />
-        <el-table-column prop="houseNo" label="房号" width="70" />
-        <el-table-column prop="name" label="姓名" width="90" />
-        <el-table-column label="性别" width="60" align="center">
+    <el-card shadow="never" class="table-card">
+      <el-table :data="residents" v-loading="loading" stripe class="data-table">
+        <el-table-column type="index" label="序号" width="64" align="center" />
+        <el-table-column prop="buildingNo" label="楼栋" width="80" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="row.buildingNo" size="small" effect="plain" round>{{ row.buildingNo }}</el-tag>
+            <span v-else class="empty-cell">—</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="houseNo" label="房号" width="80" align="center">
+          <template #default="{ row }">
+            <span class="cell-link">{{ row.houseNo || '—' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="name" label="姓名" width="96" align="center">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="openDetail(row)">{{ row.name }}</el-button>
+          </template>
+        </el-table-column>
+        <el-table-column label="性别" width="72" align="center">
           <template #default="{ row }">{{ genderLabel(row.gender) }}</template>
         </el-table-column>
-        <el-table-column prop="age" label="年龄" width="60" align="center" />
-        <el-table-column prop="phone" label="电话" width="120" />
-        <el-table-column prop="emergencyContact" label="紧急联系人" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="remark" label="备注" min-width="140" show-overflow-tooltip />
-        <el-table-column label="标签" show-overflow-tooltip>
-          <template #default="{ row }">{{ tagNames(row.tagIds) }}</template>
+        <el-table-column prop="age" label="年龄" width="72" align="center">
+          <template #default="{ row }">{{ row.age ?? '—' }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="140">
+        <el-table-column prop="phone" label="电话" width="128" align="center" />
+        <el-table-column label="标签" min-width="180">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openResident(row)">编辑</el-button>
-            <el-button link type="danger" @click="delResident(row)">删除</el-button>
+            <div v-if="displayTags(row).length" class="tag-list">
+              <el-tag
+                v-for="t in displayTags(row)"
+                :key="t"
+                size="small"
+                :type="careTagType(t)"
+                effect="plain"
+                round
+              >{{ t }}</el-tag>
+            </div>
+            <span v-else class="empty-cell">—</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="140" align="center" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" class="btn-action" @click="openResident(row)">编辑</el-button>
+            <el-button link type="danger" class="btn-action" @click="delResident(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -67,126 +93,243 @@
       />
     </el-card>
 
-    <el-dialog v-model="residentDlg" :title="residentForm.residentId ? '编辑住户' : '创建住户'" width="520px" append-to-body>
-      <el-form ref="residentRef" :model="residentForm" :rules="residentRules" label-width="100px">
+    <ResidentDetailDrawer
+      v-model="detailDrawer"
+      :resident-id="detailResidentId"
+      show-edit
+      @edit="openResident"
+    />
+
+    <el-dialog v-model="residentDlg" :title="residentForm.residentId ? '编辑住户档案' : '创建住户档案'" width="580px" append-to-body>
+      <el-form ref="residentRef" :model="residentForm" :rules="residentRules" label-width="110px">
         <el-form-item label="姓名" prop="name">
-          <el-input v-model="residentForm.name" maxlength="20" placeholder="2-20个字符" />
+          <el-input v-model="residentForm.name" maxlength="20" placeholder="2-20个字符，与业主管理姓名一致" />
         </el-form-item>
-        <el-form-item label="性别">
-          <el-select v-model="residentForm.gender" clearable placeholder="选填" style="width:100%">
+        <el-form-item label="联系电话" prop="phone">
+          <el-input v-model="residentForm.phone" maxlength="11" placeholder="11位手机号，与业主账号一致" />
+          <p class="field-hint">保存后按手机号自动关联业主管理中的账号</p>
+        </el-form-item>
+        <el-form-item label="性别" prop="gender">
+          <el-select v-model="residentForm.gender" placeholder="请选择" style="width:100%">
             <el-option label="男" value="0" />
             <el-option label="女" value="1" />
           </el-select>
         </el-form-item>
         <el-form-item label="年龄" prop="age">
-          <el-input-number v-model="residentForm.age" :min="1" :max="120" controls-position="right" placeholder="选填" style="width:100%" />
-        </el-form-item>
-        <el-form-item label="电话" prop="phone">
-          <el-input v-model="residentForm.phone" maxlength="11" placeholder="11位手机号" />
+          <el-input-number v-model="residentForm.age" :min="1" :max="120" controls-position="right" style="width:100%" />
         </el-form-item>
         <el-form-item label="房屋" prop="houseId">
-          <el-select v-model="residentForm.houseId" filterable style="width:100%" placeholder="请选择未绑定档案的房屋">
-            <el-option v-for="h in availableHouseOptions" :key="h.houseId" :label="`${h.buildingNo}-${h.houseNo}`" :value="h.houseId" />
+          <el-select v-model="residentForm.houseId" filterable style="width:100%" placeholder="一屋一条档案">
+            <el-option
+              v-for="h in availableHouses"
+              :key="h.houseId"
+              :label="`${h.buildingNo}-${h.houseNo}`"
+              :value="h.houseId"
+              :disabled="occupiedHouseIds.includes(h.houseId)"
+            />
           </el-select>
         </el-form-item>
+        <el-form-item label="居住状态">
+          <el-select v-model="residentForm.livingStatus" style="width:100%">
+            <el-option label="在住" value="1" />
+            <el-option label="空置" value="2" />
+            <el-option label="出租" value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="是否产权人">
+          <el-radio-group v-model="residentForm.isOwner">
+            <el-radio :value="1">是（本人）</el-radio>
+            <el-radio :value="0">否</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <template v-if="residentForm.isOwner === 0">
+          <el-form-item label="产权人姓名" prop="ownerName">
+            <el-input v-model="residentForm.ownerName" maxlength="20" />
+          </el-form-item>
+          <el-form-item label="产权人电话" prop="ownerPhone">
+            <el-input v-model="residentForm.ownerPhone" maxlength="11" />
+          </el-form-item>
+          <el-form-item label="与产权人关系">
+            <el-select v-model="residentForm.ownerRelation" style="width:100%">
+              <el-option v-for="r in OWNER_RELATIONS" :key="r" :label="r" :value="r" />
+            </el-select>
+          </el-form-item>
+        </template>
         <el-form-item label="入住日期">
           <el-date-picker v-model="residentForm.moveInDate" type="date" value-format="YYYY-MM-DD" style="width:100%" />
         </el-form-item>
-        <el-form-item label="紧急联系人">
-          <el-input v-model="residentForm.emergencyContact" placeholder="选填" maxlength="64" />
+        <el-divider content-position="left">紧急联系人（选填）</el-divider>
+        <el-form-item label="联系人姓名">
+          <el-input v-model="residentForm.emergencyName" maxlength="20" />
+        </el-form-item>
+        <el-form-item label="联系人电话">
+          <el-input v-model="residentForm.emergencyPhone" maxlength="11" />
+        </el-form-item>
+        <el-form-item label="与住户关系">
+          <el-select v-model="residentForm.emergencyRelation" clearable style="width:100%">
+            <el-option v-for="r in EMERGENCY_RELATIONS" :key="r" :label="r" :value="r" />
+          </el-select>
         </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="residentForm.remark" type="textarea" :rows="2" placeholder="选填，如沟通偏好、特殊需求等" maxlength="512" show-word-limit />
+          <el-input v-model="residentForm.remark" type="textarea" :rows="2" maxlength="512" show-word-limit />
         </el-form-item>
-        <el-form-item label="标签">
-          <el-select v-model="residentForm.tagIds" multiple style="width:100%" placeholder="选填">
-            <el-option v-for="t in tags" :key="t.tagId" :label="t.tagName" :value="t.tagId" />
+        <el-form-item label="系统标签">
+          <div class="care-tag-block">
+            <div v-if="previewAutoTags.length" class="tag-list">
+              <el-tag
+                v-for="t in previewAutoTags"
+                :key="t"
+                size="small"
+                :type="careTagType(t)"
+                effect="plain"
+                round
+              >{{ t }}</el-tag>
+            </div>
+            <span v-else class="empty-cell">根据年龄与居住状态自动判定</span>
+            <p class="care-tag-hint">独居老人：在住且年龄≥60岁；高龄老人：在住且年龄≥80岁</p>
+          </div>
+        </el-form-item>
+        <el-form-item label="重点关注">
+          <el-checkbox v-model="focusChecked" :disabled="!canApplyFocus">
+            纳入重点关注（残障人士等特殊情况，不纳入老人关怀）
+          </el-checkbox>
+          <p v-if="!canApplyFocus" class="field-hint">独居或高龄老人已自动纳入老人关怀，无需设置重点关注</p>
+        </el-form-item>
+        <el-form-item v-if="extraManualTagOptions.length" label="其他标签">
+          <el-select v-model="extraManualTagIds" multiple placeholder="可选自定义标签" style="width:100%">
+            <el-option
+              v-for="t in extraManualTagOptions"
+              :key="t.tagId"
+              :label="t.tagName"
+              :value="t.tagId"
+            />
           </el-select>
         </el-form-item>
       </el-form>
       <template #footer><el-button type="primary" @click="saveResident">保存</el-button></template>
     </el-dialog>
 
-    <el-dialog v-model="tagDlg" title="标签管理" width="480px" append-to-body>
-      <el-table :data="tags" border stripe size="small" max-height="240">
+    <el-dialog v-model="tagDlg" title="标签管理" width="520px" append-to-body @open="loadTagList">
+      <div class="tag-mgr-add">
+        <el-input v-model="newTagName" maxlength="20" placeholder="新标签名称" style="width:200px" />
+        <el-button type="primary" :disabled="!newTagName.trim()" @click="submitAddTag">添加</el-button>
+      </div>
+      <el-table :data="allTags" border stripe size="small" v-loading="tagLoading">
         <el-table-column prop="tagName" label="标签名称" />
-        <el-table-column label="分类" width="100">
-          <template #default="{ row }">{{ tagTypeLabel(row.tagType) }}</template>
+        <el-table-column label="类型" width="90" align="center">
+          <template #default="{ row }">
+            <el-tag size="small" :type="row.tagType === 'auto' ? 'info' : 'primary'" effect="plain">
+              {{ row.tagType === 'auto' ? '系统' : '自定义' }}
+            </el-tag>
+          </template>
         </el-table-column>
         <el-table-column label="操作" width="80" align="center">
           <template #default="{ row }">
-            <el-button link type="danger" @click="delTag(row)">删除</el-button>
+            <el-button
+              v-if="row.tagType !== 'auto'"
+              link
+              type="danger"
+              @click="removeTag(row)"
+            >删除</el-button>
+            <span v-else class="empty-cell">—</span>
           </template>
         </el-table-column>
       </el-table>
-      <el-divider content-position="left">新增标签</el-divider>
-      <el-form :model="tagForm" label-width="80px">
-        <el-form-item label="名称">
-          <el-input v-model="tagForm.tagName" placeholder="如：独居老人" maxlength="32" />
-        </el-form-item>
-        <el-form-item label="分类">
-          <el-select v-model="tagForm.tagType" style="width:100%">
-            <el-option label="老人关怀" value="elder" />
-            <el-option label="特殊关怀" value="disabled" />
-            <el-option label="普通标签" value="custom" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="tagDlg = false">关闭</el-button>
-        <el-button type="primary" @click="saveTag">新增</el-button>
-      </template>
+      <p class="care-tag-hint">系统标签由规则自动计算；「重点关注」适用于非独居、非高龄住户；自定义标签可在档案中勾选。</p>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  listBuildingAll, listHouse, listTag, addTag, deleteTag,
-  listResident, addResident, updateResident, deleteResident, listOccupiedHouses
+  listBuildingAll, listHouse, listOccupiedHouses,
+  listResident, addResident, updateResident, deleteResident,
+  listTag, addTag, deleteTag
 } from '@/api/property'
+import ResidentDetailDrawer from '@/components/ResidentDetailDrawer/index.vue'
 import { useAutoQuery } from '@/composables/useAutoQuery'
+import '@/styles/property-table-page.css'
+
+const FOCUS_TAG_ID = 3
+
+const route = useRoute()
+const OWNER_RELATIONS = ['配偶', '子女', '父母', '兄弟姐妹', '亲属', '租客', '其他']
+const EMERGENCY_RELATIONS = ['配偶', '子女', '父母', '兄弟姐妹', '亲属', '邻居', '朋友', '其他']
 
 const buildingOptions = ref([])
 const houseOptions = ref([])
-const tags = ref([])
+const occupiedHouseIds = ref([])
 const residents = ref([])
+const detailDrawer = ref(false)
+const detailResidentId = ref(null)
 const resTotal = ref(0)
 const resQuery = reactive({ pageNum: 1, pageSize: 10 })
 const q = reactive({ buildingId: null, tagId: null, name: '', gender: '', ageMin: null, ageMax: null })
+
+const allTags = ref([])
+const tagLoading = ref(false)
+const newTagName = ref('')
+const filterTagOptions = computed(() => allTags.value)
 
 const residentDlg = ref(false)
 const residentRef = ref()
 const residentForm = reactive({
   residentId: null, name: '', gender: '', age: null, phone: '', houseId: null,
-  moveInDate: '', emergencyContact: '', remark: '', tagIds: []
+  livingStatus: '1', isOwner: 1, ownerName: '', ownerPhone: '', ownerRelation: '',
+  moveInDate: '', emergencyName: '', emergencyPhone: '', emergencyRelation: '', remark: ''
 })
-const occupiedHouseIds = ref(new Set())
+const focusChecked = ref(false)
+const extraManualTagIds = ref([])
 
-const availableHouseOptions = computed(() => {
-  const currentId = residentForm.houseId
-  return houseOptions.value.filter(h => h.houseId === currentId || !occupiedHouseIds.value.has(h.houseId))
-})
 const residentRules = {
   name: [
     { required: true, message: '请输入姓名', trigger: 'blur' },
-    { min: 2, max: 20, message: '姓名长度应为2-20个字符', trigger: 'blur' },
-    { pattern: /^[\u4e00-\u9fa5·]{2,20}$/, message: '姓名应为中文', trigger: 'blur' }
+    { min: 2, max: 20, message: '姓名长度应为2-20个字符', trigger: 'blur' }
   ],
+  gender: [{ required: true, message: '请选择性别', trigger: 'change' }],
   phone: [
     { required: true, message: '请输入手机号', trigger: 'blur' },
     { pattern: /^1\d{10}$/, message: '手机号格式不正确', trigger: 'blur' }
   ],
   houseId: [{ required: true, message: '请选择房屋', trigger: 'change' }],
-  age: [{ type: 'number', min: 1, max: 120, message: '年龄应在1-120之间', trigger: 'blur' }]
+  age: [{ required: true, type: 'number', min: 1, max: 120, message: '请填写年龄', trigger: 'blur' }]
 }
 
 const tagDlg = ref(false)
-const tagForm = reactive({ tagName: '', tagType: 'custom' })
+const availableHouses = computed(() => houseOptions.value)
 
-const TAG_TYPE_MAP = { elder: '老人关怀', disabled: '特殊关怀', custom: '普通标签' }
+const extraManualTagOptions = computed(() =>
+  allTags.value.filter(t => t.tagType === 'manual' && t.tagId !== FOCUS_TAG_ID)
+)
+
+const previewAutoTags = computed(() => {
+  const tags = []
+  const age = residentForm.age
+  const living = residentForm.livingStatus === '1'
+  if (living && age != null && age >= 60) tags.push('独居老人')
+  if (living && age != null && age >= 80) tags.push('高龄老人')
+  return tags
+})
+
+const canApplyFocus = computed(() => previewAutoTags.value.length === 0)
+
+watch(canApplyFocus, (ok) => {
+  if (!ok) focusChecked.value = false
+})
+
+function careTagType(name) {
+  if (name === '独居老人') return 'danger'
+  if (name === '高龄老人') return 'success'
+  if (name === '重点关注') return 'warning'
+  return 'primary'
+}
+
+function displayTags(row) {
+  return row.careTags || [...(row.systemTags || []), ...(row.manualTags || [])]
+}
 
 function genderLabel(gender) {
   if (gender === '0') return '男'
@@ -194,13 +337,23 @@ function genderLabel(gender) {
   return '-'
 }
 
-function tagTypeLabel(type) {
-  return TAG_TYPE_MAP[type] || '普通标签'
+function buildTagIds() {
+  const ids = [...extraManualTagIds.value]
+  if (focusChecked.value) ids.unshift(FOCUS_TAG_ID)
+  return ids
 }
 
-function tagNames(ids) {
-  if (!ids?.length) return ''
-  return ids.map(id => tags.value.find(t => t.tagId === id)?.tagName).filter(Boolean).join('、')
+async function loadTags() {
+  allTags.value = (await listTag()).data || []
+}
+
+async function loadTagList() {
+  tagLoading.value = true
+  try {
+    await loadTags()
+  } finally {
+    tagLoading.value = false
+  }
 }
 
 async function loadBuildingOptions() {
@@ -210,14 +363,19 @@ async function loadBuildingOptions() {
 async function loadHouseOptions() {
   const list = []
   for (const b of buildingOptions.value) {
-    const res = await listHouse({ buildingId: b.buildingId, pageNum: 1, pageSize: 100 })
+    const res = await listHouse({ buildingId: b.buildingId, pageNum: 1, pageSize: 200 })
     res.data.rows.forEach(h => list.push({ ...h, buildingNo: b.buildingNo }))
   }
   houseOptions.value = list
 }
 
-async function loadTags() {
-  tags.value = (await listTag()).data
+async function openDetail(row) {
+  detailResidentId.value = row.residentId
+  detailDrawer.value = true
+}
+
+async function loadOccupied(excludeId) {
+  occupiedHouseIds.value = (await listOccupiedHouses(excludeId)).data || []
 }
 
 async function fetchList() {
@@ -230,11 +388,6 @@ const { loading, load: loadList, reset: resetAuto } = useAutoQuery(fetchList,
   () => [q.buildingId, q.tagId, q.name, q.gender, q.ageMin, q.ageMax],
   { beforeLoad: () => { resQuery.pageNum = 1 } }
 )
-
-async function loadOccupiedHouses(excludeResidentId) {
-  const res = await listOccupiedHouses(excludeResidentId)
-  occupiedHouseIds.value = new Set(res.data || [])
-}
 
 function resetQuery() {
   resetAuto(() => {
@@ -250,7 +403,6 @@ function resetQuery() {
 
 async function openResident(row) {
   if (row) {
-    await loadOccupiedHouses(row.residentId)
     Object.assign(residentForm, {
       residentId: row.residentId,
       name: row.name,
@@ -258,18 +410,30 @@ async function openResident(row) {
       age: row.age ?? null,
       phone: row.phone,
       houseId: row.houseId,
+      livingStatus: row.livingStatus || '1',
+      isOwner: row.isOwner ?? 1,
+      ownerName: row.ownerName || '',
+      ownerPhone: row.ownerPhone || '',
+      ownerRelation: row.ownerRelation || '',
       moveInDate: row.moveInDate || '',
-      emergencyContact: row.emergencyContact || '',
-      remark: row.remark || '',
-      tagIds: row.tagIds || []
+      emergencyName: row.emergencyName || '',
+      emergencyPhone: row.emergencyPhone || '',
+      emergencyRelation: row.emergencyRelation || '',
+      remark: row.remark || ''
     })
+    const manualIds = row.manualTagIds || []
+    focusChecked.value = manualIds.includes(FOCUS_TAG_ID)
+    extraManualTagIds.value = manualIds.filter(id => id !== FOCUS_TAG_ID)
+    await loadOccupied(row.residentId)
   } else {
-    await loadOccupiedHouses(null)
     Object.assign(residentForm, {
-      residentId: null, name: '', gender: '', age: null, phone: '',
-      houseId: availableHouseOptions.value[0]?.houseId || null,
-      moveInDate: '', emergencyContact: '', remark: '', tagIds: []
+      residentId: null, name: '', gender: '', age: null, phone: '', houseId: null,
+      livingStatus: '1', isOwner: 1, ownerName: '', ownerPhone: '', ownerRelation: '',
+      moveInDate: '', emergencyName: '', emergencyPhone: '', emergencyRelation: '', remark: ''
     })
+    focusChecked.value = false
+    extraManualTagIds.value = []
+    await loadOccupied(null)
   }
   residentDlg.value = true
 }
@@ -277,8 +441,18 @@ async function openResident(row) {
 async function saveResident() {
   const valid = await residentRef.value?.validate().catch(() => false)
   if (!valid) return
-  if (residentForm.residentId) await updateResident(residentForm)
-  else await addResident(residentForm)
+  if (focusChecked.value && !canApplyFocus.value) {
+    ElMessage.warning('独居或高龄老人不能设置重点关注')
+    return
+  }
+  const payload = { ...residentForm, tagIds: buildTagIds() }
+  if (payload.isOwner === 1) {
+    payload.ownerName = ''
+    payload.ownerPhone = ''
+    payload.ownerRelation = '本人'
+  }
+  if (residentForm.residentId) await updateResident(payload)
+  else await addResident(payload)
   ElMessage.success('已保存')
   residentDlg.value = false
   loadList()
@@ -292,60 +466,59 @@ async function delResident(row) {
 }
 
 function openTagMgr() {
-  tagForm.tagName = ''
-  tagForm.tagType = 'custom'
   tagDlg.value = true
 }
 
-async function saveTag() {
-  if (!tagForm.tagName?.trim()) {
-    ElMessage.warning('请输入标签名称')
-    return
-  }
-  await addTag({ tagName: tagForm.tagName.trim(), tagType: tagForm.tagType })
-  ElMessage.success('标签已新增')
-  tagForm.tagName = ''
-  tagForm.tagType = 'custom'
-  loadTags()
+async function submitAddTag() {
+  const name = newTagName.value.trim()
+  if (!name) return
+  await addTag({ tagName: name, tagType: 'manual' })
+  ElMessage.success('标签已添加')
+  newTagName.value = ''
+  await loadTags()
 }
 
-async function delTag(row) {
+async function removeTag(row) {
   await ElMessageBox.confirm(`确认删除标签「${row.tagName}」？`, '提示', { type: 'warning' })
   await deleteTag(row.tagId)
   ElMessage.success('已删除')
-  loadTags()
-  loadList()
+  await loadTags()
 }
 
 onMounted(async () => {
-  await loadBuildingOptions()
-  await loadHouseOptions()
-  await loadTags()
+  try {
+    await loadTags()
+    await loadBuildingOptions()
+    await loadHouseOptions()
+  } catch (e) {
+    console.error('住户档案页初始化失败', e)
+  }
+  const rid = route.query.residentId
+  if (rid) {
+    detailResidentId.value = Number(rid)
+    detailDrawer.value = true
+  }
 })
 </script>
 
 <style scoped>
-.page-toolbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
+.care-tag-hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.5;
 }
-.page-toolbar .search-form {
-  margin-bottom: 0;
+.care-tag-block {
+  width: 100%;
 }
-.page-toolbar .search-form :deep(.el-form-item) {
-  margin-bottom: 0;
+.field-hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
-.toolbar-actions {
+.tag-mgr-add {
   display: flex;
   gap: 8px;
-  flex-shrink: 0;
-}
-.age-sep {
-  margin: 0 6px;
-  color: var(--el-text-color-secondary);
+  margin-bottom: 12px;
 }
 </style>

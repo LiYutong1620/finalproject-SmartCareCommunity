@@ -80,4 +80,35 @@ public class ElCareOrderService {
         Page<ElCareOrder> page = careOrderMapper.selectPage(new Page<>(pageNum, pageSize), qw);
         return new TableDataInfo(page.getTotal(), page.getRecords());
     }
+
+    /** 预警触发时自动创建待指派工单（一预警一工单） */
+    @Transactional
+    public Long createPendingOrderForAlert(Long alertId, Long residentId, String careItem, Integer level) {
+        if (alertId != null) {
+            ElCareOrder existing = careOrderMapper.selectOne(new LambdaQueryWrapper<ElCareOrder>()
+                .eq(ElCareOrder::getAlertId, alertId)
+                .last("LIMIT 1"));
+            if (existing != null) {
+                return existing.getCareId();
+            }
+        }
+        ElCareOrder order = new ElCareOrder();
+        order.setAlertId(alertId);
+        order.setResidentId(residentId);
+        order.setCareItem(careItem);
+        order.setStatus("pending");
+        order.setLevel(level);
+        order.setCreateTime(LocalDateTime.now());
+        careOrderMapper.insert(order);
+        return order.getCareId();
+    }
+
+    public ElCareOrder getByAlertId(Long alertId) {
+        if (alertId == null) {
+            return null;
+        }
+        return careOrderMapper.selectOne(new LambdaQueryWrapper<ElCareOrder>()
+            .eq(ElCareOrder::getAlertId, alertId)
+            .last("LIMIT 1"));
+    }
 }

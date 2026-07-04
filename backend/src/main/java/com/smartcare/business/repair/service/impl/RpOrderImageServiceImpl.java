@@ -46,8 +46,17 @@ public class RpOrderImageServiceImpl implements RpOrderImageService {
     @Transactional
     public void deleteByOrderId(Long orderId) {
         imageMapper.delete(
-                new LambdaQueryWrapper<RpOrderImage>()
-                        .eq(RpOrderImage::getOrderId, orderId)
+            new LambdaQueryWrapper<RpOrderImage>()
+                .eq(RpOrderImage::getOrderId, orderId)
         );
+    }
+
+    @Override
+    @Transactional
+    public void deleteByIds(List<Long> imageIds) {
+        if (imageIds == null || imageIds.isEmpty()) {
+            return;
+        }
+        imageMapper.deleteBatchIds(imageIds);
     }
 }

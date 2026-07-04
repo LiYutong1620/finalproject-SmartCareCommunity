@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Plus, Delete } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
@@ -49,11 +49,32 @@ const props = defineProps({
   maxCount: {
     type: Number,
     default: 9
+  },
+  storageKey: {
+    type: String,
+    default: '__repairFiles'
   }
 })
 
 const emit = defineEmits(['update:modelValue'])
 const fileInput = ref(null)
+
+function getFileStore() {
+  if (!window[props.storageKey]) {
+    window[props.storageKey] = []
+  }
+  return window[props.storageKey]
+}
+
+watch(
+  () => props.modelValue.length,
+  (len) => {
+    const store = getFileStore()
+    if (len < store.length) {
+      store.splice(len)
+    }
+  }
+)
 
 const triggerUpload = () => {
   fileInput.value?.click()
@@ -68,7 +89,6 @@ const handleFileChange = (e) => {
     ElMessage.warning(`最多上传 ${props.maxCount} 张图片`)
   }
 
-  // 转为 base64 预览，实际提交时由父组件转为 FormData
   const readers = validFiles.map((file) => {
     return new Promise((resolve) => {
       const reader = new FileReader()
@@ -85,9 +105,8 @@ const handleFileChange = (e) => {
   Promise.all(readers).then((results) => {
     const urls = results.map(r => r.dataUrl)
     emit('update:modelValue', [...props.modelValue, ...urls])
-    // 存储原始 file 对象供提交使用
-    window.__repairFiles = window.__repairFiles || []
-    results.forEach(r => window.__repairFiles.push(r.file))
+    const store = getFileStore()
+    results.forEach(r => store.push(r.file))
   })
 
   e.target.value = ''
@@ -97,10 +116,8 @@ const removeImage = (index) => {
   const newList = [...props.modelValue]
   newList.splice(index, 1)
   emit('update:modelValue', newList)
-  // 同步移除对应的 file
-  if (window.__repairFiles) {
-    window.__repairFiles.splice(index, 1)
-  }
+  const store = getFileStore()
+  store.splice(index, 1)
 }
 </script>
 

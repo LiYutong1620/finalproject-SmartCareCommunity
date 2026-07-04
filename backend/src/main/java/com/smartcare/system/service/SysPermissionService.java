@@ -1,7 +1,7 @@
 package com.smartcare.system.service;
 
 import com.smartcare.system.domain.SysUser;
-import com.smartcare.system.mapper.SysUserMapper;
+import com.smartcare.system.service.UserAccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +12,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class SysPermissionService {
 
-    private final SysUserMapper sysUserMapper;
+    private final UserAccountService accountService;
 
     private static final List<Map<String, String>> PERMISSIONS = new ArrayList<>();
 
@@ -42,7 +42,7 @@ public class SysPermissionService {
     }
 
     public List<String> getUserPermissions(Long userId) {
-        SysUser user = sysUserMapper.selectById(userId);
+        SysUser user = accountService.findById(userId);
         if (user == null || user.getPermissionCode() == null || user.getPermissionCode().isEmpty()) {
             return Collections.emptyList();
         }
@@ -54,6 +54,6 @@ public class SysPermissionService {
         SysUser user = new SysUser();
         user.setUserId(userId);
         user.setPermissionCode(permissions == null || permissions.isEmpty() ? "" : String.join(",", permissions));
-        sysUserMapper.updateById(user);
+        accountService.updateProfile(user);
     }
 }

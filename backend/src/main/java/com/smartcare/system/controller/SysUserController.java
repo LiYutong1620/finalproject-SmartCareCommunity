@@ -1,5 +1,6 @@
 package com.smartcare.system.controller;
 
+import com.smartcare.business.repair.mapper.RpWorkerProfileMapper;
 import com.smartcare.common.core.domain.AjaxResult;
 import com.smartcare.common.core.page.TableDataInfo;
 import com.smartcare.common.exception.ServiceException;
@@ -27,8 +28,9 @@ public class SysUserController {
     public AjaxResult list(@RequestParam(defaultValue = "1") int pageNum,
                            @RequestParam(defaultValue = "10") int pageSize,
                            @RequestParam(required = false) String username,
+                           @RequestParam(required = false) String nickName,
                            @RequestParam(required = false) String userType) {
-        var page = userService.pageList(pageNum, pageSize, username, userType);
+        var page = userService.pageList(pageNum, pageSize, username, nickName, userType);
         return AjaxResult.success(new TableDataInfo(page.getTotal(), page.getRecords()));
     }
 
@@ -51,6 +53,20 @@ public class SysUserController {
             user.setUserType("0");
         }
         userService.createUser(user);
+        Long roleId = switch (user.getUserType()) {
+            case "1" -> 3L;
+            case "2" -> 4L;
+            default -> 2L;
+        };
+        roleService.assignUserRole(user.getUserId(), List.of(roleId));
+        if ("2".equals(user.getUserType()) && !StringUtils.hasText(user.getPermissionCode())) {
+            SysUser permUpdate = new SysUser();
+            permUpdate.setUserId(user.getUserId());
+            permUpdate.setPermissionCode(
+                "elder_view,elder_manage,elder_staff_manage,dashboard_view,report_export,"
+                    + "repair_manage,repair_assign,system_user_manage,ai_monitor_view,ai_monitor_config");
+            userService.updateProfile(permUpdate);
+        }
         return AjaxResult.success();
     }
 

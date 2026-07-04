@@ -17,4 +17,7 @@ public class RpRepairType {
     private String typeName;
 
     private Integer orderNum;
+
+    /** 典型关键词（逗号分隔，一级分类用于 AI 识别） */
+    private String keywords;
 }

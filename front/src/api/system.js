@@ -82,6 +82,50 @@ export function deleteWorkerSkill(skillId) {
   return request({ url: `/system/worker-skill/${skillId}`, method: "delete" });
 }
 
+export function auditWorkerSkill(skillId, approved, rejectReason) {
+  return request({
+    url: `/system/worker-skill/audit/${skillId}`,
+    method: "put",
+    data: { approved, rejectReason },
+  });
+}
+
+export function listWorkerProfileSummaries(params) {
+  return request({ url: "/property/worker-profile/list", method: "get", params });
+}
+
+export function getWorkerQualification(workerId) {
+  return request({ url: `/property/worker-profile/${workerId}`, method: "get" });
+}
+
+export function updateWorkerLevel(workerId, workerLevel) {
+  return request({
+    url: `/property/worker-profile/${workerId}/level`,
+    method: "put",
+    data: { workerLevel },
+  });
+}
+
+export function auditWorkerCert(certId, approved, rejectReason) {
+  return request({
+    url: `/property/worker-profile/cert-audit/${certId}`,
+    method: "put",
+    data: { approved, rejectReason },
+  });
+}
+
+export function addWorkerCert(workerId, data) {
+  return request({ url: `/property/worker-profile/${workerId}/cert`, method: "post", data });
+}
+
+export function editWorkerCert(certId, data) {
+  return request({ url: `/property/worker-profile/cert/${certId}`, method: "put", data });
+}
+
+export function deleteWorkerCert(certId) {
+  return request({ url: `/property/worker-profile/cert/${certId}`, method: "delete" });
+}
+
 export function getSkillDict() {
   return request({ url: "/system/worker-skill/dict", method: "get" });
 }

@@ -22,6 +22,17 @@ public class CmHouse {
     private String ownerName;
     private String remark;
 
+    @TableField(exist = false)
+    private Long residentId;
+    @TableField(exist = false)
+    private String residentName;
+    @TableField(exist = false)
+    private String livingStatus;
+    @TableField(exist = false)
+    private String livingStatusLabel;
+    @TableField(exist = false)
+    private String buildingNo;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 }

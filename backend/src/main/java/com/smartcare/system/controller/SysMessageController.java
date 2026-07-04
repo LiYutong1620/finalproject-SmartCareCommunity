@@ -23,8 +23,16 @@ public class SysMessageController {
     }
 
     @GetMapping("/unreadCount")
-    public AjaxResult unreadCount() {
-        return AjaxResult.success(messageService.unreadCount(SecurityUtils.getUserId()));
+    public AjaxResult unreadCount(@RequestParam(required = false) String msgType) {
+        return AjaxResult.success(messageService.unreadCount(SecurityUtils.getUserId(), msgType));
+    }
+
+    @GetMapping("/recent")
+    public AjaxResult recent(@RequestParam(required = false) String msgType,
+                             @RequestParam(defaultValue = "10") int limit,
+                             @RequestParam(defaultValue = "false") boolean unreadOnly) {
+        return AjaxResult.success(messageService.listRecentForUser(
+            SecurityUtils.getUserId(), msgType, limit, unreadOnly));
     }
 
     @PutMapping("/read/{messageId}")

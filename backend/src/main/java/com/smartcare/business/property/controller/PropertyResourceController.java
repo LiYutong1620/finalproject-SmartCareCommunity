@@ -106,14 +106,24 @@ public class PropertyResourceController {
 
     @PostMapping("/resident")
     public AjaxResult addResident(@RequestBody CmResident resident) {
-        resourceService.addResident(resident, resident.getTagIds());
+        resourceService.addResident(resident);
         return AjaxResult.success();
     }
 
     @PutMapping("/resident")
     public AjaxResult editResident(@RequestBody CmResident resident) {
-        resourceService.updateResident(resident, resident.getTagIds());
+        resourceService.updateResident(resident);
         return AjaxResult.success();
+    }
+
+    @GetMapping("/resident/{residentId}")
+    public AjaxResult residentDetail(@PathVariable Long residentId) {
+        return AjaxResult.success(resourceService.getResidentDetail(residentId));
+    }
+
+    @GetMapping("/resident/owner-options")
+    public AjaxResult ownerBindOptions(@RequestParam(required = false) Long excludeResidentId) {
+        return AjaxResult.success(resourceService.listOwnerBindOptions(excludeResidentId));
     }
 
     @DeleteMapping("/resident/{residentId}")

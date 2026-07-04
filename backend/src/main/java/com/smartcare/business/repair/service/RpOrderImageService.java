@@ -10,4 +10,6 @@ public interface RpOrderImageService {
     List<RpOrderImage> getByOrderId(Long orderId);
 
     void deleteByOrderId(Long orderId);
+
+    void deleteByIds(List<Long> imageIds);
 }

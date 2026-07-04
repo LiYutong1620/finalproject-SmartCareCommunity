@@ -20,6 +20,7 @@ public class ElAlert {
     private String content;
     private String status;
     private Long handlerId;
+    private LocalDateTime processStartTime;
     private LocalDateTime handleTime;
     private String handleResult;
     private LocalDateTime createTime;
@@ -43,4 +44,12 @@ public class ElAlert {
     /** 家属电话（非数据库字段） */
     @TableField(exist = false)
     private String familyPhone;
+
+    /** 规则判定描述（非数据库字段，与 AI 建议分开展示） */
+    @TableField(exist = false)
+    private String alertReason;
+
+    /** AI 分析建议（非数据库字段） */
+    @TableField(exist = false)
+    private String aiSuggestion;
 }

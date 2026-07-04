@@ -15,3 +15,15 @@ export function getInfo() {
 export function register(data) {
   return request({ url: '/register', method: 'post', data })
 }
+
+export function forgotVerify(data) {
+  return request({ url: '/forgot-password/verify', method: 'post', data })
+}
+
+export function forgotSendCode(data) {
+  return request({ url: '/forgot-password/send-code', method: 'post', data })
+}
+
+export function forgotReset(data) {
+  return request({ url: '/forgot-password/reset', method: 'post', data })
+}

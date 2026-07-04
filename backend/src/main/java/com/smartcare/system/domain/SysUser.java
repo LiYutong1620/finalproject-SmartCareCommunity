@@ -1,19 +1,18 @@
 package com.smartcare.system.domain;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.smartcare.common.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * 运行时用户聚合对象（登录态），资料分别存于业主/维修工/物业分表。
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("sys_user")
 public class SysUser extends BaseEntity {
 
-    @TableId(type = IdType.AUTO)
+    @TableField(exist = false)
     private Long userId;
     private String username;
     private String password;
@@ -30,6 +29,13 @@ public class SysUser extends BaseEntity {
     private String status;
     /** 权限码，逗号分隔，如 "elder_view,elder_manage,dashboard_view" */
     private String permissionCode;
-    @TableLogic(value = "0", delval = "2")
+    @TableField(exist = false)
     private String delFlag;
+    /** 关联档案主键：业主=residentId，维修工=workerId，物业=staffId */
+    @TableField(exist = false)
+    private Long profileRefId;
+    @TableField(exist = false)
+    private String houseAddress;
+    @TableField(exist = false)
+    private Boolean residentBound;
 }

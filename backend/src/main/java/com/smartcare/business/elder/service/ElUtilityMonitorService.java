@@ -28,13 +28,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 独居老人水电数据时序异常监测服务
+ * 独居老人水电数据时序监测服务（方案B：仅水电 + 生活迹象推断）
  *
  * 检测规则：
- * 1. 连续24小时无用水用电 → 高风险（红色）
- * 2. 水电用量突增（超历史平均2倍）→ 中风险（黄色）
- * 3. 水电用量突减（低于历史平均1/2）→ 中风险（黄色）
- * 4. 夜间时段（22:00-5:00）高用量异常 → 中风险（黄色）
+ * 1. 生活迹象：近3小时用水用电均为零，且历史有正常模式 → 一级
+ * 2. 连续24小时全零或无数据上报 → 一级
+ * 3. 用餐时段（早/午/晚）用水异常偏低 → 二级
+ * 4. 单项指标长时间为零（另一项正常）→ 二级
+ * 5. 数据上报稀疏（可能设备异常）→ 二级
+ * 6. 用量突增/突减（相对7日均值）→ 二级
+ * 7. 单小时用量尖峰（超历史3倍）→ 二级
+ * 8. 日间整体用量异常偏低 → 二级
+ * 9. 夜间高用量 → 二级
  */
 @Slf4j
 @Service
@@ -61,6 +66,17 @@ public class ElUtilityMonitorService {
     private static final double NIGHT_HIGH_MULTIPLIER = 1.5;
     /** 历史数据窗口（天）—— 用于计算平均值 */
     private static final int HISTORY_DAYS = 7;
+    /** 生活迹象检测窗口（小时）—— 近 N 小时无用水用电且历史有正常模式 */
+    private static final int ACTIVITY_WINDOW_HOURS = 3;
+    /** 用餐时段小时 */
+    private static final Set<Integer> MEAL_HOURS = Set.of(7, 8, 9, 11, 12, 13, 17, 18, 19);
+    /** 日间小时 6-20 */
+    private static final int DAY_START = 6;
+    private static final int DAY_END = 20;
+    /** 尖峰倍数 */
+    private static final double SPIKE_MULTIPLIER = 3.0;
+    /** 日间偏低比例 */
+    private static final double DAY_LOW_RATIO = 0.3;
 
     // ==================== 核心异常检测 ====================
 
@@ -89,10 +105,18 @@ public class ElUtilityMonitorService {
                 .orderByAsc(ElUtilityData::getRecordTime)
         );
 
-        // 规则1：连续24小时无用水用电
+        // 规则2：连续24小时无用水用电
         Map<String, Object> noUsageAnomaly = checkNoUsage24h(recent24h, residentId);
         if (noUsageAnomaly != null) {
             anomalies.add(noUsageAnomaly);
+        }
+
+        // 规则1：近几小时无生活迹象（24h全零时不重复报）
+        if (noUsageAnomaly == null) {
+            Map<String, Object> livingSignAnomaly = checkNoLivingSign(recent24h, historyData, residentId, now);
+            if (livingSignAnomaly != null) {
+                anomalies.add(livingSignAnomaly);
+            }
         }
 
         // 计算历史平均（分日间/夜间）
@@ -101,19 +125,44 @@ public class ElUtilityMonitorService {
         BigDecimal histDaytimeAvgWater = calcAverage(historyData, "water", false);
         BigDecimal histDaytimeAvgElectric = calcAverage(historyData, "electric", false);
 
-        // 规则2：突增（最近数据 vs 历史平均）
+        Map<String, Object> mealAnomaly = checkMealTimeLowWater(recent24h, historyData, residentId);
+        if (mealAnomaly != null) {
+            anomalies.add(mealAnomaly);
+        }
+
+        Map<String, Object> partialZeroAnomaly = checkPartialUtilityZero(recent24h, historyData, residentId);
+        if (partialZeroAnomaly != null) {
+            anomalies.add(partialZeroAnomaly);
+        }
+
+        Map<String, Object> sparseAnomaly = checkSparseReporting(recent24h, residentId);
+        if (sparseAnomaly != null) {
+            anomalies.add(sparseAnomaly);
+        }
+
+        // 规则：突增（最近数据 vs 历史平均）
         Map<String, Object> surgeAnomaly = checkSurge(recent24h, histAvgWater, histAvgElectric, residentId);
         if (surgeAnomaly != null) {
             anomalies.add(surgeAnomaly);
         }
 
-        // 规则3：突减
+        // 规则：突减
         Map<String, Object> dropAnomaly = checkDrop(recent24h, histAvgWater, histAvgElectric, residentId);
         if (dropAnomaly != null) {
             anomalies.add(dropAnomaly);
         }
 
-        // 规则4：夜间高用量
+        Map<String, Object> spikeAnomaly = checkHourlySpike(recent24h, histAvgWater, histAvgElectric, residentId);
+        if (spikeAnomaly != null) {
+            anomalies.add(spikeAnomaly);
+        }
+
+        Map<String, Object> dayLowAnomaly = checkDaytimeAbnormalLow(recent24h, histDaytimeAvgWater, histDaytimeAvgElectric, residentId);
+        if (dayLowAnomaly != null) {
+            anomalies.add(dayLowAnomaly);
+        }
+
+        // 规则：夜间高用量
         Map<String, Object> nightAnomaly = checkNightHighUsage(recent24h, histDaytimeAvgWater, histDaytimeAvgElectric, residentId);
         if (nightAnomaly != null) {
             anomalies.add(nightAnomaly);
@@ -123,7 +172,45 @@ public class ElUtilityMonitorService {
     }
 
     /**
-     * 规则1：检测连续24小时无用水用电
+     * 生活迹象：近 ACTIVITY_WINDOW_HOURS 小时用水用电均为零，且历史存在正常用量模式
+     */
+    private Map<String, Object> checkNoLivingSign(List<ElUtilityData> recent24h, List<ElUtilityData> historyData,
+                                                    Long residentId, LocalDateTime now) {
+        LocalDateTime windowStart = now.minusHours(ACTIVITY_WINDOW_HOURS);
+        List<ElUtilityData> recentWindow = recent24h.stream()
+            .filter(d -> d.getRecordTime() != null && !d.getRecordTime().isBefore(windowStart))
+            .toList();
+        if (recentWindow.isEmpty()) {
+            return null;
+        }
+
+        boolean allZero = recentWindow.stream().allMatch(d ->
+            (d.getWaterUsage() == null || d.getWaterUsage().compareTo(ZERO_THRESHOLD) < 0)
+                && (d.getElectricUsage() == null || d.getElectricUsage().compareTo(ZERO_THRESHOLD) < 0));
+        if (!allZero) {
+            return null;
+        }
+
+        BigDecimal histAvgWater = calcAverage(historyData, "water", null);
+        BigDecimal histAvgElectric = calcAverage(historyData, "electric", null);
+        boolean hasNormalPattern = histAvgWater.compareTo(ZERO_THRESHOLD) > 0
+            || histAvgElectric.compareTo(ZERO_THRESHOLD) > 0;
+        if (!hasNormalPattern) {
+            return null;
+        }
+
+        Map<String, Object> anomaly = new LinkedHashMap<>();
+        anomaly.put("type", "no_living_sign");
+        anomaly.put("level", 1);
+        anomaly.put("description", String.format(
+            "【生活迹象】近%d小时用水、用电均接近零；对比近7天历史存在正常用量（水均%.2fL/h、电均%.2fkWh/h），疑似长时间无活动",
+            ACTIVITY_WINDOW_HOURS, histAvgWater.doubleValue(), histAvgElectric.doubleValue()));
+        anomaly.put("residentId", residentId);
+        return anomaly;
+    }
+
+    /**
+     * 规则2：检测连续24小时无用水用电
      */
     private Map<String, Object> checkNoUsage24h(List<ElUtilityData> recent24h, Long residentId) {
         if (recent24h.isEmpty()) {
@@ -131,7 +218,7 @@ public class ElUtilityMonitorService {
             Map<String, Object> anomaly = new LinkedHashMap<>();
             anomaly.put("type", "no_usage_24h");
             anomaly.put("level", 1); // 高风险
-            anomaly.put("description", "连续24小时无水电数据上报，可能设备离线或老人异常");
+            anomaly.put("description", "【数据缺失】连续24小时无水电数据上报，可能采集设备离线或通讯中断，需人工核查");
             anomaly.put("residentId", residentId);
             return anomaly;
         }
@@ -146,7 +233,9 @@ public class ElUtilityMonitorService {
             Map<String, Object> anomaly = new LinkedHashMap<>();
             anomaly.put("type", "no_usage_24h");
             anomaly.put("level", 1); // 高风险
-            anomaly.put("description", "连续24小时无用水且无用电，老人可能存在安全隐患");
+            anomaly.put("description", String.format(
+                "【生活迹象】连续24小时用水、用电均为零（共%d条记录）；对比历史存在正常模式，存在较高安全风险",
+                recent24h.size()));
             anomaly.put("residentId", residentId);
             anomaly.put("dataPoints", recent24h.size());
             return anomaly;
@@ -169,20 +258,20 @@ public class ElUtilityMonitorService {
         List<String> surges = new ArrayList<>();
         if (histAvgWater.compareTo(ZERO_THRESHOLD) > 0 &&
             recentAvgWater.compareTo(histAvgWater.multiply(BigDecimal.valueOf(SURGE_MULTIPLIER))) > 0) {
-            surges.add(String.format("用水量突增（当前平均%.2fL/h，历史平均%.2fL/h，超过2倍）",
+            surges.add(String.format("用水突增：近24h均%.2fL/h，高于7日基线%.2fL/h的200%%",
                 recentAvgWater.doubleValue(), histAvgWater.doubleValue()));
         }
         if (histAvgElectric.compareTo(ZERO_THRESHOLD) > 0 &&
             recentAvgElectric.compareTo(histAvgElectric.multiply(BigDecimal.valueOf(SURGE_MULTIPLIER))) > 0) {
-            surges.add(String.format("用电量突增（当前平均%.2fkWh/h，历史平均%.2fkWh/h，超过2倍）",
+            surges.add(String.format("用电突增：近24h均%.2fkWh/h，高于7日基线%.2fkWh/h的200%%",
                 recentAvgElectric.doubleValue(), histAvgElectric.doubleValue()));
         }
 
         if (!surges.isEmpty()) {
             Map<String, Object> anomaly = new LinkedHashMap<>();
             anomaly.put("type", "usage_surge");
-            anomaly.put("level", 2); // 中风险
-            anomaly.put("description", String.join("；", surges));
+            anomaly.put("level", 2);
+            anomaly.put("description", "【用量异常】" + String.join("；", surges));
             anomaly.put("residentId", residentId);
             return anomaly;
         }
@@ -204,13 +293,13 @@ public class ElUtilityMonitorService {
         if (histAvgWater.compareTo(ZERO_THRESHOLD) > 0 &&
             recentAvgWater.compareTo(histAvgWater.multiply(BigDecimal.valueOf(DROP_MULTIPLIER))) < 0 &&
             recentAvgWater.compareTo(ZERO_THRESHOLD) > 0) { // 非零才算突减（零是no_usage规则）
-            drops.add(String.format("用水量突减（当前平均%.2fL/h，历史平均%.2fL/h，低于1/2）",
+            drops.add(String.format("用水突减：近24h均%.2fL/h，低于7日基线%.2fL/h的50%%",
                 recentAvgWater.doubleValue(), histAvgWater.doubleValue()));
         }
         if (histAvgElectric.compareTo(ZERO_THRESHOLD) > 0 &&
             recentAvgElectric.compareTo(histAvgElectric.multiply(BigDecimal.valueOf(DROP_MULTIPLIER))) < 0 &&
             recentAvgElectric.compareTo(ZERO_THRESHOLD) > 0) {
-            drops.add(String.format("用电量突减（当前平均%.2fkWh/h，历史平均%.2fkWh/h，低于1/2）",
+            drops.add(String.format("用电突减：近24h均%.2fkWh/h，低于7日基线%.2fkWh/h的50%%",
                 recentAvgElectric.doubleValue(), histAvgElectric.doubleValue()));
         }
 
@@ -218,7 +307,7 @@ public class ElUtilityMonitorService {
             Map<String, Object> anomaly = new LinkedHashMap<>();
             anomaly.put("type", "usage_drop");
             anomaly.put("level", 2);
-            anomaly.put("description", String.join("；", drops));
+            anomaly.put("description", "【用量异常】" + String.join("；", drops));
             anomaly.put("residentId", residentId);
             return anomaly;
         }
@@ -244,23 +333,158 @@ public class ElUtilityMonitorService {
         BigDecimal nightElectricThreshold = daytimeAvgElectric.multiply(BigDecimal.valueOf(NIGHT_HIGH_MULTIPLIER));
 
         if (daytimeAvgWater.compareTo(ZERO_THRESHOLD) > 0 && nightAvgWater.compareTo(nightWaterThreshold) > 0) {
-            nightIssues.add(String.format("夜间(22:00-5:00)用水异常偏高（夜间平均%.2fL/h，日间平均%.2fL/h）",
-                nightAvgWater.doubleValue(), daytimeAvgWater.doubleValue()));
+            nightIssues.add(String.format("夜间用水偏高：22:00-5:00均%.2fL/h，为日间均值%.2fL/h的%.0f%%以上",
+                nightAvgWater.doubleValue(), daytimeAvgWater.doubleValue(), NIGHT_HIGH_MULTIPLIER * 100));
         }
         if (daytimeAvgElectric.compareTo(ZERO_THRESHOLD) > 0 && nightAvgElectric.compareTo(nightElectricThreshold) > 0) {
-            nightIssues.add(String.format("夜间(22:00-5:00)用电异常偏高（夜间平均%.2fkWh/h，日间平均%.2fkWh/h）",
-                nightAvgElectric.doubleValue(), daytimeAvgElectric.doubleValue()));
+            nightIssues.add(String.format("夜间用电偏高：22:00-5:00均%.2fkWh/h，为日间均值%.2fkWh/h的%.0f%%以上",
+                nightAvgElectric.doubleValue(), daytimeAvgElectric.doubleValue(), NIGHT_HIGH_MULTIPLIER * 100));
         }
 
         if (!nightIssues.isEmpty()) {
             Map<String, Object> anomaly = new LinkedHashMap<>();
             anomaly.put("type", "night_high_usage");
             anomaly.put("level", 2);
-            anomaly.put("description", String.join("；", nightIssues));
+            anomaly.put("description", "【用量异常】" + String.join("；", nightIssues));
             anomaly.put("residentId", residentId);
             return anomaly;
         }
         return null;
+    }
+
+    /** 用餐时段用水异常偏低（历史该时段有用水习惯） */
+    private Map<String, Object> checkMealTimeLowWater(List<ElUtilityData> recent24h, List<ElUtilityData> historyData, Long residentId) {
+        List<ElUtilityData> mealRecent = recent24h.stream()
+            .filter(d -> d.getRecordTime() != null && MEAL_HOURS.contains(d.getRecordTime().getHour()))
+            .toList();
+        if (mealRecent.isEmpty()) {
+            return null;
+        }
+        boolean mealAllLowWater = mealRecent.stream().allMatch(d ->
+            d.getWaterUsage() == null || d.getWaterUsage().compareTo(ZERO_THRESHOLD) < 0);
+        if (!mealAllLowWater) {
+            return null;
+        }
+        BigDecimal histMealWater = calcAverage(
+            historyData.stream().filter(d -> d.getRecordTime() != null && MEAL_HOURS.contains(d.getRecordTime().getHour())).toList(),
+            "water", null);
+        if (histMealWater.compareTo(BigDecimal.valueOf(2)) <= 0) {
+            return null;
+        }
+        Map<String, Object> anomaly = new LinkedHashMap<>();
+        anomaly.put("type", "meal_time_low");
+        anomaly.put("level", 2);
+        anomaly.put("description", String.format(
+            "【生活迹象】早/午/晚用餐时段（7-9、11-13、17-19点）用水均为零；历史同期用水均%.2fL/h，偏离日常作息",
+            histMealWater.doubleValue()));
+        anomaly.put("residentId", residentId);
+        return anomaly;
+    }
+
+    /** 单项指标12小时以上为零，另一项仍有用量 */
+    private Map<String, Object> checkPartialUtilityZero(List<ElUtilityData> recent24h, List<ElUtilityData> historyData, Long residentId) {
+        if (recent24h.size() < 12) {
+            return null;
+        }
+        List<ElUtilityData> last12h = recent24h.subList(Math.max(0, recent24h.size() - 12), recent24h.size());
+        boolean waterZero = last12h.stream().allMatch(d -> d.getWaterUsage() == null || d.getWaterUsage().compareTo(ZERO_THRESHOLD) < 0);
+        boolean electricZero = last12h.stream().allMatch(d -> d.getElectricUsage() == null || d.getElectricUsage().compareTo(ZERO_THRESHOLD) < 0);
+        BigDecimal histWater = calcAverage(historyData, "water", null);
+        BigDecimal histElectric = calcAverage(historyData, "electric", null);
+
+        String detail = null;
+        if (waterZero && !electricZero && histWater.compareTo(ZERO_THRESHOLD) > 0) {
+            detail = "近12小时用水为零但仍有用电，历史用水基线正常，需关注是否未正常起居用水";
+        } else if (electricZero && !waterZero && histElectric.compareTo(ZERO_THRESHOLD) > 0) {
+            detail = "近12小时用电为零但仍有用水，历史用电基线正常，需关注是否电器长期未使用或设备故障";
+        }
+        if (detail == null) {
+            return null;
+        }
+        Map<String, Object> anomaly = new LinkedHashMap<>();
+        anomaly.put("type", "partial_zero");
+        anomaly.put("level", 2);
+        anomaly.put("description", "【用量异常】" + detail);
+        anomaly.put("residentId", residentId);
+        return anomaly;
+    }
+
+    /** 24h内上报点数过少 */
+    private Map<String, Object> checkSparseReporting(List<ElUtilityData> recent24h, Long residentId) {
+        if (recent24h.isEmpty()) {
+            return null;
+        }
+        if (recent24h.size() >= 18) {
+            return null;
+        }
+        Map<String, Object> anomaly = new LinkedHashMap<>();
+        anomaly.put("type", "sparse_data");
+        anomaly.put("level", 2);
+        anomaly.put("description", String.format(
+            "【数据缺失】近24小时仅上报%d条水电记录（正常应≥18条/小时级），数据稀疏可能影响监测准确性",
+            recent24h.size()));
+        anomaly.put("residentId", residentId);
+        return anomaly;
+    }
+
+    /** 单小时尖峰用量 */
+    private Map<String, Object> checkHourlySpike(List<ElUtilityData> recent24h, BigDecimal histAvgWater, BigDecimal histAvgElectric, Long residentId) {
+        if (recent24h.isEmpty()) {
+            return null;
+        }
+        List<String> spikes = new ArrayList<>();
+        for (ElUtilityData d : recent24h) {
+            if (histAvgWater.compareTo(ZERO_THRESHOLD) > 0 && d.getWaterUsage() != null
+                && d.getWaterUsage().compareTo(histAvgWater.multiply(BigDecimal.valueOf(SPIKE_MULTIPLIER))) > 0) {
+                spikes.add(String.format("%s 用水%.2fL", d.getRecordTime(), d.getWaterUsage().doubleValue()));
+            }
+            if (histAvgElectric.compareTo(ZERO_THRESHOLD) > 0 && d.getElectricUsage() != null
+                && d.getElectricUsage().compareTo(histAvgElectric.multiply(BigDecimal.valueOf(SPIKE_MULTIPLIER))) > 0) {
+                spikes.add(String.format("%s 用电%.2fkWh", d.getRecordTime(), d.getElectricUsage().doubleValue()));
+            }
+        }
+        if (spikes.isEmpty()) {
+            return null;
+        }
+        String sample = spikes.size() > 2 ? String.join("、", spikes.subList(0, 2)) + " 等" : String.join("、", spikes);
+        Map<String, Object> anomaly = new LinkedHashMap<>();
+        anomaly.put("type", "hourly_spike");
+        anomaly.put("level", 2);
+        anomaly.put("description", "【用量异常】出现单小时尖峰用量（超7日基线300%）：" + sample);
+        anomaly.put("residentId", residentId);
+        return anomaly;
+    }
+
+    /** 日间整体用量显著低于历史 */
+    private Map<String, Object> checkDaytimeAbnormalLow(List<ElUtilityData> recent24h, BigDecimal histDayWater, BigDecimal histDayElectric, Long residentId) {
+        List<ElUtilityData> dayData = recent24h.stream()
+            .filter(d -> {
+                int h = d.getRecordTime().getHour();
+                return h >= DAY_START && h <= DAY_END;
+            }).toList();
+        if (dayData.isEmpty() || (histDayWater.compareTo(ZERO_THRESHOLD) <= 0 && histDayElectric.compareTo(ZERO_THRESHOLD) <= 0)) {
+            return null;
+        }
+        BigDecimal dayWater = calcRecentAverage(dayData, "water");
+        BigDecimal dayElectric = calcRecentAverage(dayData, "electric");
+        List<String> issues = new ArrayList<>();
+        BigDecimal lowWater = histDayWater.multiply(BigDecimal.valueOf(DAY_LOW_RATIO));
+        BigDecimal lowElectric = histDayElectric.multiply(BigDecimal.valueOf(DAY_LOW_RATIO));
+        if (histDayWater.compareTo(ZERO_THRESHOLD) > 0 && dayWater.compareTo(lowWater) < 0 && dayWater.compareTo(ZERO_THRESHOLD) > 0) {
+            issues.add(String.format("日间用水均%.2fL/h，低于基线%.2fL/h的30%%", dayWater.doubleValue(), histDayWater.doubleValue()));
+        }
+        if (histDayElectric.compareTo(ZERO_THRESHOLD) > 0 && dayElectric.compareTo(lowElectric) < 0 && dayElectric.compareTo(ZERO_THRESHOLD) > 0) {
+            issues.add(String.format("日间用电均%.2fkWh/h，低于基线%.2fkWh/h的30%%", dayElectric.doubleValue(), histDayElectric.doubleValue()));
+        }
+        if (issues.isEmpty()) {
+            return null;
+        }
+        Map<String, Object> anomaly = new LinkedHashMap<>();
+        anomaly.put("type", "daytime_low");
+        anomaly.put("level", 2);
+        anomaly.put("description", "【生活迹象】" + String.join("；", issues) + "，日间活动量可能不足");
+        anomaly.put("residentId", residentId);
+        return anomaly;
     }
 
     // ==================== 自动预警与工单生成 ====================
@@ -402,6 +626,32 @@ public class ElUtilityMonitorService {
 
     // ==================== 数据模拟 ====================
 
+    /** 每位老人固定的用量基线（同一人每次生成形态一致，不同老人有差异） */
+    private record ElderUsageProfile(double waterScale, double electricScale, double activityFactor) {}
+
+    private ElderUsageProfile profileFor(Long residentId) {
+        long id = residentId != null ? residentId : 1L;
+        double waterScale = 0.55 + (id % 11) * 0.11;
+        double electricScale = 0.42 + (id % 9) * 0.14;
+        double activityFactor = 0.75 + (id % 5) * 0.12;
+        return new ElderUsageProfile(waterScale, electricScale, activityFactor);
+    }
+
+    private Random elderRandom(Long residentId, long salt) {
+        long seed = (residentId != null ? residentId : 0L) * 1009L + salt;
+        return new Random(seed);
+    }
+
+    private BigDecimal scaledWater(Random random, double baseMin, double baseRange, ElderUsageProfile profile) {
+        double v = (baseMin + random.nextDouble() * baseRange) * profile.waterScale() * profile.activityFactor();
+        return BigDecimal.valueOf(v).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal scaledElectric(Random random, double baseMin, double baseRange, ElderUsageProfile profile) {
+        double v = (baseMin + random.nextDouble() * baseRange) * profile.electricScale() * profile.activityFactor();
+        return BigDecimal.valueOf(v).setScale(2, RoundingMode.HALF_UP);
+    }
+
     /**
      * 为指定老人生成模拟水电数据（最近N天，每小时一条）
      */
@@ -417,7 +667,8 @@ public class ElUtilityMonitorService {
                 .eq(ElUtilityData::getSource, "simulated")
         );
 
-        Random random = new Random(residentId + days);
+        ElderUsageProfile profile = profileFor(residentId);
+        Random random = elderRandom(residentId, days);
         List<ElUtilityData> batch = new ArrayList<>();
         LocalDateTime cursor = start;
 
@@ -429,34 +680,27 @@ public class ElUtilityMonitorService {
             data.setSource("simulated");
             data.setCreateTime(LocalDateTime.now());
 
-            // 模拟正常用水用电模式
             if (NIGHT_HOURS.contains(hour)) {
-                // 夜间：低用量
-                data.setWaterUsage(BigDecimal.valueOf(random.nextDouble() * 2).setScale(2, RoundingMode.HALF_UP));
-                data.setElectricUsage(BigDecimal.valueOf(0.1 + random.nextDouble() * 0.3).setScale(2, RoundingMode.HALF_UP));
+                data.setWaterUsage(scaledWater(random, 0, 2, profile));
+                data.setElectricUsage(scaledElectric(random, 0.1, 0.3, profile));
             } else if (hour >= 6 && hour <= 9) {
-                // 早间高峰
-                data.setWaterUsage(BigDecimal.valueOf(8 + random.nextDouble() * 12).setScale(2, RoundingMode.HALF_UP));
-                data.setElectricUsage(BigDecimal.valueOf(0.5 + random.nextDouble() * 1.5).setScale(2, RoundingMode.HALF_UP));
+                data.setWaterUsage(scaledWater(random, 8, 12, profile));
+                data.setElectricUsage(scaledElectric(random, 0.5, 1.5, profile));
             } else if (hour >= 11 && hour <= 13) {
-                // 午间
-                data.setWaterUsage(BigDecimal.valueOf(5 + random.nextDouble() * 10).setScale(2, RoundingMode.HALF_UP));
-                data.setElectricUsage(BigDecimal.valueOf(0.4 + random.nextDouble() * 1.2).setScale(2, RoundingMode.HALF_UP));
+                data.setWaterUsage(scaledWater(random, 5, 10, profile));
+                data.setElectricUsage(scaledElectric(random, 0.4, 1.2, profile));
             } else if (hour >= 17 && hour <= 20) {
-                // 晚间高峰
-                data.setWaterUsage(BigDecimal.valueOf(10 + random.nextDouble() * 15).setScale(2, RoundingMode.HALF_UP));
-                data.setElectricUsage(BigDecimal.valueOf(0.8 + random.nextDouble() * 2.0).setScale(2, RoundingMode.HALF_UP));
+                data.setWaterUsage(scaledWater(random, 10, 15, profile));
+                data.setElectricUsage(scaledElectric(random, 0.8, 2.0, profile));
             } else {
-                // 其他时段
-                data.setWaterUsage(BigDecimal.valueOf(2 + random.nextDouble() * 5).setScale(2, RoundingMode.HALF_UP));
-                data.setElectricUsage(BigDecimal.valueOf(0.2 + random.nextDouble() * 0.8).setScale(2, RoundingMode.HALF_UP));
+                data.setWaterUsage(scaledWater(random, 2, 5, profile));
+                data.setElectricUsage(scaledElectric(random, 0.2, 0.8, profile));
             }
 
             batch.add(data);
             cursor = cursor.plusHours(1);
         }
 
-        // 批量插入
         for (ElUtilityData d : batch) {
             utilityDataMapper.insert(d);
         }
@@ -489,7 +733,8 @@ public class ElUtilityMonitorService {
                 .ge(ElUtilityData::getRecordTime, start)
         );
 
-        Random random = new Random();
+        Random random = elderRandom(residentId, anomalyType.hashCode());
+        ElderUsageProfile profile = profileFor(residentId);
         List<ElUtilityData> batch = new ArrayList<>();
         LocalDateTime cursor = start;
 
@@ -502,30 +747,39 @@ public class ElUtilityMonitorService {
 
             switch (anomalyType) {
                 case "no_usage" -> {
-                    // 全部为0
                     data.setWaterUsage(BigDecimal.ZERO);
                     data.setElectricUsage(BigDecimal.ZERO);
                 }
+                case "no_living_sign" -> {
+                    boolean inRecentWindow = cursor.isAfter(now.minusHours(ACTIVITY_WINDOW_HOURS));
+                    if (inRecentWindow) {
+                        data.setWaterUsage(BigDecimal.ZERO);
+                        data.setElectricUsage(BigDecimal.ZERO);
+                    } else {
+                        data.setWaterUsage(scaledWater(random, 5, 8, profile));
+                        data.setElectricUsage(scaledElectric(random, 0.3, 0.8, profile));
+                    }
+                }
                 case "surge" -> {
-                    // 突增：所有值都是正常的3倍
-                    data.setWaterUsage(BigDecimal.valueOf(30 + random.nextDouble() * 40).setScale(2, RoundingMode.HALF_UP));
-                    data.setElectricUsage(BigDecimal.valueOf(3 + random.nextDouble() * 5).setScale(2, RoundingMode.HALF_UP));
+                    double surgeFactor = 2.2 + (residentId % 4) * 0.35;
+                    data.setWaterUsage(scaledWater(random, 12, 18, profile)
+                        .multiply(BigDecimal.valueOf(surgeFactor)).setScale(2, RoundingMode.HALF_UP));
+                    data.setElectricUsage(scaledElectric(random, 1.2, 2.5, profile)
+                        .multiply(BigDecimal.valueOf(surgeFactor * 0.85)).setScale(2, RoundingMode.HALF_UP));
                 }
                 case "night_high" -> {
                     int hour = cursor.getHour();
                     if (NIGHT_HOURS.contains(hour)) {
-                        // 夜间高用量
-                        data.setWaterUsage(BigDecimal.valueOf(20 + random.nextDouble() * 20).setScale(2, RoundingMode.HALF_UP));
-                        data.setElectricUsage(BigDecimal.valueOf(2 + random.nextDouble() * 3).setScale(2, RoundingMode.HALF_UP));
+                        data.setWaterUsage(scaledWater(random, 14, 22, profile));
+                        data.setElectricUsage(scaledElectric(random, 1.5, 2.8, profile));
                     } else {
-                        // 日间正常
-                        data.setWaterUsage(BigDecimal.valueOf(5 + random.nextDouble() * 8).setScale(2, RoundingMode.HALF_UP));
-                        data.setElectricUsage(BigDecimal.valueOf(0.3 + random.nextDouble() * 0.8).setScale(2, RoundingMode.HALF_UP));
+                        data.setWaterUsage(scaledWater(random, 5, 8, profile));
+                        data.setElectricUsage(scaledElectric(random, 0.3, 0.8, profile));
                     }
                 }
                 default -> {
-                    data.setWaterUsage(BigDecimal.valueOf(5 + random.nextDouble() * 8).setScale(2, RoundingMode.HALF_UP));
-                    data.setElectricUsage(BigDecimal.valueOf(0.3 + random.nextDouble() * 0.8).setScale(2, RoundingMode.HALF_UP));
+                    data.setWaterUsage(scaledWater(random, 5, 8, profile));
+                    data.setElectricUsage(scaledElectric(random, 0.3, 0.8, profile));
                 }
             }
             batch.add(data);

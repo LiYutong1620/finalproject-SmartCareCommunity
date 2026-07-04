@@ -1,11 +1,21 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { getToken, getRoleHome } from "@/utils/auth";
+import { getToken, getRoleHome, getUser } from "@/utils/auth";
 
 const constantRoutes = [
   {
     path: "/login",
     component: () => import("@/views/login/index.vue"),
     meta: { title: "登录" },
+  },
+  {
+    path: "/register",
+    component: () => import("@/views/register/index.vue"),
+    meta: { title: "注册" },
+  },
+  {
+    path: "/forgot-password",
+    component: () => import("@/views/forgot-password/index.vue"),
+    meta: { title: "重置密码" },
   },
   {
     path: "/",
@@ -22,6 +32,16 @@ const ownerRoutes = {
       path: "repair",
       component: () => import("@/views/owner/repair/index.vue"),
       meta: { title: "报修工单" },
+    },
+    {
+      path: "repair/detail/:orderId",
+      component: () => import("@/views/owner/repair/detail.vue"),
+      meta: { title: "工单详情" },
+    },
+    {
+      path: "repair/accept/:orderId",
+      component: () => import("@/views/owner/repair/accept.vue"),
+      meta: { title: "工单验收" },
     },
     {
       path: "notice",
@@ -65,11 +85,40 @@ const workerRoutes = {
   path: "/worker",
   component: () => import("@/layout/index.vue"),
   meta: { title: "维修工端", roles: ["1"] },
+  redirect: "/worker/home",
   children: [
     {
+      path: "home",
+      component: () => import("@/views/worker/home/index.vue"),
+      meta: { title: "首页" },
+    },
+    {
       path: "order",
-      component: () => import("@/views/worker/order/index.vue"),
-      meta: { title: "工单作业" },
+      component: () => import("@/views/worker/order/TaskLayout.vue"),
+      redirect: "/worker/order/todo",
+      meta: { title: "任务中心" },
+      children: [
+        {
+          path: "todo",
+          component: () => import("@/views/worker/order/todo.vue"),
+          meta: { title: "待办任务", parent: "任务中心" },
+        },
+        {
+          path: "history",
+          component: () => import("@/views/worker/order/history.vue"),
+          meta: { title: "历史记录", parent: "任务中心" },
+        },
+      ],
+    },
+    {
+      path: "order/detail/:orderId",
+      component: () => import("@/views/worker/order/detail.vue"),
+      meta: { title: "工单详情" },
+    },
+    {
+      path: "order/work-status",
+      component: () => import("@/views/worker/order/profile.vue"),
+      meta: { title: "我的资质" },
     },
     {
       path: "profile",
@@ -105,6 +154,21 @@ const propertyRoutes = {
       meta: { title: "工单监管", parent: "工单管理" },
     },
     {
+      path: "repair/detail/:orderId",
+      component: () => import("@/views/property/repair/detail.vue"),
+      meta: { title: "工单详情", parent: "工单管理" },
+    },
+    {
+      path: "repair/type",
+      component: () => import("@/views/property/repair/type-manage.vue"),
+      meta: { title: "报修类型", parent: "工单管理" },
+    },
+    {
+      path: "repair/ai-report",
+      component: () => import("@/views/property/repair/ai-report.vue"),
+      meta: { title: "工单复盘", parent: "工单管理" },
+    },
+    {
       path: "elder",
       component: () => import("@/views/property/elder/index.vue"),
       meta: { title: "老人档案", parent: "老人关怀" },
@@ -120,6 +184,11 @@ const propertyRoutes = {
       name: "ElderUtility",
       component: () => import("@/views/property/elder/utility.vue"),
       meta: { title: "水电监测", parent: "老人关怀", roles: ["2"] },
+    },
+    {
+      path: "elder/staff",
+      component: () => import("@/views/property/elder/staff.vue"),
+      meta: { title: "关怀人员", parent: "老人关怀" },
     },
     {
       path: "notice/announce",
@@ -157,7 +226,7 @@ const propertyRoutes = {
     {
       path: "ai/chat/:sessionId",
       component: () => import("@/views/property/ai/chat.vue"),
-      meta: { title: "对话详情", parent: "AI智能问答" },
+      meta: { title: "对话详情", parent: "AI智能问答", fullHeight: true },
     },
     {
       path: "dashboard",
@@ -165,21 +234,26 @@ const propertyRoutes = {
       meta: { title: "数据大屏" },
     },
     {
-      path: "user",
+      path: "users/owner",
       component: () => import("@/views/system/user/index.vue"),
-      meta: { title: "用户管理", parent: "系统管理" },
+      meta: { title: "业主管理", parent: "用户管理", userType: "0" },
     },
     {
-      path: "permission",
-      name: "Permission",
-      component: () => import("@/views/system/permission/index.vue"),
-      meta: { title: "权限管理", parent: "系统管理", roles: ["2"] },
+      path: "users/worker",
+      component: () => import("@/views/system/user/index.vue"),
+      meta: { title: "维修工管理", parent: "用户管理", userType: "1" },
     },
+    {
+      path: "users/property",
+      component: () => import("@/views/system/user/index.vue"),
+      meta: { title: "物业管理", parent: "用户管理", userType: "2" },
+    },
+    { path: "user", redirect: "/property/users/owner" },
     {
       path: "skill",
       name: "WorkerSkill",
       component: () => import("@/views/system/skill/index.vue"),
-      meta: { title: "技能标签", parent: "工单管理", roles: ["2"] },
+      meta: { title: "维修工资质", parent: "工单管理", roles: ["2"] },
     },
     {
       path: "profile",
@@ -194,12 +268,23 @@ const router = createRouter({
   routes: [...constantRoutes, ownerRoutes, workerRoutes, propertyRoutes],
 });
 
+/** 收集路由链上要求的角色（userType: 0业主 1维修工 2物业） */
+function collectRequiredRoles(route) {
+  const roles = new Set();
+  route.matched.forEach((record) => {
+    if (record.meta?.roles?.length) {
+      record.meta.roles.forEach((r) => roles.add(r));
+    }
+  });
+  return [...roles];
+}
+
 router.beforeEach((to, from, next) => {
   const token = getToken();
   const home = getRoleHome();
 
-  // 已登录访问登录页 → 进入对应角色首页
-  if (to.path === "/login") {
+  // 已登录访问登录/注册/忘记密码 → 进入对应角色首页
+  if (to.path === "/login" || to.path === "/register" || to.path === "/forgot-password") {
     return token ? next(home) : next();
   }
 
@@ -211,6 +296,15 @@ router.beforeEach((to, from, next) => {
   // 已登录访问根路径或旧通用首页 → 角色首页
   if (to.path === "/" || to.path === "/dashboard") {
     return next(home);
+  }
+
+  // 按 meta.roles 限制跨端 URL 访问
+  const requiredRoles = collectRequiredRoles(to);
+  if (requiredRoles.length > 0) {
+    const userType = getUser()?.userType;
+    if (!userType || !requiredRoles.includes(userType)) {
+      return next(home);
+    }
   }
 
   next();

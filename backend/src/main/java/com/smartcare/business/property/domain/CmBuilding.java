@@ -1,6 +1,7 @@
 package com.smartcare.business.property.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.smartcare.common.core.domain.BaseEntity;
@@ -18,4 +19,9 @@ public class CmBuilding extends BaseEntity {
     private Integer totalFloors;
     private Integer unitsPerFloor;
     private String remark;
+
+    @TableField(exist = false)
+    private Integer houseCount;
+    @TableField(exist = false)
+    private Integer residentCount;
 }

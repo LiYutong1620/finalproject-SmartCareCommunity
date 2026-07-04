@@ -33,7 +33,7 @@ export function setUser(user) {
 /** 各角色登录后的默认首页 */
 export const roleHomeMap = {
   '0': '/owner/repair',
-  '1': '/worker/order',
+  '1': '/worker/home',
   '2': '/property/dashboard'
 }
 

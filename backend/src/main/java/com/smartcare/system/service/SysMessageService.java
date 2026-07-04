@@ -15,7 +15,12 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -66,6 +71,19 @@ public class SysMessageService {
         }
     }
 
+    @Transactional
+    public void markReadByBizId(Long userId, String bizId, String title) {
+        if (!StringUtils.hasText(bizId)) {
+            return;
+        }
+        List<SysMessage> messages = messageMapper.selectList(new LambdaQueryWrapper<SysMessage>()
+            .eq(SysMessage::getBizId, bizId)
+            .eq(StringUtils.hasText(title), SysMessage::getTitle, title));
+        for (SysMessage msg : messages) {
+            markRead(msg.getMessageId(), userId);
+        }
+    }
+
     public void recall(Long messageId, Long senderId) {
         SysMessage msg = messageMapper.selectById(messageId);
         if (msg == null) throw new ServiceException("消息不存在");
@@ -78,6 +96,10 @@ public class SysMessageService {
     }
 
     public long unreadCount(Long userId) {
+        return unreadCount(userId, null);
+    }
+
+    public long unreadCount(Long userId, String msgType) {
         List<Long> msgIds = messageUserMapper.selectList(
             new LambdaQueryWrapper<SysMessageUser>()
                 .eq(SysMessageUser::getUserId, userId)
@@ -86,9 +108,100 @@ public class SysMessageService {
         if (msgIds.isEmpty()) {
             return 0;
         }
-        return messageMapper.selectCount(new LambdaQueryWrapper<SysMessage>()
+        LambdaQueryWrapper<SysMessage> qw = new LambdaQueryWrapper<SysMessage>()
             .in(SysMessage::getMessageId, msgIds)
-            .eq(SysMessage::getRecalled, 0));
+            .eq(SysMessage::getRecalled, 0);
+        if (StringUtils.hasText(msgType)) {
+            qw.eq(SysMessage::getMsgType, msgType);
+        }
+        return messageMapper.selectCount(qw);
+    }
+
+    public Set<Long> findUnreadAppendOrderIds(Long userId) {
+        Set<Long> ids = new HashSet<>();
+        List<Long> msgIds = messageUserMapper.selectList(
+            new LambdaQueryWrapper<SysMessageUser>()
+                .eq(SysMessageUser::getUserId, userId)
+                .eq(SysMessageUser::getReadFlag, 0))
+            .stream().map(SysMessageUser::getMessageId).toList();
+        if (msgIds.isEmpty()) {
+            return ids;
+        }
+        List<SysMessage> messages = messageMapper.selectList(
+            new LambdaQueryWrapper<SysMessage>()
+                .in(SysMessage::getMessageId, msgIds)
+                .eq(SysMessage::getMsgType, "order")
+                .eq(SysMessage::getTitle, "业主补充信息"));
+        for (SysMessage msg : messages) {
+            if (StringUtils.hasText(msg.getBizId())) {
+                try {
+                    ids.add(Long.parseLong(msg.getBizId()));
+                } catch (NumberFormatException ignored) {
+                    // skip
+                }
+            }
+        }
+        return ids;
+    }
+
+    public List<Map<String, Object>> listRecentForUser(Long userId, String msgType, int limit, boolean unreadOnly) {
+        List<SysMessageUser> relations = messageUserMapper.selectList(
+            new LambdaQueryWrapper<SysMessageUser>()
+                .eq(SysMessageUser::getUserId, userId)
+                .eq(unreadOnly, SysMessageUser::getReadFlag, 0)
+                .orderByDesc(SysMessageUser::getId)
+                .last("LIMIT " + Math.min(limit, 50)));
+        if (relations.isEmpty()) {
+            return List.of();
+        }
+        List<Long> msgIds = relations.stream().map(SysMessageUser::getMessageId).toList();
+        Map<Long, SysMessageUser> relMap = new LinkedHashMap<>();
+        for (SysMessageUser rel : relations) {
+            relMap.putIfAbsent(rel.getMessageId(), rel);
+        }
+        LambdaQueryWrapper<SysMessage> qw = new LambdaQueryWrapper<SysMessage>()
+            .in(SysMessage::getMessageId, msgIds)
+            .eq(SysMessage::getRecalled, 0);
+        if (StringUtils.hasText(msgType)) {
+            qw.eq(SysMessage::getMsgType, msgType);
+        }
+        List<SysMessage> messages = messageMapper.selectList(qw.orderByDesc(SysMessage::getCreateTime));
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (SysMessage msg : messages) {
+            SysMessageUser rel = relMap.get(msg.getMessageId());
+            if (rel == null) {
+                continue;
+            }
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("messageId", msg.getMessageId());
+            row.put("title", msg.getTitle());
+            row.put("content", msg.getContent());
+            row.put("bizId", msg.getBizId());
+            row.put("createTime", msg.getCreateTime());
+            row.put("readFlag", rel.getReadFlag());
+            rows.add(row);
+            if (rows.size() >= limit) {
+                break;
+            }
+        }
+        return rows;
+    }
+
+    public List<SysMessage> findUnreadByTitle(Long userId, String msgType, String title) {
+        List<Long> msgIds = messageUserMapper.selectList(
+            new LambdaQueryWrapper<SysMessageUser>()
+                .eq(SysMessageUser::getUserId, userId)
+                .eq(SysMessageUser::getReadFlag, 0))
+            .stream().map(SysMessageUser::getMessageId).toList();
+        if (msgIds.isEmpty()) {
+            return List.of();
+        }
+        return messageMapper.selectList(new LambdaQueryWrapper<SysMessage>()
+            .in(SysMessage::getMessageId, msgIds)
+            .eq(SysMessage::getMsgType, msgType)
+            .eq(SysMessage::getTitle, title)
+            .eq(SysMessage::getRecalled, 0)
+            .orderByDesc(SysMessage::getCreateTime));
     }
 
     public void updatePriority(Long messageId, String priority) {

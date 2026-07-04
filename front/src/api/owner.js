@@ -5,7 +5,7 @@ export const getNoticeDetail = (id) => request({ url: `/owner/notice/${id}`, met
 export const markNoticeRead = (id) => request({ url: `/owner/notice/read/${id}`, method: 'post' })
 
 export const getResidentMe = () => request({ url: '/owner/resident/me', method: 'get' })
-export const updateEmergency = (emergencyContact) => request({ url: '/owner/resident/emergency', method: 'put', data: { emergencyContact } })
+export const updateEmergency = (data) => request({ url: '/owner/resident/emergency', method: 'put', data })
 
 export const aiAsk = (data) => request({ url: '/owner/ai/ask', method: 'post', data })
 export const listAiSessions = (params) => request({ url: '/owner/ai/sessions', method: 'get', params })

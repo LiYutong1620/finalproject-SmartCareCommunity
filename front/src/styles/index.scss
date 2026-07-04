@@ -1,6 +1,80 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body, #app { height: 100%; font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; }
 
+/* 智护社区 · 三端清新适中蓝（不沉闷、不刺眼） */
+:root,
+.role-theme-0 {
+  --brand-primary: #55A8D8;
+  --brand-primary-light: #86C5E8;
+  --brand-primary-pale: #E3F2FA;
+  --brand-primary-dark: #3A94C4;
+  --brand-sidebar-bg: #D0EAF8;
+  --brand-sidebar-bg-end: #C4E2F4;
+  --brand-sidebar-text: #466880;
+  --brand-sidebar-text-active: #3A94C4;
+  --brand-bg: #FAFCFE;
+  --brand-content-bg: #FAFCFE;
+  --brand-content-border: #EEF2F6;
+  --brand-surface: #FFFFFF;
+  --brand-border: #B5D8EE;
+  --brand-text: #3D5A72;
+  --el-color-primary: #55A8D8;
+  --el-color-primary-light-3: #6FB5DE;
+  --el-color-primary-light-5: #86C5E8;
+  --el-color-primary-light-7: #AED9F0;
+  --el-color-primary-light-8: #C8E6F5;
+  --el-color-primary-light-9: #E3F2FA;
+  --el-color-primary-dark-2: #3A94C4;
+}
+
+/* 维修工端 · 略深 */
+.role-theme-1 {
+  --brand-primary: #4898CA;
+  --brand-primary-light: #78B8DC;
+  --brand-primary-pale: #D6EBF6;
+  --brand-primary-dark: #3585B8;
+  --brand-sidebar-bg: #B8DCF0;
+  --brand-sidebar-bg-end: #A8D2EA;
+  --brand-sidebar-text: #3A6078;
+  --brand-sidebar-text-active: #3585B8;
+  --brand-bg: #FAFCFE;
+  --brand-content-bg: #FAFCFE;
+  --brand-content-border: #EEF2F6;
+  --brand-border: #9CC8E2;
+  --brand-text: #345568;
+  --el-color-primary: #4898CA;
+  --el-color-primary-light-3: #62A8D2;
+  --el-color-primary-light-5: #78B8DC;
+  --el-color-primary-light-7: #A4D0E8;
+  --el-color-primary-light-8: #BCDEEE;
+  --el-color-primary-light-9: #D6EBF6;
+  --el-color-primary-dark-2: #3585B8;
+}
+
+/* 物业端 · 更深 */
+.role-theme-2 {
+  --brand-primary: #3E8AB8;
+  --brand-primary-light: #6AA8CC;
+  --brand-primary-pale: #CCE5F2;
+  --brand-primary-dark: #2E78A8;
+  --brand-sidebar-bg: #9ECFE8;
+  --brand-sidebar-bg-end: #8EC5E2;
+  --brand-sidebar-text: #2E5068;
+  --brand-sidebar-text-active: #2E78A8;
+  --brand-bg: #FAFCFE;
+  --brand-content-bg: #FAFCFE;
+  --brand-content-border: #EEF2F6;
+  --brand-border: #88BBD8;
+  --brand-text: #2C4A60;
+  --el-color-primary: #3E8AB8;
+  --el-color-primary-light-3: #559BC2;
+  --el-color-primary-light-5: #6AA8CC;
+  --el-color-primary-light-7: #96C4DC;
+  --el-color-primary-light-8: #AED4E6;
+  --el-color-primary-light-9: #CCE5F2;
+  --el-color-primary-dark-2: #2E78A8;
+}
+
 /* 若依风格：页面容器 */
 .app-container {
   padding: 20px;
@@ -26,27 +100,13 @@ html, body, #app { height: 100%; font-family: 'Helvetica Neue', Helvetica, 'Ping
   }
 }
 
-/* 登录页 */
+/* 认证页（登录/注册/忘记密码使用 AuthShell 组件，此处保留兼容） */
 .login-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #2d3a4b;
-  background-image: linear-gradient(135deg, #2d3a4b 0%, #3d4f66 100%);
-}
-.login-card {
-  width: 420px;
-  padding: 40px;
-  border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-}
-.login-title {
-  text-align: center;
-  margin-bottom: 32px;
-  h1 { font-size: 22px; color: #303133; font-weight: 600; }
-  p { color: #909399; margin-top: 8px; font-size: 14px; }
+  background: #f0f4f8;
 }
 
 /* 若依风格：分页 */

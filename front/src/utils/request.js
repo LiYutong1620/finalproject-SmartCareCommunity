@@ -22,11 +22,20 @@ service.interceptors.response.use(
     return Promise.reject(data)
   },
   err => {
-    if (err.response?.status === 401) {
+    const status = err.response?.status
+    const bodyCode = typeof err.response?.data === 'object' ? err.response.data?.code : null
+    if (status === 401 || bodyCode === 401 || (status === 403 && getToken())) {
       removeToken()
       router.push('/login')
     }
-    ElMessage.error(err.message || '网络异常')
+    const data = err.response?.data
+    const msg = (typeof data === 'object' && data?.msg)
+      || (err.response?.status === 404
+        ? '接口不存在(404)，请确认后端已启动且通过 npm run dev 访问前端(5173端口)'
+        : null)
+      || err.message
+      || '网络异常'
+    ElMessage.error(msg)
     return Promise.reject(err)
   }
 )

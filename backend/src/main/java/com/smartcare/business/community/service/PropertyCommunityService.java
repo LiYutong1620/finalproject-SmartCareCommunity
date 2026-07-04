@@ -11,7 +11,7 @@ import com.smartcare.common.core.page.TableDataInfo;
 import com.smartcare.common.exception.ServiceException;
 import com.smartcare.framework.security.SecurityUtils;
 import com.smartcare.system.domain.SysUser;
-import com.smartcare.system.mapper.SysUserMapper;
+import com.smartcare.system.service.UserAccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -25,7 +25,7 @@ public class PropertyCommunityService {
 
     private final CsNoticeMapper noticeMapper;
     private final CsNoticeReadMapper noticeReadMapper;
-    private final SysUserMapper userMapper;
+    private final UserAccountService accountService;
     private final NoticePublishScheduler publishScheduler;
     private final KbLearnService kbLearnService;
 
@@ -74,9 +74,7 @@ public class PropertyCommunityService {
     }
 
     public Map<String, Object> noticeReadStats(Long noticeId) {
-        List<SysUser> owners = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
-            .eq(SysUser::getUserType, "0")
-            .eq(SysUser::getDelFlag, "0"));
+        List<SysUser> owners = accountService.listByUserType("0");
         List<Long> readIds = noticeReadMapper.selectReadUserIdsByNotice(noticeId);
         Set<Long> readSet = new HashSet<>(readIds);
         List<Map<String, Object>> readList = new ArrayList<>();

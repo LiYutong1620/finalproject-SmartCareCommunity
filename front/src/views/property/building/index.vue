@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <div class="page-toolbar">
+  <div class="app-container property-table-page">
+    <div class="filter-panel">
       <el-form :inline="true" class="search-form">
         <el-form-item label="楼栋号">
           <el-input v-model="buildingQuery.buildingNo" clearable placeholder="楼栋号" style="width:140px" />
@@ -12,31 +12,48 @@
           <el-button icon="Refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-      <el-button type="success" @click="openBuilding()">新增楼栋</el-button>
+      <div class="filter-actions">
+        <el-button type="success" @click="openBuilding()">新增楼栋</el-button>
+      </div>
     </div>
 
-    <el-card shadow="never">
+    <el-card shadow="never" class="table-card">
       <el-table
         :data="buildings"
         v-loading="loading"
-        border
         stripe
-        class="clickable-table"
+        class="data-table clickable-table"
         @row-click="goHousePage"
       >
-        <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column prop="buildingNo" label="楼栋号" width="100">
+        <el-table-column type="index" label="序号" width="64" align="center" />
+        <el-table-column prop="buildingNo" label="楼栋号" width="110" align="center">
           <template #default="{ row }">
-            <el-link type="primary" :underline="false" @click.stop="goHousePage(row)">{{ row.buildingNo }}</el-link>
+            <el-link type="primary" :underline="false" class="cell-link" @click.stop="goHousePage(row)">
+              {{ row.buildingNo }}
+            </el-link>
           </template>
         </el-table-column>
-        <el-table-column prop="totalFloors" label="总层数" width="90" align="center" />
-        <el-table-column prop="unitsPerFloor" label="每层户数" width="100" align="center" />
-        <el-table-column prop="remark" label="备注" min-width="160" show-overflow-tooltip />
+        <el-table-column prop="totalFloors" label="总层数" width="96" align="center">
+          <template #default="{ row }">
+            <el-tag size="small" effect="plain" round>{{ row.totalFloors }} 层</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="unitsPerFloor" label="每层户数" width="104" align="center">
+          <template #default="{ row }">{{ row.unitsPerFloor }} 户</template>
+        </el-table-column>
+        <el-table-column prop="houseCount" label="房屋数" width="88" align="center">
+          <template #default="{ row }">{{ row.houseCount ?? '—' }}</template>
+        </el-table-column>
+        <el-table-column prop="residentCount" label="已建档" width="88" align="center">
+          <template #default="{ row }">{{ row.residentCount ?? '—' }}</template>
+        </el-table-column>
+        <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.remark || '—' }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="140" align="center" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click.stop="openBuilding(row)">编辑</el-button>
-            <el-button link type="danger" @click.stop="delBuilding(row)">删除</el-button>
+            <el-button link type="primary" class="btn-action" @click.stop="openBuilding(row)">编辑</el-button>
+            <el-button link type="danger" class="btn-action" @click.stop="delBuilding(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -67,6 +84,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listBuilding, addBuilding, updateBuilding, deleteBuilding } from '@/api/property'
 import { useAutoQuery } from '@/composables/useAutoQuery'
+import '@/styles/property-table-page.css'
 
 const router = useRouter()
 const buildings = ref([])
@@ -119,21 +137,3 @@ async function delBuilding(row) {
   loadList()
 }
 </script>
-
-<style scoped>
-.page-toolbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.page-toolbar .search-form {
-  margin-bottom: 0;
-}
-.page-toolbar .search-form :deep(.el-form-item) {
-  margin-bottom: 0;
-}
-.clickable-table :deep(.el-table__row) { cursor: pointer; }
-</style>

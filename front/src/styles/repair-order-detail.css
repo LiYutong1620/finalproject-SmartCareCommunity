@@ -1,0 +1,154 @@
+/* 三端工单详情共用样式 — 清晰分区，避免过度装饰 */
+
+.repair-detail-body {
+  min-height: 200px;
+  padding-bottom: 16px;
+}
+
+.repair-detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  background: #f8fafc;
+  border: 1px solid #e8edf3;
+  border-radius: 10px;
+}
+
+.repair-detail-header .order-no {
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+  letter-spacing: 0.02em;
+}
+
+.repair-detail-header .header-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.repair-detail-section {
+  margin-bottom: 20px;
+}
+
+.repair-detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.repair-detail-section > h4 {
+  margin: 0 0 10px;
+  padding-left: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
+  border-left: 3px solid #409eff;
+  line-height: 1.2;
+}
+
+.repair-detail-panel {
+  margin: 0;
+  padding: 4px 14px;
+  background: #fafbfc;
+  border-radius: 10px;
+  border: 1px solid #ebeef5;
+}
+
+.repair-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f2f5;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.repair-detail-row:last-child {
+  border-bottom: none;
+}
+
+.repair-detail-row.is-block {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.repair-detail-row dt {
+  flex-shrink: 0;
+  min-width: 72px;
+  margin: 0;
+  color: #909399;
+}
+
+.repair-detail-row dd {
+  margin: 0;
+  color: #303133;
+  text-align: right;
+  word-break: break-word;
+}
+
+.repair-detail-row.is-block dd {
+  text-align: left;
+}
+
+.repair-detail-desc {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #606266;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #eef2f6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.repair-detail-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.repair-detail-images .el-image {
+  width: 88px;
+  height: 88px;
+  border-radius: 8px;
+  border: 1px solid #ebeef5;
+}
+
+.repair-detail-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.repair-detail-timeline .progress-node {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.repair-detail-timeline .node-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #303133;
+}
+
+.repair-detail-timeline .node-operator {
+  font-size: 12px;
+  color: #909399;
+}
+
+.repair-detail-timeline .node-remark {
+  font-size: 13px;
+  color: #606266;
+  line-height: 1.5;
+}

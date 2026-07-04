@@ -14,7 +14,7 @@ import com.smartcare.common.core.page.TableDataInfo;
 import com.smartcare.common.exception.ServiceException;
 import com.smartcare.framework.security.SecurityUtils;
 import com.smartcare.system.domain.SysUser;
-import com.smartcare.system.mapper.SysUserMapper;
+import com.smartcare.system.service.UserAccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +32,7 @@ public class PropertyAiService {
     private final CsServiceTicketMapper ticketMapper;
     private final AiChatSessionMapper sessionMapper;
     private final AiChatMessageMapper messageMapper;
-    private final SysUserMapper userMapper;
+    private final UserAccountService accountService;
 
     public TableDataInfo listArticles(int pageNum, int pageSize, String title, String keywords, String content) {
         Page<KbArticle> page = articleMapper.selectPage(new Page<>(pageNum, pageSize),
@@ -113,7 +113,7 @@ public class PropertyAiService {
 
     public Map<String, Object> getSession(Long sessionId) {
         AiChatSession session = requireViewableSession(sessionId);
-        SysUser user = userMapper.selectById(session.getUserId());
+        SysUser user = accountService.findById(session.getUserId());
         return buildSessionRow(session, user);
     }
 
@@ -308,7 +308,7 @@ public class PropertyAiService {
         if (userIds.isEmpty()) {
             return Map.of();
         }
-        List<SysUser> users = userMapper.selectBatchIds(userIds);
+        List<SysUser> users = accountService.findByIds(new ArrayList<>(userIds));
         Map<Long, SysUser> map = new HashMap<>();
         for (SysUser user : users) {
             map.put(user.getUserId(), user);

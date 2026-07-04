@@ -41,6 +41,22 @@ public class FileStorageService {
         return dateDir + "/" + fileName;
     }
 
+    /** 保存到固定子目录（如 avatar），返回文件名 */
+    public String saveFlat(MultipartFile file, String subDir) throws IOException {
+        Path uploadDir = basePath.resolve(subDir).normalize();
+        Files.createDirectories(uploadDir);
+
+        String original = file.getOriginalFilename();
+        String ext = "";
+        if (original != null && original.contains(".")) {
+            ext = original.substring(original.lastIndexOf("."));
+        }
+        String fileName = UUID.randomUUID().toString().replace("-", "") + ext;
+        Path dest = uploadDir.resolve(fileName).normalize();
+        file.transferTo(dest);
+        return fileName;
+    }
+
     private static Path resolveUploadBase(String uploadPath) {
         Path configured = Paths.get(uploadPath);
         if (configured.isAbsolute()) {

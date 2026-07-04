@@ -3,6 +3,9 @@ import request from '@/utils/request'
 export function listResident(params) {
   return request({ url: '/property/resident/list', method: 'get', params })
 }
+export function getResident(residentId) {
+  return request({ url: `/property/resident/${residentId}`, method: 'get' })
+}
 export function addResident(data) {
   return request({ url: '/property/resident', method: 'post', data })
 }
@@ -12,6 +15,14 @@ export function updateResident(data) {
 export function deleteResident(residentId) {
   return request({ url: `/property/resident/${residentId}`, method: 'delete' })
 }
+export function listOwnerOptions(excludeResidentId) {
+  return request({
+    url: '/property/resident/owner-options',
+    method: 'get',
+    params: excludeResidentId != null ? { excludeResidentId } : {}
+  })
+}
+
 export function listOccupiedHouses(excludeResidentId) {
   return request({
     url: '/property/resident/occupied-houses',
@@ -58,14 +69,4 @@ export function addTag(data) {
 }
 export function deleteTag(tagId) {
   return request({ url: `/property/tag/${tagId}`, method: 'delete' })
-}
-
-export function dashboardStats() {
-  return request({ url: '/property/dashboard/stats', method: 'get' })
-}
-export function listElderAlert(params) {
-  return request({ url: '/property/elder/alert/list', method: 'get', params })
-}
-export function handleElderAlert(data) {
-  return request({ url: '/property/elder/alert/handle', method: 'put', data })
 }

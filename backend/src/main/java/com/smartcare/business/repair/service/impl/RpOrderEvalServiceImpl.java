@@ -1,5 +1,6 @@
 package com.smartcare.business.repair.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.smartcare.business.repair.domain.RpOrderEval;
 import com.smartcare.business.repair.mapper.RpOrderEvalMapper;
 import com.smartcare.business.repair.service.RpOrderEvalService;
@@ -23,5 +24,13 @@ public class RpOrderEvalServiceImpl implements RpOrderEvalService {
         eval.setContent(content);
         eval.setAppealStatus("0");
         evalMapper.insert(eval);
+    }
+
+    @Override
+    public RpOrderEval findByOrderId(Long orderId) {
+        return evalMapper.selectOne(new LambdaQueryWrapper<RpOrderEval>()
+            .eq(RpOrderEval::getOrderId, orderId)
+            .orderByDesc(RpOrderEval::getEvalId)
+            .last("LIMIT 1"));
     }
 }

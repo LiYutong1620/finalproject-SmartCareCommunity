@@ -1,0 +1,131 @@
+/* 物业端社区资源列表页共用表格样式 */
+
+.property-table-page {
+  max-width: 1200px;
+}
+
+.property-table-page .filter-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 14px 16px 6px;
+  background: #f8fafc;
+  border: 1px solid #e8edf3;
+  border-radius: 10px;
+}
+
+.property-table-page .filter-panel .search-form {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.property-table-page .filter-panel .search-form :deep(.el-form-item) {
+  margin-bottom: 10px;
+  margin-right: 14px;
+}
+
+.property-table-page .filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+  padding-bottom: 10px;
+}
+
+.property-table-page .table-card {
+  border-radius: 10px;
+  border: 1px solid #e8edf3;
+  overflow: hidden;
+}
+
+.property-table-page .table-card :deep(.el-card__body) {
+  padding: 0;
+}
+
+.property-table-page .data-table {
+  font-size: 13px;
+}
+
+.property-table-page .data-table :deep(.el-table__header th) {
+  background: #f4f7fb !important;
+  color: #303133 !important;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.property-table-page .data-table :deep(.el-table__row) {
+  transition: background 0.15s;
+}
+
+.property-table-page .data-table :deep(.el-table__body tr:hover > td) {
+  background: #f5f9ff !important;
+}
+
+.property-table-page .data-table :deep(.el-table__body td) {
+  padding: 10px 0;
+}
+
+.property-table-page .data-table.clickable-table :deep(.el-table__row) {
+  cursor: pointer;
+}
+
+.property-table-page .table-card :deep(.pagination-container) {
+  padding: 12px 16px;
+  margin: 0;
+  background: #fafbfc;
+  border-top: 1px solid #eef2f6;
+}
+
+.property-table-page .cell-link {
+  font-weight: 600;
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  letter-spacing: 0.02em;
+}
+
+.property-table-page .btn-action {
+  font-weight: 500;
+  padding: 4px 6px;
+}
+
+.property-table-page .tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.property-table-page .tag-list .el-tag {
+  max-width: 100%;
+}
+
+.property-table-page .age-sep {
+  margin: 0 6px;
+  color: #909399;
+}
+
+.property-table-page .empty-cell {
+  color: #c0c4cc;
+}
+
+/* 工单状态/紧急程度自定义标签色 */
+.property-table-page .el-tag.tag-status-purple,
+.detail-drawer .el-tag.tag-status-purple {
+  --el-tag-bg-color: #f3e8ff;
+  --el-tag-border-color: #d8b4fe;
+  --el-tag-text-color: #7e22ce;
+  background-color: var(--el-tag-bg-color);
+  border-color: var(--el-tag-border-color);
+  color: var(--el-tag-text-color);
+}
+
+.property-table-page .el-tag.tag-urgency-normal,
+.detail-drawer .el-tag.tag-urgency-normal {
+  --el-tag-bg-color: #e0f2fe;
+  --el-tag-border-color: #7dd3fc;
+  --el-tag-text-color: #0369a1;
+  background-color: var(--el-tag-bg-color);
+  border-color: var(--el-tag-border-color);
+  color: var(--el-tag-text-color);
+}

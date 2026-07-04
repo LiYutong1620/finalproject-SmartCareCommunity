@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <div class="page-toolbar">
+  <div class="app-container property-table-page">
+    <div class="filter-panel">
       <el-form :inline="true" class="search-form">
         <el-form-item label="所属楼栋">
           <el-select v-model="houseQuery.buildingId" clearable placeholder="全部楼栋" style="width:140px">
@@ -17,24 +17,43 @@
           <el-button icon="Refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-      <el-button type="success" :disabled="!houseQuery.buildingId" @click="openHouse()">新增房屋</el-button>
+      <div class="filter-actions">
+        <el-button type="success" :disabled="!houseQuery.buildingId" @click="openHouse()">新增房屋</el-button>
+      </div>
     </div>
 
-    <el-card shadow="never">
-      <el-table :data="houses" v-loading="loading" border stripe>
-        <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column label="楼栋" width="90" align="center">
-          <template #default="{ row }">{{ buildingName(row.buildingId) }}</template>
+    <el-card shadow="never" class="table-card">
+      <el-table :data="houses" v-loading="loading" stripe class="data-table house-table">
+        <el-table-column type="index" label="序号" width="64" align="center" />
+        <el-table-column label="楼栋" width="96" align="center">
+          <template #default="{ row }">
+            <el-tag size="small" effect="plain" round>{{ row.buildingNo || buildingName(row.buildingId) }}</el-tag>
+          </template>
         </el-table-column>
-        <el-table-column prop="houseNo" label="房号" width="90" align="center" />
-        <el-table-column prop="area" label="面积(㎡)" width="100" align="center" />
-        <el-table-column prop="layout" label="户型" min-width="110" show-overflow-tooltip />
-        <el-table-column prop="ownerName" label="业主" width="90" />
-        <el-table-column prop="remark" label="备注" min-width="160" show-overflow-tooltip />
+        <el-table-column prop="houseNo" label="房号" width="88" align="center">
+          <template #default="{ row }">
+            <span class="cell-link">{{ row.houseNo }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="area" label="面积(㎡)" width="96" align="center" />
+        <el-table-column prop="layout" label="户型" width="100" align="center" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.layout || '—' }}</template>
+        </el-table-column>
+        <el-table-column prop="residentName" label="在住住户" width="110" align="center">
+          <template #default="{ row }">
+            <el-button v-if="row.residentId" link type="primary" @click="openResidentDetail(row.residentId)">
+              {{ row.residentName }}
+            </el-button>
+            <span v-else class="empty-cell">—</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="remark" label="备注" min-width="140" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.remark || '—' }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="140" align="center" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openHouse(row)">编辑</el-button>
-            <el-button link type="danger" @click="delHouse(row)">删除</el-button>
+            <el-button link type="primary" class="btn-action" @click="openHouse(row)">编辑</el-button>
+            <el-button link type="danger" class="btn-action" @click="delHouse(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -47,6 +66,8 @@
       />
     </el-card>
 
+    <ResidentDetailDrawer v-model="detailVisible" :resident-id="detailResidentId" />
+
     <el-dialog v-model="houseDlg" :title="houseForm.houseId ? '编辑房屋' : '新增房屋'" width="480px" append-to-body>
       <el-form :model="houseForm" label-width="90px">
         <el-form-item label="所属楼栋">
@@ -57,7 +78,6 @@
         <el-form-item label="房号"><el-input v-model="houseForm.houseNo" /></el-form-item>
         <el-form-item label="面积"><el-input v-model="houseForm.area" /></el-form-item>
         <el-form-item label="户型"><el-input v-model="houseForm.layout" /></el-form-item>
-        <el-form-item label="业主"><el-input v-model="houseForm.ownerName" /></el-form-item>
         <el-form-item label="备注"><el-input v-model="houseForm.remark" type="textarea" :rows="3" placeholder="选填" /></el-form-item>
       </el-form>
       <template #footer><el-button type="primary" @click="saveHouse">保存</el-button></template>
@@ -70,12 +90,16 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listBuildingAll, listHouse, addHouse, updateHouse, deleteHouse } from '@/api/property'
+import ResidentDetailDrawer from '@/components/ResidentDetailDrawer/index.vue'
 import { useAutoQuery } from '@/composables/useAutoQuery'
+import '@/styles/property-table-page.css'
 
 const route = useRoute()
 const buildingOptions = ref([])
 const houses = ref([])
 const houseTotal = ref(0)
+const detailVisible = ref(false)
+const detailResidentId = ref(null)
 const houseQuery = reactive({
   pageNum: 1,
   pageSize: 10,
@@ -87,7 +111,12 @@ const houseDlg = ref(false)
 const houseForm = reactive({ houseId: null, buildingId: null, houseNo: '', area: 0, layout: '', ownerName: '', remark: '' })
 
 function buildingName(id) {
-  return buildingOptions.value.find(b => b.buildingId === id)?.buildingNo || '-'
+  return buildingOptions.value.find(b => b.buildingId === id)?.buildingNo || '—'
+}
+
+function openResidentDetail(residentId) {
+  detailResidentId.value = residentId
+  detailVisible.value = true
 }
 
 async function loadBuildingOptions() {
@@ -129,8 +158,14 @@ async function saveHouse() {
     ElMessage.warning('请选择所属楼栋')
     return
   }
-  if (houseForm.houseId) await updateHouse(houseForm)
-  else await addHouse(houseForm)
+  const payload = { ...houseForm }
+  delete payload.residentId
+  delete payload.residentName
+  delete payload.livingStatus
+  delete payload.livingStatusLabel
+  delete payload.buildingNo
+  if (houseForm.houseId) await updateHouse(payload)
+  else await addHouse(payload)
   ElMessage.success('已保存')
   houseDlg.value = false
   loadList()
@@ -143,24 +178,12 @@ async function delHouse(row) {
   loadList()
 }
 
-onMounted(async () => {
-  await loadBuildingOptions()
-})
+onMounted(loadBuildingOptions)
 </script>
 
 <style scoped>
-.page-toolbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.page-toolbar .search-form {
-  margin-bottom: 0;
-}
-.page-toolbar .search-form :deep(.el-form-item) {
-  margin-bottom: 0;
+.house-table :deep(.el-table__body),
+.house-table :deep(.el-table__header) {
+  table-layout: fixed;
 }
 </style>

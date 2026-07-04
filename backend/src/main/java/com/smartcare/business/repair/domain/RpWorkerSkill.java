@@ -14,4 +14,10 @@ public class RpWorkerSkill {
     private Long workerId;
     private String skillName;
     private String skillLevel;
+    /** 审核：0待审核 1已通过 2已驳回 */
+    private String auditStatus;
+    /** 申请说明/从业证明 */
+    private String applyRemark;
+    /** 审核意见（驳回原因等） */
+    private String auditRemark;
 }

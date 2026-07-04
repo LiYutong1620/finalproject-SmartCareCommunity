@@ -1,7 +1,7 @@
 package com.smartcare.business.repair.controller;
 
 import com.smartcare.business.repair.service.RepairAiEngineService;
-import com.smartcare.business.repair.service.RepairAnalyticsService;
+import com.smartcare.business.repair.service.RepairDispatchConfigService;
 import com.smartcare.business.repair.service.RepairReportService;
 import com.smartcare.common.core.domain.AjaxResult;
 import com.smartcare.common.core.page.TableDataInfo;
@@ -18,18 +18,40 @@ public class PropertyRepairAiController {
 
     private final RepairAiEngineService aiEngineService;
     private final RepairReportService reportService;
-    private final RepairAnalyticsService analyticsService;
+    private final RepairDispatchConfigService dispatchConfigService;
+
+    @GetMapping("/auto-dispatch/config")
+    public AjaxResult getAutoDispatchConfig() {
+        return AjaxResult.success(Map.of("enabled", dispatchConfigService.isAutoDispatchEnabled()));
+    }
+
+    @PutMapping("/auto-dispatch/config")
+    public AjaxResult setAutoDispatchConfig(@RequestBody Map<String, Object> body) {
+        boolean enabled = Boolean.TRUE.equals(body.get("enabled"));
+        dispatchConfigService.setAutoDispatchEnabled(enabled);
+        return AjaxResult.success();
+    }
 
     @PostMapping("/auto-dispatch/{orderId}")
     public AjaxResult autoDispatch(@PathVariable Long orderId) {
-        Long workerId = aiEngineService.autoDispatch(orderId);
-        return workerId == null ? AjaxResult.error("暂无可派单维修工") : AjaxResult.success(Map.of("workerId", workerId));
+        Map<String, Object> result = aiEngineService.autoDispatch(orderId);
+        return result == null ? AjaxResult.error("暂无可派单维修工或工单状态不可派单") : AjaxResult.success(result);
     }
 
-    @GetMapping("/analyze")
-    public AjaxResult analyze(@RequestParam String description,
-                              @RequestParam(required = false) Long typeId) {
-        return AjaxResult.success(aiEngineService.analyzePreview(description, typeId));
+    @PostMapping("/batch-dispatch")
+    public AjaxResult batchAutoDispatch() {
+        return AjaxResult.success(aiEngineService.batchAutoDispatch());
+    }
+
+    @PostMapping("/reanalyze/{orderId}")
+    public AjaxResult reanalyze(@PathVariable Long orderId) {
+        aiEngineService.reanalyzeOrder(orderId);
+        return AjaxResult.success();
+    }
+
+    @GetMapping("/recommend/{orderId}")
+    public AjaxResult recommend(@PathVariable Long orderId) {
+        return AjaxResult.success(aiEngineService.recommendWorker(orderId));
     }
 
     @GetMapping("/reports")
@@ -43,10 +65,5 @@ public class PropertyRepairAiController {
     public AjaxResult generateReport(@RequestParam(required = false) String weekStart) {
         LocalDate start = weekStart == null ? null : LocalDate.parse(weekStart);
         return AjaxResult.success(reportService.generateWeeklyReport(start));
-    }
-
-    @GetMapping("/trend")
-    public AjaxResult trend(@RequestParam(defaultValue = "6") int months) {
-        return AjaxResult.success(analyticsService.monthlyTrend(months));
     }
 }

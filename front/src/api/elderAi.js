@@ -19,10 +19,11 @@ export function manualCheck(residentId) {
   });
 }
 
-export function getAloneElders() {
+export function getAloneElders(params) {
   return request({
     url: "/property/elder/ai-monitor/alone-elders",
     method: "get",
+    params: params || { pageNum: 1, pageSize: 500 },
   });
 }
 

@@ -1,6 +1,24 @@
 import request from "@/utils/request";
 
 // 关怀人员
+export function listCareStaffByResident(residentId) {
+  return request({ url: `/property/elder/staff/by-resident/${residentId}`, method: "get" });
+}
+export function processAlert(alertId) {
+  return request({ url: `/property/elder/alert/${alertId}/process`, method: "put" });
+}
+export function assignAlertCare(alertId, data) {
+  return request({ url: `/property/elder/alert/${alertId}/assign`, method: "put", data });
+}
+export function listCareStaffTypes() {
+  return request({ url: "/property/elder/staff-type/list", method: "get" });
+}
+export function addCareStaffType(data) {
+  return request({ url: "/property/elder/staff-type", method: "post", data });
+}
+export function deleteCareStaffType(typeId) {
+  return request({ url: `/property/elder/staff-type/${typeId}`, method: "delete" });
+}
 export function listCareStaff(params) {
   return request({ url: "/property/elder/staff/list", method: "get", params });
 }
@@ -12,47 +30,6 @@ export function updateCareStaff(data) {
 }
 export function deleteCareStaff(staffId) {
   return request({ url: `/property/elder/staff/${staffId}`, method: "delete" });
-}
-
-// 健康数据
-export function recordHealth(data) {
-  return request({
-    url: "/property/elder/health/record",
-    method: "post",
-    data,
-  });
-}
-export function getHealthRecords(residentId, params) {
-  return request({
-    url: `/property/elder/health/${residentId}`,
-    method: "get",
-    params,
-  });
-}
-
-// 处置预案
-export function listDisposalPlans(params) {
-  return request({
-    url: "/property/elder/disposal-plan/list",
-    method: "get",
-    params,
-  });
-}
-export function addDisposalPlan(data) {
-  return request({
-    url: "/property/elder/disposal-plan",
-    method: "post",
-    data,
-  });
-}
-export function updateDisposalPlan(data) {
-  return request({ url: "/property/elder/disposal-plan", method: "put", data });
-}
-export function deleteDisposalPlan(planId) {
-  return request({
-    url: `/property/elder/disposal-plan/${planId}`,
-    method: "delete",
-  });
 }
 
 // 关怀工单
@@ -87,9 +64,6 @@ export function getCareOrderDetail(id) {
 // 预警
 export function listAlerts(params) {
   return request({ url: "/property/elder/alert/list", method: "get", params });
-}
-export function handleAlert(data) {
-  return request({ url: "/property/elder/alert/handle", method: "put", data });
 }
 export function getAlertDetail(alertId) {
   return request({ url: `/property/elder/alert/${alertId}`, method: "get" });

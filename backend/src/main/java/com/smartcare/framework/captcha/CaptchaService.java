@@ -1,6 +1,7 @@
 package com.smartcare.framework.captcha;
 
 import com.smartcare.common.exception.ServiceException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -26,7 +27,13 @@ public class CaptchaService {
     private final Map<String, CaptchaEntry> store = new ConcurrentHashMap<>();
     private final RandomGenerator random = RandomGenerator.getDefault();
 
+    @Value("${smartcare.captcha.enabled:true}")
+    private boolean captchaEnabled;
+
     public CaptchaResult create() {
+        if (!captchaEnabled) {
+            return new CaptchaResult("", "", false);
+        }
         String code = randomCode();
         String uuid = UUID.randomUUID().toString().replace("-", "");
         store.put(uuid, new CaptchaEntry(code.toLowerCase(), System.currentTimeMillis()));
@@ -35,6 +42,9 @@ public class CaptchaService {
     }
 
     public void validate(String uuid, String code) {
+        if (!captchaEnabled) {
+            return;
+        }
         if (!StringUtils.hasText(uuid) || !StringUtils.hasText(code)) {
             throw new ServiceException("请输入验证码");
         }

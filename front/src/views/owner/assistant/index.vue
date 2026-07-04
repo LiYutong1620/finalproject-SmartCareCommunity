@@ -370,8 +370,26 @@ function scrollToBottom() {
 
 <style scoped>
 .assistant-page {
-  height: calc(100vh - 120px);
-  min-height: 560px;
+  box-sizing: border-box;
+  padding: 20px;
+  height: calc(100vh - 56px);
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.assistant-row {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.assistant-row :deep(.el-col) {
+  min-width: 0;
 }
 
 .assistant-row,
@@ -386,11 +404,14 @@ function scrollToBottom() {
 .chat-card {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .history-card :deep(.el-card__body),
 .chat-card :deep(.el-card__body) {
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -458,6 +479,8 @@ function scrollToBottom() {
 
 .message-box {
   flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 8px 4px 16px;
   background: #fafafa;
@@ -537,6 +560,7 @@ function scrollToBottom() {
   white-space: pre-wrap;
   line-height: 1.6;
   word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .transfer-tip {
@@ -561,6 +585,7 @@ function scrollToBottom() {
 
 .input-area {
   margin-top: 12px;
+  min-width: 0;
 }
 
 .image-preview-row {
@@ -608,12 +633,16 @@ function scrollToBottom() {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .left-actions {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .ended-alert {
@@ -623,7 +652,12 @@ function scrollToBottom() {
 @media (max-width: 768px) {
   .assistant-page {
     height: auto;
-    min-height: auto;
+    min-height: calc(100vh - 56px);
+    overflow: visible;
+  }
+
+  .assistant-row {
+    height: auto;
   }
 
   .history-col {

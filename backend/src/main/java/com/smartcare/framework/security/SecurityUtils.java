@@ -35,4 +35,9 @@ public final class SecurityUtils {
         if (perms == null || perms.isEmpty()) return false;
         return Arrays.asList(perms.split(",")).contains(code);
     }
+
+    public static String getUserType() {
+        SysUser user = getUser();
+        return user != null ? user.getUserType() : null;
+    }
 }

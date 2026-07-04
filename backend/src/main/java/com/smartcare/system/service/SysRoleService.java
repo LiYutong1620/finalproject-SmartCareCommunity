@@ -23,6 +23,7 @@ public class SysRoleService {
 
     public List<SysRole> listAll() {
         return roleMapper.selectList(new LambdaQueryWrapper<SysRole>()
+            .in(SysRole::getRoleKey, "owner", "worker", "property")
             .orderByAsc(SysRole::getRoleId));
     }
 

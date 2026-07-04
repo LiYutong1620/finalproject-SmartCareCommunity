@@ -25,26 +25,6 @@ public class DashboardController {
         return AjaxResult.success(dashboardService.getElderStats());
     }
 
-    @GetMapping("/alert-trend")
-    public AjaxResult alertTrend() {
-        return AjaxResult.success(dashboardService.getAlertTrend());
-    }
-
-    @GetMapping("/order-trend")
-    public AjaxResult orderTrend() {
-        return AjaxResult.success(dashboardService.getOrderTrend());
-    }
-
-    @GetMapping("/staff-performance")
-    public AjaxResult staffPerformance() {
-        return AjaxResult.success(dashboardService.getStaffPerformance());
-    }
-
-    @GetMapping("/risk-residents")
-    public AjaxResult riskResidents() {
-        return AjaxResult.success(dashboardService.getRiskResidents());
-    }
-
     /** 工单完成率（按日/周/月） */
     @GetMapping("/completion-rate")
     public AjaxResult completionRate(@RequestParam(defaultValue = "month") String period) {
@@ -73,5 +53,29 @@ public class DashboardController {
     @GetMapping("/worker-load")
     public AjaxResult workerLoad() {
         return AjaxResult.success(dashboardService.getWorkerLoad());
+    }
+
+    /** 预警处理趋势 */
+    @GetMapping("/alert-process-trend")
+    public AjaxResult alertProcessTrend() {
+        return AjaxResult.success(dashboardService.getAlertProcessTrend());
+    }
+
+    /** 住户结构 */
+    @GetMapping("/resident-structure")
+    public AjaxResult residentStructure() {
+        return AjaxResult.success(dashboardService.getResidentStructure());
+    }
+
+    /** 房屋结构 */
+    @GetMapping("/house-structure")
+    public AjaxResult houseStructure() {
+        return AjaxResult.success(dashboardService.getHouseStructure());
+    }
+
+    /** AI 安全预测 */
+    @GetMapping("/ai-safety-prediction")
+    public AjaxResult aiSafetyPrediction() {
+        return AjaxResult.success(dashboardService.getAiSafetyPrediction());
     }
 }

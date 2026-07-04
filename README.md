@@ -1,4 +1,4 @@
-# Smart Care Community（智慧社区）
+# 智护社区：AI 智能服务平台
 
 基于《需求规格说明书（SSR 简略版）》的前后端分离智慧社区项目，参考若依（RuoYi）的页面与 CRUD 写法。
 
@@ -19,7 +19,7 @@ finalproject/
 
 | 类型 | 名称 | 说明 |
 |------|------|------|
-| 项目名称 | Smart Care Community | 智慧社区平台 |
+| 项目名称 | 智护社区：AI 智能服务平台 | 简称「智护社区」 |
 | Java 根包 | `com.smartcare` | 后端统一包名 |
 | 数据库 | `smart_care_community` | MySQL 库名 |
 | 配置前缀 | `smartcare.*` | `application.yml` 自定义项 |
@@ -40,7 +40,11 @@ finalproject/
 |------|------|------|------|
 | property01 | admin123 | 物业 | 昵称「王管家」；资源、公告、工单、AI 管理 |
 | owner01 | admin123 | 业主 | 报修、公告、智能问答 |
-| worker01 | admin123 | 维修工 | 工单作业 |
+| worker01 | admin123 | 维修工 | 水电电路，工单作业 |
+| worker02 | admin123 | 维修工 | 管道疏通（忙） |
+| worker03 | admin123 | 维修工 | 家电维修 |
+| worker04 | admin123 | 维修工 | 弱电/监控 |
+| worker05 | admin123 | 维修工 | 综合维修（离线） |
 
 ---
 
@@ -62,19 +66,26 @@ mysql -u root -p < sql/smart_care_community.sql
 
 > 脚本开头会 **预删除全部表** 再重建，**会清空该库已有数据**，请在导入前确认。
 
-修改 `backend/src/main/resources/application.yml` 中的数据库账号密码（默认 `root` / `123456`）。
+数据库账号密码需与后端配置一致，见下方「本地配置」。
 
-### 2. 智谱 AI 配置（智能问答 / 知识库自学习必需）
+### 2. 本地配置（数据库密码 / AI Key）
 
-在项目根目录或 `backend/src/main/resources/` 下创建 **`application-local.yml`**（已被 `.gitignore` 忽略，不会提交 Git）：
+复制 `backend/src/main/resources/application-local.yml.example` 为同目录下的 **`application-local.yml`**（已被 `.gitignore` 忽略）：
 
 ```yaml
+spring:
+  datasource:
+    username: root
+    password: 你的MySQL密码   # 与 Navicat 连接时使用的密码一致
+
 ai:
   zhipu:
     api-key: 你的智谱API密钥
 ```
 
-或设置环境变量 `ZHIPU_API_KEY`。未配置时 AI 问答将使用本地知识库兜底，知识库自学习无法调用大模型。
+也可设置环境变量 `MYSQL_USER`、`MYSQL_PASSWORD` 覆盖默认值（默认 `root` / `123456`）。
+
+未配置智谱 API Key 时，AI 问答将使用本地知识库兜底，知识库自学习无法调用大模型。
 
 ### 3. 后端
 
@@ -94,7 +105,9 @@ npm install
 npm run dev
 ```
 
-- 访问：http://localhost（Vite 代理 `/api` → 后端 8080）
+- 访问：http://localhost:5173（Vite 代理 `/api` → 后端 8080）
+
+> 请使用 `npm run dev` 启动前端，不要直接打开 `dist/index.html`，否则 `/api` 请求会 404。
 
 ---
 
@@ -104,7 +117,11 @@ npm run dev
 
 | 文件 | 作用 |
 |------|------|
-| `sql/smart_care_community.sql` | **唯一主库脚本**：建库、全部业务表、演示数据（含 AI 对话、知识库 20 条），可直接整库导入 |
+| `sql/smart_care_community.sql` | **唯一主库脚本**：基于现网导出清理后生成，含全部业务数据，可直接整库导入 |
+| `sql/build_clean_sql.py` | 从 Navicat 导出文件重新生成主脚本（用法：`python build_clean_sql.py <导出文件路径>`） |
+| `sql/upgrade_after_merge.sql` | **增量升级脚本**：已有旧库时补全字段与新表 |
+
+> 合并分工3模块后若登录报「系统异常」或接口 500，通常是库结构未更新。请整库重导主脚本，或执行增量升级脚本。
 
 ### 3.2 表分组（主要）
 
@@ -113,7 +130,7 @@ npm run dev
 | `cm_*` | 物业资源 | 楼栋、房屋、住户、标签等 |
 | `cs_*` | 社区公告 | `cs_notice`、`cs_notice_read` |
 | `rp_*` | 报修工单 | 工单、进度、类型、物料等 |
-| `el_*` | 老人关怀 | 预警、健康档案、探访计划等 |
+| `el_*` | 老人关怀 | 预警、水电监测、关怀工单、处置记录等 |
 | `ai_*` / `kb_*` | AI 智能问答 | `ai_chat_session`、`ai_chat_message`、`kb_article`、`kb_learn_draft`、`cs_service_ticket` |
 | `sys_*` | 系统 | 用户、消息、配置、登录日志等 |
 
@@ -121,6 +138,7 @@ npm run dev
 
 - 社区活动、访客预约、邻里话题、亲情账号、业主投票、场地预约、投诉建议
 - 财务缴费（账单、缴费流水等）
+- 家政服务（`cs_housekeeping*`）、二手闲置（`cs_secondhand`）、健康档案（`el_health_*`）、旧统一用户表（`sys_user`）
 
 ---
 
@@ -205,7 +223,7 @@ front/src/
 
 ## 七、其他说明
 
-- **角色区分**：`sys_user.user_type`（0 业主 / 1 维修工 / 2 物业）。
+- **角色区分**：三端账号分表（`sys_owner_account` / `sys_worker_account` / `sys_property_account`）
 - **无 Redis**：验证码存内存；认证为 JWT 无状态。
 - **文件上传**：头像等保存在 `backend/upload/`；知识库文档导入支持 `.docx` / `.pdf` / `.txt`。
 - **敏感配置**：`application-local.yml`、`.env`、本地上传目录已在 `.gitignore` 中忽略，**请勿将 API Key 提交到 Git**。

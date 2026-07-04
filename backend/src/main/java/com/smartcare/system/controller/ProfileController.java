@@ -6,23 +6,20 @@ import com.smartcare.business.property.mapper.CmResidentMapper;
 import com.smartcare.common.core.domain.AjaxResult;
 import com.smartcare.common.exception.ServiceException;
 import com.smartcare.framework.security.SecurityUtils;
+import com.smartcare.framework.storage.FileStorageService;
 import com.smartcare.system.domain.SysUser;
+import com.smartcare.system.service.ProfilePhoneVerifyService;
 import com.smartcare.system.service.SysUserService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/system/user/profile")
@@ -33,9 +30,8 @@ public class ProfileController {
 
     private final SysUserService userService;
     private final CmResidentMapper residentMapper;
-
-    @Value("${smartcare.file.upload-path:./upload}")
-    private String uploadPath;
+    private final ProfilePhoneVerifyService profilePhoneVerifyService;
+    private final FileStorageService fileStorageService;
 
     @GetMapping
     public AjaxResult profile() {
@@ -47,10 +43,18 @@ public class ProfileController {
     public AjaxResult updateProfile(@RequestBody ProfileBody body) {
         SysUser user = requireLoginUser();
         Long userId = user.getUserId();
+        String newPhone = StringUtils.hasText(body.getPhone()) ? body.getPhone().trim() : null;
+        String oldPhone = user.getPhone();
+        boolean phoneChanged = StringUtils.hasText(newPhone)
+            && (oldPhone == null || !newPhone.equals(oldPhone));
+        if (phoneChanged) {
+            profilePhoneVerifyService.verifyAndConsume(userId, newPhone, body.getPhoneCode());
+        }
+
         SysUser update = new SysUser();
         update.setUserId(userId);
         update.setNickName(body.getNickName());
-        update.setPhone(body.getPhone());
+        update.setPhone(newPhone);
         update.setAvatar(body.getAvatar());
         update.setGender(body.getGender());
         update.setAge(body.getAge());
@@ -65,18 +69,24 @@ public class ProfileController {
         return AjaxResult.success(toProfileVo(latest));
     }
 
+    @PostMapping("/phone/send-code")
+    public AjaxResult sendPhoneCode(@RequestBody PhoneSendBody body) {
+        if (!StringUtils.hasText(body.getPhone())) {
+            throw new ServiceException("请输入手机号");
+        }
+        Long userId = requireLoginUser().getUserId();
+        String code = profilePhoneVerifyService.sendCode(userId, body.getPhone());
+        Map<String, String> data = new HashMap<>();
+        data.put("message", "验证码已发送");
+        data.put("demoCode", code);
+        return AjaxResult.success(data);
+    }
+
     @PutMapping("/updatePwd")
     public AjaxResult updatePwd(@RequestBody UpdatePwdBody body) {
         Long userId = requireLoginUser().getUserId();
         userService.updatePassword(userId, body.getOldPassword(), body.getNewPassword());
         return AjaxResult.success();
-    }
-
-    @DeleteMapping("/deactivate")
-    public AjaxResult deactivate() {
-        Long userId = requireLoginUser().getUserId();
-        userService.deleteUser(userId);
-        return AjaxResult.success("账号已注销");
     }
 
     @PostMapping("/avatar")
@@ -90,12 +100,7 @@ public class ProfileController {
         if (!ALLOWED_EXT.contains(ext)) {
             throw new ServiceException("仅支持 jpg/png/gif/webp 格式");
         }
-        Path dir = Paths.get(uploadPath, "avatar");
-        Files.createDirectories(dir);
-        String filename = UUID.randomUUID().toString().replace("-", "") + ext;
-        Path target = dir.resolve(filename);
-        file.transferTo(target.toFile());
-
+        String filename = fileStorageService.saveFlat(file, "avatar");
         String avatarUrl = "/upload/avatar/" + filename;
         Long userId = requireLoginUser().getUserId();
         SysUser update = new SysUser();
@@ -193,9 +198,15 @@ public class ProfileController {
     static class ProfileBody {
         private String nickName;
         private String phone;
+        private String phoneCode;
         private String avatar;
         private String gender;
         private Integer age;
+    }
+
+    @Data
+    static class PhoneSendBody {
+        private String phone;
     }
 
     @Data

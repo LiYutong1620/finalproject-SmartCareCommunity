@@ -34,9 +34,12 @@ public class ElAiMonitorController {
         return AjaxResult.success(aiMonitorService.performFullCheck(residentId));
     }
 
-    /** 获取独居老人列表 */
+    /** 获取老人档案列表（分页，支持姓名/性别筛选） */
     @GetMapping("/alone-elders")
-    public AjaxResult aloneElders() {
-        return AjaxResult.success(aiMonitorService.listAloneElders());
+    public AjaxResult aloneElders(@RequestParam(defaultValue = "1") int pageNum,
+                                  @RequestParam(defaultValue = "10") int pageSize,
+                                  @RequestParam(required = false) String name,
+                                  @RequestParam(required = false) String gender) {
+        return AjaxResult.success(aiMonitorService.listAloneElders(pageNum, pageSize, name, gender));
     }
 }

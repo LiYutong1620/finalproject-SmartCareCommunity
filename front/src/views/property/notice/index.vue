@@ -129,7 +129,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dlg = false">取 消</el-button>
-        <el-button type="primary" @click="save">确 定</el-button>
+        <el-button type="primary" :loading="saving" :disabled="saving" @click="save">确 定</el-button>
       </template>
     </el-dialog>
 
@@ -174,6 +174,7 @@ const list = ref([])
 const total = ref(0)
 const query = reactive({ pageNum: 1, pageSize: 10, title: '', status: '', publishTimeRange: null })
 const dlg = ref(false)
+const saving = ref(false)
 const statsDrawer = ref(false)
 const formRef = ref(null)
 const readStats = ref({ readRate: 0, readCount: 0, totalOwners: 0, readList: [], unreadList: [] })
@@ -375,6 +376,7 @@ function openEdit(row) {
 }
 
 async function save() {
+  if (saving.value) return
   if (!form.noticeId) {
     const t = parseTime(form.createTime)
     if (!t || t < Date.now() - 1000) {
@@ -382,14 +384,19 @@ async function save() {
     }
   }
   await formRef.value.validate()
-  form.noticeType = noticeTab.value
-  const payload = { ...form }
-  delete payload.originalCreateTime
-  if (form.noticeId) await updateContentNotice(payload)
-  else await publishNotice(payload)
-  ElMessage.success(isScheduledPublish.value && !form.noticeId ? '已保存，将定时发布' : '保存成功')
-  dlg.value = false
-  loadList()
+  saving.value = true
+  try {
+    form.noticeType = noticeTab.value
+    const payload = { ...form }
+    delete payload.originalCreateTime
+    if (form.noticeId) await updateContentNotice(payload)
+    else await publishNotice(payload)
+    ElMessage.success(isScheduledPublish.value && !form.noticeId ? '已保存，将定时发布' : '保存成功')
+    dlg.value = false
+    loadList()
+  } finally {
+    saving.value = false
+  }
 }
 
 async function offline(row) {
