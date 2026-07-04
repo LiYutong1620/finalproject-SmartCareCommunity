@@ -1,12 +1,7 @@
 /*
- Smart Care Community - 完整数据库脚本（基于现网导出 2026-07-04 清理）
+ Smart Care Community - 完整数据库脚本
  用途：全新导入（会先 DROP 再 CREATE 全部表）
  数据库：smart_care_community
- 说明：
-   - 数据来源：smart_care_community（2）.sql（Navicat 现网导出）
-   - 已移除废弃表：sys_user、el_device、el_health_*、el_disposal_plan、cs_housekeeping*、cs_secondhand
-   - 已精简 cm_resident 废弃字段：family_members、is_primary_resident、is_alone_living、last_activity_time
-   - 保留三端账号分表及全部在用的业务数据
  导入：mysql -uroot -p < sql/smart_care_community.sql
 */
 
